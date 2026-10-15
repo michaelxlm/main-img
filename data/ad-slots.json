@@ -1,0 +1,55 @@
+{
+  "version": "1.0",
+  "updated": "2026.10.15",
+  "source": "本地兜底广告位；远程 OSS 同步 JSON 优先，本文件仅作远程不可用时的兜底。main-img 未纳入管理端集中 OSS 分片（config.adSlots.sites 含 img-fangkelianmeng），此处自营位为本地兜底，跨链同族站点。",
+  "settings": {
+    "enabled": true,
+    "maxPerSlot": 3,
+    "carouselMax": 6,
+    "rotateInterval": 4000
+  },
+  "slots": [
+    {
+      "id": "self-zangeng",
+      "type": "self",
+      "weight": 2,
+      "eyebrow": "同族站点 · 小满手记",
+      "title": "小满手记 · zangeng.com",
+      "desc": "建站、配色与前端工程的实践手记。",
+      "cta": "去手记看看 →",
+      "url": "https://zangeng.com/",
+      "rel": "noopener",
+      "enabled": true,
+      "placements": ["footer", "inline"],
+      "pages": ["*"]
+    },
+    {
+      "id": "self-585",
+      "type": "self",
+      "weight": 1,
+      "eyebrow": "同族站点 · 实测手记",
+      "title": "实测手记 · 585.ink",
+      "desc": "收录观测与埋点口径的实测记录。",
+      "cta": "去看看 →",
+      "url": "https://585.ink/",
+      "rel": "noopener",
+      "enabled": true,
+      "placements": ["footer", "inline"],
+      "pages": ["*"]
+    },
+    {
+      "id": "self-20101115",
+      "type": "self",
+      "weight": 1,
+      "eyebrow": "同族站点 · 历史知识库",
+      "title": "历史知识库 · 20101115.com",
+      "desc": "按朝代与年份串起历史事件的年表拾遗。",
+      "cta": "去逛逛 →",
+      "url": "https://20101115.com/",
+      "rel": "noopener",
+      "enabled": true,
+      "placements": ["footer", "inline"],
+      "pages": ["*"]
+    }
+  ]
+}

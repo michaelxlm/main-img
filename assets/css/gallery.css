@@ -1,0 +1,274 @@
+/* ==========================================================================
+   小满美图（img.fangkelianmeng.com）· 图片画廊专用样式
+   复用 tokens.css / main.css 的设计令牌；本文件只放图片画廊页独有组件。
+   ========================================================================== */
+
+/* ---------------------------------- 搜索栏 ---------------------------------- */
+.gm-search { display: flex; gap: 8px; }
+.gm-search input {
+  width: 320px; max-width: 60vw; height: 42px; padding: 0 14px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.9375rem;
+}
+.gm-search input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+.gm-search button {
+  height: 42px; padding: 0 20px; border: 1px solid transparent;
+  border-radius: var(--radius-sm); background: var(--accent); color: #fff;
+  font-size: 0.9375rem; font-weight: 600; cursor: pointer;
+  transition: background .15s ease;
+}
+.gm-search button:hover { background: var(--accent-strong); }
+
+/* ---------------------------------- 分类 chip 行 ---------------------------------- */
+.gm-cats { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 22px; }
+.gm-cat-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border: 1px solid var(--border-strong);
+  border-radius: 999px; background: var(--surface); color: var(--text);
+  font-size: 0.9375rem; font-weight: 600; text-decoration: none;
+  transition: border-color .15s ease, color .15s ease, background .15s ease;
+}
+.gm-cat-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.gm-cat-chip.is-active { border-color: var(--accent); color: #fff; background: var(--accent); }
+
+/* ---------------------------------- 工具栏 ---------------------------------- */
+.gm-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: space-between; gap: 16px; margin-bottom: 18px;
+}
+.gm-sort { display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.875rem; }
+.gm-sort select {
+  height: 36px; padding: 0 10px; border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); background: var(--bg); color: var(--text);
+  font-family: inherit; font-size: 0.875rem; cursor: pointer;
+}
+
+/* ---------------------------------- 瀑布流图片网格 ---------------------------------- */
+.gm-grid {
+  columns: 5;
+  column-gap: 14px;
+}
+.gm-card {
+  display: block;
+  position: relative;
+  margin-bottom: 14px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform .18s ease, box-shadow .18s ease;
+  break-inside: avoid;
+}
+@media (hover: hover) {
+  .gm-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+}
+.gm-card img {
+  width: 100%; display: block;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--surface-2);
+  transition: opacity .3s ease;
+}
+.gm-card img[data-loaded="0"] { opacity: 0; min-height: 180px; }
+.gm-card img[data-loaded="1"] { opacity: 1; }
+
+/* 图片信息叠加层 */
+.gm-overlay {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 32px 12px 10px;
+  background: linear-gradient(transparent, rgba(0,0,0,.55));
+  color: #fff; opacity: 0; transition: opacity .2s ease;
+}
+@media (hover: hover) { .gm-card:hover .gm-overlay { opacity: 1; } }
+.gm-overlay-title {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden; font-size: 0.875rem; font-weight: 600; line-height: 1.4;
+}
+.gm-overlay-meta { display: flex; gap: 10px; margin-top: 4px; font-size: 0.75rem; opacity: .8; }
+
+/* 图片标签 */
+.gm-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.gm-tag {
+  padding: 2px 8px; border-radius: 999px;
+  background: rgba(255,255,255,.2); color: #fff;
+  font-size: 0.6875rem; font-weight: 500;
+}
+
+/* 图片操作按钮 */
+.gm-actions {
+  position: absolute; top: 8px; right: 8px; z-index: 2;
+  display: flex; gap: 6px; opacity: 0; transition: opacity .2s ease;
+}
+@media (hover: hover) { .gm-card:hover .gm-actions { opacity: 1; } }
+.gm-action-btn {
+  width: 32px; height: 32px; border: 0; border-radius: 50%;
+  background: rgba(0,0,0,.45); color: #fff; font-size: 0.875rem;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  transition: background .15s ease, transform .15s ease;
+}
+.gm-action-btn:hover { background: rgba(0,0,0,.7); transform: scale(1.1); }
+.gm-action-btn.is-on { background: var(--accent); }
+
+/* ---------------------------------- 骨架屏 ---------------------------------- */
+.gm-skeleton {
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+  break-inside: avoid;
+  margin-bottom: 14px;
+}
+.gm-sk-img { width: 100%; background: var(--surface-2); }
+.gm-sk-line { height: 14px; margin: 10px 12px; border-radius: 6px; background: var(--surface-2); }
+.gm-sk-line.is-short { width: 55%; height: 12px; }
+.gm-skeleton .gm-sk-img,
+.gm-skeleton .gm-sk-line { animation: gm-sk-shimmer 1.2s ease-in-out infinite; }
+@keyframes gm-sk-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+
+/* ---------------------------------- 状态 / 加载更多 ---------------------------------- */
+.gm-state { padding: 24px 0; text-align: center; color: var(--text-muted); font-size: 0.9375rem; }
+.gm-more-wrap { text-align: center; margin-top: 18px; }
+
+/* ---------------------------------- Lightbox 灯箱 ---------------------------------- */
+.gm-lightbox {
+  position: fixed; inset: 0; z-index: var(--z-lightbox);
+  background: rgba(0, 0, 0, .88);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .25s ease;
+}
+.gm-lightbox.is-open { opacity: 1; pointer-events: auto; }
+.gm-lightbox-inner {
+  position: relative; max-width: 92vw; max-height: 90vh;
+  display: flex; flex-direction: column; align-items: center;
+}
+.gm-lightbox-img {
+  max-width: 92vw; max-height: 80vh; object-fit: contain;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 12px 48px rgba(0,0,0,.5);
+}
+.gm-lightbox-info {
+  margin-top: 12px; color: #fff; text-align: center;
+  font-size: 0.9375rem; max-width: 640px;
+}
+.gm-lightbox-info h3 { font-size: 1.0625rem; font-weight: 600; margin-bottom: 4px; }
+.gm-lightbox-info p { color: rgba(255,255,255,.7); font-size: 0.8125rem; }
+.gm-lightbox-close {
+  position: absolute; top: -40px; right: 0;
+  width: 36px; height: 36px; border: 0; border-radius: 50%;
+  background: rgba(255,255,255,.15); color: #fff; font-size: 1.25rem;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+}
+.gm-lightbox-close:hover { background: rgba(255,255,255,.3); }
+.gm-lightbox-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; border: 0; border-radius: 50%;
+  background: rgba(255,255,255,.12); color: #fff; font-size: 1.5rem;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+}
+.gm-lightbox-nav:hover { background: rgba(255,255,255,.25); }
+.gm-lightbox-prev { left: -56px; }
+.gm-lightbox-next { right: -56px; }
+.gm-lightbox-dl {
+  margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; border-radius: var(--radius-sm);
+  background: var(--accent); color: #fff; font-size: 0.875rem;
+  font-weight: 600; text-decoration: none; border: 0; cursor: pointer;
+}
+.gm-lightbox-dl:hover { background: var(--accent-strong); color: #fff; }
+
+/* ---------------------------------- 统计数字 ---------------------------------- */
+.gm-stats {
+  display: flex; flex-wrap: wrap; gap: 24px;
+  padding: 14px 18px; border: 1px solid var(--border);
+  border-radius: var(--radius); background: var(--surface); margin-bottom: 24px;
+}
+.gm-stat { text-align: center; }
+.gm-stat-value { font-size: 1.375rem; font-weight: 800; color: var(--accent); }
+.gm-stat-label { color: var(--text-soft); font-size: 0.8125rem; }
+
+/* ---------------------------------- 回到顶部 ---------------------------------- */
+.gm-back-top {
+  position: fixed; right: 18px; bottom: 22px; z-index: 50;
+  width: 42px; height: 42px; border: 1px solid var(--border-strong);
+  border-radius: 50%; background: var(--surface); color: var(--text);
+  font-size: 1.125rem; cursor: pointer; box-shadow: var(--shadow);
+  transition: opacity .15s ease, transform .15s ease;
+}
+.gm-back-top[hidden] { display: none; }
+.gm-back-top:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+
+/* ---------------------------------- 搜索历史 chip ---------------------------------- */
+.gm-his { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
+.gm-his[hidden] { display: none; }
+.gm-his-label { color: var(--text-soft); font-size: 0.8125rem; }
+.gm-his-chip {
+  border: 1px solid var(--border-strong); border-radius: 999px;
+  background: transparent; color: var(--text-muted); text-decoration: none;
+  padding: 4px 12px; font-size: 0.8125rem; cursor: pointer; font-family: inherit;
+  transition: border-color .15s ease, color .15s ease;
+}
+.gm-his-chip:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+/* ---------------------------------- CTA 条 ---------------------------------- */
+.cta-band {
+  padding: 36px 0;
+  background:
+    radial-gradient(680px 260px at 18% -10%, var(--accent-soft), transparent 62%),
+    linear-gradient(180deg, var(--surface), var(--surface-2));
+  color: var(--text); text-align: center;
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.cta-band h2 { color: var(--text); }
+.cta-band p { margin-top: 12px; color: var(--text-muted); font-size: 1.0625rem; }
+
+/* ---------------------------------- FAQ ---------------------------------- */
+.faq-list { max-width: 100%; margin: 0 auto; display: grid; gap: 12px; }
+details.faq { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+details.faq summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 12px 16px; font-weight: 600; cursor: pointer; list-style: none;
+}
+details.faq summary::-webkit-details-marker { display: none; }
+details.faq summary::after { content: "+"; color: var(--accent); font-size: 1.25rem; font-weight: 700; }
+details.faq[open] summary::after { content: "−"; }
+details.faq .faq-body { padding: 0 16px 12px; color: var(--text-muted); font-size: 0.9375rem; }
+
+/* ---------------------------------- 卡片网格（分类页用） ---------------------------------- */
+.grid { display: grid; gap: 16px; }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.card {
+  display: block; padding: 20px; border: 1px solid var(--border);
+  border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--border-strong); }
+.card-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; margin-bottom: 10px; border-radius: 10px;
+  background: var(--accent-soft); font-size: 1.2rem;
+}
+.card h3 { margin-bottom: 8px; }
+.card p { color: var(--text-muted); font-size: 0.9375rem; }
+.card-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 12px; font-size: 0.875rem; font-weight: 600; }
+
+/* ---------------------------------- 响应式 ---------------------------------- */
+@media (max-width: 1200px) { .gm-grid { columns: 4; } }
+@media (max-width: 980px) { .gm-grid { columns: 3; } }
+@media (max-width: 720px) {
+  .gm-grid { columns: 2; column-gap: 10px; }
+  .gm-card { margin-bottom: 10px; }
+  .gm-toolbar { flex-direction: column; align-items: stretch; }
+  .gm-search { width: 100%; }
+  .gm-search input { flex: 1; max-width: none; width: auto; }
+  .gm-lightbox-prev { left: 8px; }
+  .gm-lightbox-next { right: 8px; }
+  .gm-lightbox-close { top: 8px; right: 8px; }
+  .grid-3, .grid-2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .gm-grid { columns: 2; column-gap: 8px; }
+  .gm-card { margin-bottom: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gm-skeleton .gm-sk-img, .gm-skeleton .gm-sk-line { animation: none; }
+  .gm-card, .gm-card:hover { transform: none; }
+}

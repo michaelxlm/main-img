@@ -1,0 +1,14 @@
+{
+  "note": "壁纸分类定义。type 对应 API 的 type 参数（images 集合的 type 字段）。新增分类后需同步更新 category.html 和首页 chip。",
+  "categories": [
+    { "slug": "anime",     "name": "动漫",   "icon": "🎨", "desc": "二次元动漫角色、场景壁纸，热血、治愈、唯美风格应有尽有。" },
+    { "slug": "landscape", "name": "风景",   "icon": "🏔️", "desc": "山川湖海、日出日落、星空银河等自然风景高清壁纸。" },
+    { "slug": "girl",      "name": "美女",   "icon": "💃", "desc": "清新、甜美、时尚风格的美女写真壁纸精选。" },
+    { "slug": "game",      "name": "游戏",   "icon": "🎮", "desc": "热门游戏角色、场景、CG 壁纸，游戏迷必备。" },
+    { "slug": "animal",    "name": "动物",   "icon": "🐾", "desc": "萌宠猫咪、狗狗、野生动物等可爱动物壁纸。" },
+    { "slug": "car",       "name": "汽车",   "icon": "🏎️", "desc": "超级跑车、经典车型、赛车运动等汽车壁纸。" },
+    { "slug": "art",       "name": "艺术",   "icon": "🖼️", "desc": "抽象艺术、插画、概念设计等创意艺术壁纸。" },
+    { "slug": "city",      "name": "城市",   "icon": "🌃", "desc": "城市夜景、天际线、建筑摄影等都市风光壁纸。" },
+    { "slug": "tech",      "name": "科技",   "icon": "💻", "desc": "赛博朋克、科幻未来、数字艺术等科技风壁纸。" }
+  ]
+}

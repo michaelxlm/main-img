@@ -1,0 +1,25 @@
+# 静态站统一部署（push-to-deploy），由 39.107 上 self-hosted runner 执行
+# runner 用自身 /root/.ssh/id_rsa 登录 60.205.214.88，无需在仓库存密钥
+# 实际部署目录为 /www/wwwroot/img.fangkelianmeng.com
+name: Deploy img.fangkelianmeng.com
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux, x64, static-deploy]
+    steps:
+      - name: Configure SSH for GitHub checkout
+        shell: bash
+        run: |
+          git config --system url."git@github.com:".insteadOf "https://github.com/"
+          mkdir -p /root/.ssh && chmod 700 /root/.ssh
+          ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> /root/.ssh/known_hosts 2>/dev/null
+      - uses: actions/checkout@v4
+      - name: Sync to /www/wwwroot/img.fangkelianmeng.com
+        shell: bash
+        run: |
+          tar cf - --exclude=.git --exclude=.github --exclude=.user.ini --exclude=.workbuddy . | ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=accept-new root@60.205.214.88 "mkdir -p /www/wwwroot/img.fangkelianmeng.com ; cd /www/wwwroot/img.fangkelianmeng.com ; tar xmf -"

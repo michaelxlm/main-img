@@ -1,0 +1,68 @@
+/* ==========================================================================
+   六站共享设计令牌（Design Tokens）· 单一事实来源
+   统一管理：间距节奏 / 圆角 / 阴影层级 / 容器宽度 / 字体。
+   品牌差异（--accent / --bg / --surface / --border / --text 等）仍由各站定义。
+   ========================================================================== */
+
+:root {
+  /* 间距尺度（4 的倍数，覆盖大多数留白） */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* 圆角 */
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 22px;
+
+  /* 阴影层级（亮色：用主题色低透明，避免深底发灰） */
+  --shadow-sm: 0 1px 2px rgba(18, 23, 42, 0.06);
+  --shadow: 0 6px 24px rgba(18, 23, 42, 0.08);
+  --shadow-lg: 0 18px 48px rgba(18, 23, 42, 0.12);
+
+  /* 布局 */
+  --maxw: 1140px;
+  --header-h: 56px;
+
+  /* 字体 */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+
+  /* 断点 */
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 768px;
+  --breakpoint-md: 1024px;
+  --breakpoint-lg: 1280px;
+  --breakpoint-xl: 1440px;
+
+  /* 层叠 */
+  --z-header: 100;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+  --z-lightbox: 1090;
+
+  /* 字阶 */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+}
+
+[data-theme="dark"] {
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.5);
+}

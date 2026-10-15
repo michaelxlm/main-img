@@ -1,0 +1,13 @@
+{
+  "name": "小满美图 · 高清壁纸",
+  "short_name": "小满美图",
+  "description": "高清壁纸图片精选，发现美图，装点屏幕。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "icons": [
+    { "src": "/assets/img/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
