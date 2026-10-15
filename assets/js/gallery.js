@@ -137,11 +137,10 @@
     card.setAttribute('data-index', index);
 
     var src = thumbUrl(item);
-    var w = item.width || 400;
-    var h = item.height || 300;
-    // 计算合理的高度比例用于占位
-    var ratio = Math.min(Math.max(parseInt(h, 10) / parseInt(w, 10) || 1, 0.5), 2.5);
-    var skH = Math.round(180 * ratio);
+    var w = parseInt(item.width, 10) || 400;
+    var h = parseInt(item.height, 10) || 300;
+    // 用 aspect-ratio 保持图片比例，不再用 min-height 占位（会导致拉伸）
+    var aspectRatio = (w / h).toFixed(4);
 
     var favOn = isFavorited(item._id) ? ' is-on' : '';
     var tags = (item.tag || []).slice(0, 3);
@@ -154,7 +153,7 @@
         '<button class="gm-action-btn gm-fav' + favOn + '" data-fav="1" aria-label="收藏" title="收藏">♥</button>' +
         '<a class="gm-action-btn" href="' + escAttr(imgUrl(item)) + '" target="_blank" rel="noopener" aria-label="查看原图" title="查看原图" download>⤓</a>' +
       '</div>' +
-      '<img src="' + escAttr(src) + '" alt="' + escAttr(item.title || '壁纸') + '" width="' + escAttr(w) + '" height="' + escAttr(h) + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="min-height:' + skH + 'px">' +
+      '<img src="' + escAttr(src) + '" alt="' + escAttr(item.title || '壁纸') + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '">' +
       '<div class="gm-overlay">' +
         '<div class="gm-overlay-title">' + escHtml(item.title || '未命名壁纸') + '</div>' +
         '<div class="gm-overlay-meta">' +
@@ -170,12 +169,10 @@
     if (img) {
       img.addEventListener('load', function () {
         img.setAttribute('data-loaded', '1');
-        img.style.minHeight = ''; // 移除占位 min-height，让图片按真实比例显示
       });
       img.addEventListener('error', function () {
         img.setAttribute('data-loaded', '1');
         img.style.opacity = '0.3';
-        img.style.minHeight = '';
         // 上报失效
         apiPost('error', { img_id: item._id });
       });

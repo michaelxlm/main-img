@@ -68,7 +68,7 @@
   background: var(--surface-2);
   transition: opacity .3s ease;
 }
-.gm-card img[data-loaded="0"] { opacity: 0; min-height: 180px; }
+.gm-card img[data-loaded="0"] { opacity: 0; background: var(--surface-2); }
 .gm-card img[data-loaded="1"] { opacity: 1; }
 
 /* 图片信息叠加层 */
