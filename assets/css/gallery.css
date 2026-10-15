@@ -6,21 +6,21 @@
 /* ---------------------------------- 搜索栏 ---------------------------------- */
 .gm-search { display: flex; gap: 8px; }
 .gm-search input {
-  width: 320px; max-width: 60vw; height: 42px; padding: 0 14px;
+  width: 280px; max-width: 50vw; height: 38px; padding: 0 12px;
   border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
-  background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.9375rem;
+  background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.875rem;
 }
 .gm-search input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
 .gm-search button {
-  height: 42px; padding: 0 20px; border: 1px solid transparent;
+  height: 38px; padding: 0 16px; border: 1px solid transparent;
   border-radius: var(--radius-sm); background: var(--accent); color: #fff;
-  font-size: 0.9375rem; font-weight: 600; cursor: pointer;
+  font-size: 0.875rem; font-weight: 600; cursor: pointer;
   transition: background .15s ease;
 }
 .gm-search button:hover { background: var(--accent-strong); }
 
 /* ---------------------------------- 分类 chip 行 ---------------------------------- */
-.gm-cats { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 22px; }
+.gm-cats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
 .gm-cat-chip {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 7px 16px; border: 1px solid var(--border-strong);
@@ -34,7 +34,7 @@
 /* ---------------------------------- 工具栏 ---------------------------------- */
 .gm-toolbar {
   display: flex; flex-wrap: wrap; align-items: center;
-  justify-content: space-between; gap: 16px; margin-bottom: 18px;
+  justify-content: space-between; gap: 12px; margin-bottom: 10px;
 }
 .gm-sort { display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.875rem; }
 .gm-sort select {
@@ -196,7 +196,7 @@
 .gm-back-top:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
 
 /* ---------------------------------- 搜索历史 chip ---------------------------------- */
-.gm-his { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
+.gm-his { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
 .gm-his[hidden] { display: none; }
 .gm-his-label { color: var(--text-soft); font-size: 0.8125rem; }
 .gm-his-chip {
@@ -209,7 +209,7 @@
 
 /* ---------------------------------- CTA 条 ---------------------------------- */
 .cta-band {
-  padding: 36px 0;
+  padding: 20px 0;
   background:
     radial-gradient(680px 260px at 18% -10%, var(--accent-soft), transparent 62%),
     linear-gradient(180deg, var(--surface), var(--surface-2));
@@ -217,7 +217,7 @@
   border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
 }
 .cta-band h2 { color: var(--text); }
-.cta-band p { margin-top: 12px; color: var(--text-muted); font-size: 1.0625rem; }
+.cta-band p { margin-top: 6px; color: var(--text-muted); font-size: 0.9rem; }
 
 /* ---------------------------------- FAQ ---------------------------------- */
 .faq-list { max-width: 100%; margin: 0 auto; display: grid; gap: 12px; }
