@@ -73,10 +73,13 @@
     // 如果有 otherUrls，取第一个作为缩略图
     if (item.otherUrls && item.otherUrls.length > 0) {
       var other = item.otherUrls[0];
-      if (other.indexOf('http') !== 0) {
-        other = 'https://antucao.oss-cn-beijing.aliyuncs.com/' + other;
+      // otherUrls 元素可能是对象 {url, height, width} 或字符串
+      var otherUrl = (typeof other === 'string') ? other : (other && other.url || '');
+      if (!otherUrl) return url;
+      if (otherUrl.indexOf('http') !== 0) {
+        otherUrl = 'https://antucao.oss-cn-beijing.aliyuncs.com/' + otherUrl;
       }
-      return other;
+      return otherUrl;
     }
     return url;
   }
