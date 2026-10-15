@@ -267,13 +267,9 @@ details.faq .faq-body { padding: 0 16px 12px; color: var(--text-muted); font-siz
   break-inside: avoid;
   margin: 14px 0;
   min-height: 90px;
-  background: var(--surface-2);
-  border-radius: var(--radius);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-3);
-  font-size: 0.8125rem;
 }
 .gm-ad-inline .ad-slot { width: 100%; }
 
