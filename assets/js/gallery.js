@@ -139,8 +139,11 @@
     var src = thumbUrl(item);
     var w = parseInt(item.width, 10) || 400;
     var h = parseInt(item.height, 10) || 300;
-    // 用 aspect-ratio 保持图片比例，不再用 min-height 占位（会导致拉伸）
-    var aspectRatio = (w / h).toFixed(4);
+    // 计算 aspect-ratio，限制在合理范围防止极端比例导致拉伸
+    var ratio = w / h;
+    if (ratio < 0.3) ratio = 0.3; // 最高约 3:1 竖图
+    if (ratio > 4) ratio = 4;     // 最宽约 4:1 横图
+    var aspectRatio = ratio.toFixed(4);
 
     var favOn = isFavorited(item._id) ? ' is-on' : '';
     var tags = (item.tag || []).slice(0, 3);
@@ -355,7 +358,7 @@
 
     var timeout = global.setTimeout(function () {
       if (state.controller) state.controller.abort();
-    }, 12000);
+    }, 20000); // 20秒超时，API 有时响应较慢
 
     apiGet(path, params)
       .then(function (data) {
