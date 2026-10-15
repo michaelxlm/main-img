@@ -9,6 +9,7 @@
 
   var API_BASE = 'https://api.xuyiheng.com/api/v1/front/antucao/image';
   var IMG_DOMAIN = 'img.fangkelianmeng.com';
+  var MAIN_URL = 'img.fangkelianmeng.com'; // sourceGuard 放行凭证，须与 projects.url 一致
   var FAV_KEY = 'gm_favorites';
   var HIS_KEY = 'gm_search_history';
   var PAGE_SIZE = 30;
@@ -96,6 +97,8 @@
   function apiGet(path, params) {
     var url = API_BASE + '/' + path;
     var qs = [];
+    // 所有请求携带 mainUrl，经后端 sourceGuard 放行（本站域须已登记）
+    qs.push('mainUrl=' + encodeURIComponent(MAIN_URL));
     if (params) {
       for (var k in params) {
         if (params[k] !== undefined && params[k] !== null && params[k] !== '') {
@@ -110,7 +113,7 @@
   }
 
   function apiPost(path, body) {
-    return global.fetch(API_BASE + '/' + path, {
+    return global.fetch(API_BASE + '/' + path + '?mainUrl=' + encodeURIComponent(MAIN_URL), {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
