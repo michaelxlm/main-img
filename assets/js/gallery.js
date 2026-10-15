@@ -8,7 +8,6 @@
   'use strict';
 
   var API_BASE = 'https://api.xuyiheng.com/api/v1/front/antucao/image';
-  var IMG_DOMAIN = 'img.fangkelianmeng.com';
   var MAIN_URL = 'img.fangkelianmeng.com'; // sourceGuard 放行凭证，须与 projects.url 一致
   var FAV_KEY = 'gm_favorites';
   var HIS_KEY = 'gm_search_history';
@@ -58,21 +57,14 @@
   /* ------------------------------ 图片 URL 处理 ------------------------------ */
   function imgUrl(item) {
     if (!item) return '';
-    // 优先使用 ali_url，其次 url，替换域名为 img.fangkelianmeng.com
+    // 优先使用 ali_url，其次 url，直接使用原始 OSS URL（img.fangkelianmeng.com 未配 CDN 回源）
     var raw = item.ali_url || item.url || '';
     if (!raw) return '';
     // 如果是相对路径，拼接 OSS 基础地址
     if (raw.indexOf('http') !== 0) {
       raw = 'https://antucao.oss-cn-beijing.aliyuncs.com/' + raw;
     }
-    // 替换域名为图片域名
-    try {
-      var u = new URL(raw);
-      u.hostname = IMG_DOMAIN;
-      return u.toString();
-    } catch (e) {
-      return raw;
-    }
+    return raw;
   }
 
   function thumbUrl(item) {
@@ -84,11 +76,7 @@
       if (other.indexOf('http') !== 0) {
         other = 'https://antucao.oss-cn-beijing.aliyuncs.com/' + other;
       }
-      try {
-        var u = new URL(other);
-        u.hostname = IMG_DOMAIN;
-        return u.toString();
-      } catch (e) { return other; }
+      return other;
     }
     return url;
   }
