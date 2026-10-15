@@ -63,7 +63,7 @@
   .gm-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
 }
 .gm-card img {
-  width: 100%; display: block;
+  width: 100%; height: auto; display: block;
   border-radius: var(--radius) var(--radius) 0 0;
   background: var(--surface-2);
   transition: opacity .3s ease;

@@ -168,10 +168,14 @@
     // 图片加载完成显示
     var img = $('img', card);
     if (img) {
-      img.addEventListener('load', function () { img.setAttribute('data-loaded', '1'); });
+      img.addEventListener('load', function () {
+        img.setAttribute('data-loaded', '1');
+        img.style.minHeight = ''; // 移除占位 min-height，让图片按真实比例显示
+      });
       img.addEventListener('error', function () {
         img.setAttribute('data-loaded', '1');
         img.style.opacity = '0.3';
+        img.style.minHeight = '';
         // 上报失效
         apiPost('error', { img_id: item._id });
       });
