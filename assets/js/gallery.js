@@ -95,9 +95,14 @@
       }
     }
     if (qs.length) url += '?' + qs.join('&');
+    console.log('[gallery] apiGet:', url);
     return global.fetch(url, { mode: 'cors' })
-      .then(function (r) { return r.json(); })
-      .then(function (j) { return j.data || j; });
+      .then(function (r) {
+        console.log('[gallery] response status:', r.status, 'ok:', r.ok);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (j) { console.log('[gallery] response data:', j); return j.data || j; });
   }
 
   function apiPost(path, body) {
@@ -367,6 +372,7 @@
       .catch(function (err) {
         global.clearTimeout(timeout);
         if (err && err.name === 'AbortError') return;
+        console.error('[gallery] loadImages error:', err);
         showState(stateEl, '加载失败，请稍后重试');
       })
       .finally(function () {
