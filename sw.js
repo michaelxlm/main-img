@@ -3,7 +3,7 @@
    —— 导航请求：网络优先，失败回退缓存首页，断网也能浏览已缓存页。
       静态资源：缓存优先，后台更新。不拦截 API（/api/）与图片域请求。
    ========================================================================== */
-var CACHE = 'img-v2';
+var CACHE = 'img-v3';
 var CORE = [
   '/', '/index.html',
   '/assets/css/tokens.css', '/assets/css/main.css', '/assets/css/gallery.css',
@@ -31,6 +31,8 @@ self.addEventListener('fetch', function (e) {
   // API 与图片域不进缓存策略
   if (url.indexOf('/api/') >= 0) return;
   if (url.indexOf('fangkelianmeng.com') >= 0 && url.indexOf('img.fangkelianmeng.com') < 0) return;
+  // 图片走 OSS 域（antucao.oss-cn-beijing.aliyuncs.com），不拦截不缓存，避免灯箱大图查看到旧缓存
+  if (url.indexOf('aliyuncs.com') >= 0) return;
 
   if (req.mode === 'navigate') {
     e.respondWith(
