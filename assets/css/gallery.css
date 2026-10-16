@@ -52,21 +52,24 @@
   display: block;
   position: relative;
   margin-bottom: 14px;
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
-  transition: transform .18s ease, box-shadow .18s ease;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
   break-inside: avoid;
 }
 @media (hover: hover) {
-  .gm-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+  .gm-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--border-strong); }
+  /* 卡片上浮 + 图内轻缩放：图站的标准 hover 反馈（overflow hidden 裁掉溢出） */
+  .gm-card:hover img { transform: scale(1.03); }
 }
 .gm-card img {
   width: 100%; height: auto; display: block;
   border-radius: var(--radius) var(--radius) 0 0;
   background: var(--surface-2);
-  transition: opacity .3s ease;
+  transition: opacity .3s ease, transform .35s ease;
 }
 .gm-card img[data-loaded="0"] {
   opacity: 0.3;
@@ -291,4 +294,5 @@ details.faq .faq-body { padding: 0 16px 12px; color: var(--text-muted); font-siz
 @media (prefers-reduced-motion: reduce) {
   .gm-skeleton .gm-sk-img, .gm-skeleton .gm-sk-line { animation: none; }
   .gm-card, .gm-card:hover { transform: none; }
+  .gm-card img, .gm-card:hover img { transform: none; }
 }
