@@ -417,6 +417,13 @@
   function loadJson(src, done) {
     var settled = false;
     var finish = function (data) { if (settled) return; settled = true; done(data); };
+    // CWV 修复：站点内联数据（ad-slots.data.js 同步提供 window.__AdSlotsData）直接命中，
+    // 同帧渲染零插位位移；远程校验仍照走（版本不同才重渲）。无内联数据时维持原 fetch 链路。
+    // 只认「本地兜底槽」：远程 CONFIG.src 不命中内联数据；字符串形式不限（相对/绝对路径均可）。
+    if (global.__AdSlotsData && typeof global.__AdSlotsData === 'object' && src === (CONFIG.fallbackSrc || CONFIG.src)) {
+      finish(global.__AdSlotsData);
+      return;
+    }
     try {
       if (global.fetch) {
         global.fetch(src, { cache: 'no-cache' }).then(function (res) {
