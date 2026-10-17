@@ -1,0 +1,87 @@
+{
+  "_note": "收录观测台账（WO-98）：URL 与 main-img/sitemap.xml 保持一致；人工只维护 submitted_at / indexed / note。indexed 取值：unknown 未核对 / yes 已收录 / no 未收录 / dropped 收录后掉出。",
+  "site": "https://img.fangkelianmeng.com",
+  "updated": "2026-10-17",
+  "platforms": [
+    "baidu",
+    "google"
+  ],
+  "check_guide": {
+    "baidu": "百度搜索资源平台 → 索引量 + site: 抽查；结果人工回填 indexed",
+    "google": "Google Search Console → 网页索引 →「已编入索引」",
+    "rhythm": "每周一次；新增 / 大改页面后立即补一次"
+  },
+  "cwv": {
+    "_note": "Core Web Vitals 真实用户读数（RUM · 非实验室分）。本站 tracker.js 已为 SDK 2.3.0（默认 project=img-fangkelianmeng），数据源：中台 GET /api/v1/admin/system/webVitals/list?project=img-fangkelianmeng&terminal=web。待生产采集产生真实读数后经 backfill 回填；未接入前保持 null。",
+    "project": "img-fangkelianmeng",
+    "terminal": "web",
+    "updated": null,
+    "sample": null,
+    "p75": { "LCP": null, "INP": null, "CLS": null },
+    "status": { "LCP": null, "INP": null, "CLS": null },
+    "ratingDist": { "LCP": null, "INP": null, "CLS": null }
+  },
+  "entries": [
+    {
+      "url": "https://img.fangkelianmeng.com/",
+      "lang": "zh",
+      "type": "page",
+      "page": "home",
+      "submitted_at": "",
+      "indexed": "unknown",
+      "http_status": "",
+      "in_sitemap": true,
+      "checked_at": "",
+      "note": ""
+    },
+    {
+      "url": "https://img.fangkelianmeng.com/browse.html",
+      "lang": "zh",
+      "type": "page",
+      "page": "browse",
+      "submitted_at": "",
+      "indexed": "unknown",
+      "http_status": "",
+      "in_sitemap": true,
+      "checked_at": "",
+      "note": ""
+    },
+    {
+      "url": "https://img.fangkelianmeng.com/rank.html",
+      "lang": "zh",
+      "type": "page",
+      "page": "rank",
+      "submitted_at": "",
+      "indexed": "unknown",
+      "http_status": "",
+      "in_sitemap": true,
+      "checked_at": "",
+      "note": ""
+    },
+    {
+      "url": "https://img.fangkelianmeng.com/category.html",
+      "lang": "zh",
+      "type": "page",
+      "page": "category",
+      "submitted_at": "",
+      "indexed": "unknown",
+      "http_status": "",
+      "in_sitemap": true,
+      "checked_at": "",
+      "note": ""
+    },
+    {
+      "url": "https://img.fangkelianmeng.com/about.html",
+      "lang": "zh",
+      "type": "page",
+      "page": "about",
+      "submitted_at": "",
+      "indexed": "unknown",
+      "http_status": "",
+      "in_sitemap": true,
+      "checked_at": "",
+      "note": ""
+    }
+  ],
+  "note": "台账建立于 WO-98 上线纳管期；404.html 不入观测清单（不提交收录）。"
+}
