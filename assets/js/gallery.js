@@ -55,6 +55,11 @@
   }
 
   /* ------------------------------ 图片 URL 处理 ------------------------------ */
+  // 统一升级为 https：ali_url 存量数据多为 http://，在 https 页面下会触发 Mixed Content
+  // 被浏览器拦截（大图/下载失效）；OSS 同时支持 https，直接改写协议最稳妥。
+  function toHttps(u) {
+    return u && u.indexOf('http://') === 0 ? 'https://' + u.slice(7) : u;
+  }
   function imgUrl(item) {
     if (!item) return '';
     // 优先使用 ali_url，其次 url，直接使用原始 OSS URL（img.fangkelianmeng.com 未配 CDN 回源）
@@ -64,7 +69,7 @@
     if (raw.indexOf('http') !== 0) {
       raw = 'https://antucao.oss-cn-beijing.aliyuncs.com/' + raw;
     }
-    return raw;
+    return toHttps(raw);
   }
 
   function thumbUrl(item) {
@@ -79,7 +84,7 @@
       if (otherUrl.indexOf('http') !== 0) {
         otherUrl = 'https://antucao.oss-cn-beijing.aliyuncs.com/' + otherUrl;
       }
-      return otherUrl;
+      return toHttps(otherUrl);
     }
     return url;
   }
@@ -98,14 +103,12 @@
       }
     }
     if (qs.length) url += '?' + qs.join('&');
-    console.log('[gallery] apiGet:', url);
     return global.fetch(url, { mode: 'cors' })
       .then(function (r) {
-        console.log('[gallery] response status:', r.status, 'ok:', r.ok);
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
       })
-      .then(function (j) { console.log('[gallery] response data:', j); return j.data || j; });
+      .then(function (j) { return j.data || j; });
   }
 
   function apiPost(path, body) {
@@ -174,9 +177,15 @@
         img.setAttribute('data-loaded', '1');
       });
       img.addEventListener('error', function () {
+        // 缩略图（otherUrls[0] 常为第三方外链）失效时，回退到必定可用的 OSS 原图（ali_url）
+        var fallback = imgUrl(item);
+        if (fallback && img.getAttribute('src') !== fallback) {
+          img.setAttribute('src', fallback);
+          return;
+        }
+        // 回退后仍失败：标记 + 上报失效
         img.setAttribute('data-loaded', '1');
         img.style.opacity = '0.3';
-        // 上报失效
         apiPost('error', { img_id: item._id });
       });
     }
@@ -331,28 +340,20 @@
     state.controller = new AbortController();
 
     var params = { pageSize: PAGE_SIZE };
-    var path = 'sample';
+    var path = 'rank';
 
-    if (state.mode === 'rank') {
-      path = 'rank';
-      params.page = state.page;
-      params.sort = state.sort || '_add_time';
-    } else if (state.mode === 'search') {
+    if (state.mode === 'search') {
       path = 'search';
       params.keyword = state.keyword;
       params.page = state.page;
       if (state.type) params.type = state.type;
-    } else if (state.mode === 'category') {
-      path = 'sample';
-      params.type = state.type;
-      params.pageSize = PAGE_SIZE;
-    } else if (state.mode === 'browse') {
+    } else {
+      // home | category | browse | rank —— 统一走 rank 接口：
+      // 旧实现 home/category 用 sample（随机取样、无 page 游标），既不能分页（“加载更多”返回同
+      // 一批重复图），也让排序下拉完全失效；rank 同时支持 page + sort + type 过滤，一举修好分页与排序。
       path = 'rank';
       params.page = state.page;
       params.sort = state.sort || '_add_time';
-    } else {
-      // home
-      path = 'sample';
       if (state.type) params.type = state.type;
     }
 
@@ -364,7 +365,20 @@
       .then(function (data) {
         global.clearTimeout(timeout);
         var list = Array.isArray(data) ? data : (data && data.list) || [];
-        if (list.length < PAGE_SIZE) state.hasMore = false;
+        if (append) {
+          // 去重兵定：按 _id 剔除已展示过的条目，无新增即判定到底
+          var seen = {};
+          state.items.forEach(function (it) { seen[it._id] = 1; });
+          list = list.filter(function (it) { return !seen[it._id]; });
+          if (list.length === 0) {
+            state.hasMore = false;
+            if (moreBtn) moreBtn.hidden = true;
+            hideState(stateEl);
+            return;
+          }
+        } else if (list.length < PAGE_SIZE) {
+          state.hasMore = false;
+        }
         if (list.length === 0 && !append) {
           showState(stateEl, '暂无图片，换个关键词试试');
           grid.innerHTML = '';

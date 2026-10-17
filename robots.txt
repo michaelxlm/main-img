@@ -1,4 +1,15 @@
 User-agent: *
 Allow: /
 
+# AI 搜索爬虫（GEO / LLM-SEO · WO-96 全网放行）：允许读取公共内容页。
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: OAI-SearchBot
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: PerplexityBot
+User-agent: Google-Extended
+User-agent: CCBot
+Allow: /
+
 Sitemap: https://img.fangkelianmeng.com/sitemap.xml

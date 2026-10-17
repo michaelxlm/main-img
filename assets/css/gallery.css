@@ -111,6 +111,8 @@
   display: flex; gap: 6px; opacity: 0; transition: opacity .2s ease;
 }
 @media (hover: hover) { .gm-card:hover .gm-actions { opacity: 1; } }
+/* 触屏设备无 hover，收藏/下载按钮常显，否则永久不可见 */
+@media (hover: none) { .gm-actions { opacity: 1; } }
 .gm-action-btn {
   width: 32px; height: 32px; border: 0; border-radius: 50%;
   background: rgba(0,0,0,.45); color: #fff; font-size: 0.875rem;

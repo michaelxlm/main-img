@@ -9,6 +9,11 @@
     "rotateInterval": 4000
   },
   "slots": [
+    { "id": "self-aiweb", "type": "self", "weight": 2, "eyebrow": "同站推荐 · 建站向导", "title": "明先生日常 · xuliming.com", "desc": "21 个场景 99 步，跟着做就能把站搭起来：服务器、域名、部署、SEO 一次讲清。", "cta": "打开建站向导 →", "url": "https://xuliming.com/", "rel": "noopener", "enabled": true, "placements": ["carousel", "footer", "inline"], "pages": ["*"] },
+    { "id": "self-color-tool", "type": "self", "weight": 2, "eyebrow": "同站推荐 · 免费配色工具", "title": "cs 调色盘 · 2002cs.com", "desc": "在线取色、配色方案、CSS 渐变与 WCAG 对比度检测，纯本地计算，免费用。", "cta": "打开调色盘 →", "url": "https://2002cs.com/", "rel": "noopener", "enabled": true, "placements": ["carousel", "footer", "inline"], "pages": ["*"] },
+    { "id": "self-visitor", "type": "self", "weight": 2, "eyebrow": "同站推荐 · 开发者工具箱", "title": "访客小站 · fangkelianmeng.com", "desc": "IP 归属地、JSON 格式化、时间戳、Base64、哈希计算，打开即用。", "cta": "打开访客小站 →", "url": "https://fangkelianmeng.com/", "rel": "noopener", "enabled": true, "placements": ["carousel", "footer", "inline"], "pages": ["*"] },
+    { "id": "self-coupon", "type": "self", "weight": 1, "eyebrow": "同站推荐 · 领券中心", "title": "小满券仓 · coupon.zangeng.com", "desc": "实时全网优惠券、满减券与品类券，先领券再下单更省。", "cta": "去领券 →", "url": "https://coupon.zangeng.com/", "rel": "noopener", "enabled": true, "placements": ["carousel", "footer", "inline"], "pages": ["*"] },
+    { "id": "self-antucao", "type": "self", "weight": 1, "eyebrow": "同站推荐 · 吐槽与反馈", "title": "暗吐槽 · antucao.com", "desc": "建站卡住了？来这里留言提问，问题统一在这里收口。", "cta": "去留言 →", "url": "https://antucao.com/", "rel": "noopener", "enabled": true, "placements": ["carousel", "footer", "inline"], "pages": ["*"] },
     {
       "id": "self-zangeng",
       "type": "self",

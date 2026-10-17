@@ -1,0 +1,21 @@
+# 小满美图 · 高清壁纸
+
+> 海量高清壁纸，按动漫、风景、人物等分类浏览与搜索，免费下载。
+
+URL: https://img.fangkelianmeng.com
+Language: zh-CN
+
+## 浏览
+
+- [首页](https://img.fangkelianmeng.com/index.html): 精选与最新壁纸
+- [浏览](https://img.fangkelianmeng.com/browse.html): 全部壁纸瀑布流
+- [分类](https://img.fangkelianmeng.com/category.html): 按主题分类（动漫/风景/人物等）
+- [热门榜](https://img.fangkelianmeng.com/rank.html): 下载/浏览排行
+
+## 关于
+
+- [关于本站](https://img.fangkelianmeng.com/about.html): 版权与使用说明
+
+## Sitemap
+
+- [Full URL index](https://img.fangkelianmeng.com/sitemap.xml): 全部页面清单（约 5 条 URL）
