@@ -6,13 +6,15 @@
 /* ---------------------------------- 搜索栏 ---------------------------------- */
 .gm-search { display: flex; gap: 8px; }
 .gm-search input {
-  width: 280px; max-width: 50vw; height: 38px; padding: 0 12px;
+  /* 触控目标 ≥44px（审计 T5/main-img 实测 38px） */
+  width: 280px; max-width: 50vw; height: 44px; padding: 0 12px;
   border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
   background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.875rem;
 }
 .gm-search input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
 .gm-search button {
-  height: 38px; padding: 0 16px; border: 1px solid transparent;
+  /* 与输入框同高 ≥44px（审计 T5） */
+  height: 44px; padding: 0 16px; border: 1px solid transparent;
   border-radius: var(--radius-sm); background: var(--accent-solid); color: #fff;
   font-size: 0.875rem; font-weight: 600; cursor: pointer;
   transition: background .15s ease;
@@ -23,7 +25,8 @@
 .gm-cats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
 .gm-cat-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 16px; border: 1px solid var(--border-strong);
+  /* 触控目标 ≥44px（审计 T5/main-img chips 提档） */
+  padding: 11px 16px; min-height: 44px; border: 1px solid var(--border-strong);
   border-radius: 999px; background: var(--surface); color: var(--text);
   font-size: 0.9375rem; font-weight: 600; text-decoration: none;
   transition: border-color .15s ease, color .15s ease, background .15s ease;
@@ -114,7 +117,8 @@
 /* 触屏设备无 hover，收藏/下载按钮常显，否则永久不可见 */
 @media (hover: none) { .gm-actions { opacity: 1; } }
 .gm-action-btn {
-  width: 32px; height: 32px; border: 0; border-radius: 50%;
+  /* 触控目标 ≥44px（审计 T5/main-img 实测 32px） */
+  min-width: 44px; min-height: 44px; border: 0; border-radius: 50%;
   background: rgba(0,0,0,.45); color: #fff; font-size: 0.875rem;
   cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
   transition: background .15s ease, transform .15s ease;
@@ -216,7 +220,9 @@
 .gm-his-chip {
   border: 1px solid var(--border-strong); border-radius: 999px;
   background: transparent; color: var(--text-muted); text-decoration: none;
-  padding: 4px 12px; font-size: 0.8125rem; cursor: pointer; font-family: inherit;
+  /* 触控目标 ≥44px（审计 T5/main-img 实测 29px） */
+  display: inline-flex; align-items: center; min-height: 44px;
+  padding: 0 14px; font-size: 0.8125rem; cursor: pointer; font-family: inherit;
   transition: border-color .15s ease, color .15s ease;
 }
 .gm-his-chip:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }

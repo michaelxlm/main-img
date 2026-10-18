@@ -128,7 +128,9 @@ section[id] { scroll-margin-top: calc(var(--header-h) + 20px); }
 
 .icon-btn {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; border: 1px solid var(--border);
+  /* 触控目标 ≥44px（审计 T5/main-img 实测 36px） */
+  min-width: 44px; min-height: 44px; width: 44px; height: 44px;
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm); background: var(--surface);
   color: var(--text-muted); font-size: 0.9375rem; cursor: pointer;
 }
@@ -154,6 +156,8 @@ section[id] { scroll-margin-top: calc(var(--header-h) + 20px); }
 .nav { display: flex; align-items: center; gap: 4px; margin-left: 12px; }
 .nav-link {
   padding: 8px 12px; border-radius: var(--radius-sm);
+  /* 触控目标 ≥44px（审计 T5/main-img 实测 40px） */
+  display: inline-flex; align-items: center; min-height: 44px;
   color: var(--text-muted); font-size: 0.9375rem; font-weight: 500;
 }
 .nav-link:hover { background: var(--surface-2); color: var(--text); }
