@@ -13,11 +13,11 @@
 .gm-search input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
 .gm-search button {
   height: 38px; padding: 0 16px; border: 1px solid transparent;
-  border-radius: var(--radius-sm); background: var(--accent); color: #fff;
+  border-radius: var(--radius-sm); background: var(--accent-solid); color: #fff;
   font-size: 0.875rem; font-weight: 600; cursor: pointer;
   transition: background .15s ease;
 }
-.gm-search button:hover { background: var(--accent-strong); }
+.gm-search button:hover { background: var(--accent-solid-hover); }
 
 /* ---------------------------------- 分类 chip 行 ---------------------------------- */
 .gm-cats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
@@ -29,7 +29,7 @@
   transition: border-color .15s ease, color .15s ease, background .15s ease;
 }
 .gm-cat-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
-.gm-cat-chip.is-active { border-color: var(--accent); color: #fff; background: var(--accent); }
+.gm-cat-chip.is-active { border-color: var(--accent-solid); color: #fff; background: var(--accent-solid); }
 
 /* ---------------------------------- 工具栏 ---------------------------------- */
 .gm-toolbar {
@@ -120,7 +120,7 @@
   transition: background .15s ease, transform .15s ease;
 }
 .gm-action-btn:hover { background: rgba(0,0,0,.7); transform: scale(1.1); }
-.gm-action-btn.is-on { background: var(--accent); }
+.gm-action-btn.is-on { background: var(--accent-solid); }
 
 /* ---------------------------------- 骨架屏 ---------------------------------- */
 .gm-skeleton {
@@ -183,10 +183,10 @@
 .gm-lightbox-dl {
   margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 18px; border-radius: var(--radius-sm);
-  background: var(--accent); color: #fff; font-size: 0.875rem;
+  background: var(--accent-solid); color: #fff; font-size: 0.875rem;
   font-weight: 600; text-decoration: none; border: 0; cursor: pointer;
 }
-.gm-lightbox-dl:hover { background: var(--accent-strong); color: #fff; }
+.gm-lightbox-dl:hover { background: var(--accent-solid-hover); color: #fff; }
 
 /* ---------------------------------- 统计数字 ---------------------------------- */
 .gm-stats {

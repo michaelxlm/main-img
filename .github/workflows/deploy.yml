@@ -19,6 +19,11 @@ jobs:
           mkdir -p /root/.ssh && chmod 700 /root/.ssh
           ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> /root/.ssh/known_hosts 2>/dev/null
       - uses: actions/checkout@v4
+      - name: Encoding gate (UTF-8 only)
+        shell: bash
+        run: |
+          # 八站统一编码门禁（静态网站字符编码规范）：非 UTF-8/带 BOM 即中断部署，防乱码上线
+          node scripts/check-encoding.js
       - name: Sync to /www/wwwroot/img.fangkelianmeng.com
         shell: bash
         run: |
