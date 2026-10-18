@@ -3,9 +3,9 @@
    —— 导航请求：网络优先，失败回退缓存首页，断网也能浏览已缓存页。
       静态资源：缓存优先，后台更新。不拦截 API（/api/）与图片域请求。
    ========================================================================== */
-var CACHE = 'img-v3';
+var CACHE = 'img-v4';
 var CORE = [
-  '/', '/index.html',
+  '/', '/index.html', '/favorites.html',
   '/assets/css/tokens.css', '/assets/css/main.css', '/assets/css/gallery.css',
   '/assets/js/tracker.js', '/assets/js/app.js', '/assets/js/gallery.js'
 ];

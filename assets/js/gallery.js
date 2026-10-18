@@ -12,6 +12,7 @@
   var FAV_KEY = 'gm_favorites';
   var HIS_KEY = 'gm_search_history';
   var PAGE_SIZE = 30;
+  var FAV_EMPTY_MSG = '还没有收藏，去首页或热门排行挑选喜欢的壁纸吧';
 
   var doc = global.document;
   function $(sel, root) { return (root || doc).querySelector(sel); }
@@ -72,21 +73,43 @@
     return toHttps(raw);
   }
 
-  function thumbUrl(item) {
-    var url = imgUrl(item);
-    if (!url) return '';
-    // 如果有 otherUrls，取第一个作为缩略图
-    if (item.otherUrls && item.otherUrls.length > 0) {
-      var other = item.otherUrls[0];
-      // otherUrls 元素可能是对象 {url, height, width} 或字符串
-      var otherUrl = (typeof other === 'string') ? other : (other && other.url || '');
-      if (!otherUrl) return url;
-      if (otherUrl.indexOf('http') !== 0) {
-        otherUrl = 'https://antucao.oss-cn-beijing.aliyuncs.com/' + otherUrl;
-      }
-      return toHttps(otherUrl);
+  // OSS 图片处理（x-oss-process）：缩略图/大图展示统一走 OSS 原图裁剪，
+  // 避免直接拉几 MB 的原图；gif 不转格式（会丢动画）。实测生产 OSS 支持 resize/webp/quality。
+  function isOssUrl(u) { return !!u && u.indexOf('aliyuncs.com') >= 0; }
+  function ossResize(u, w) {
+    if (!u || u.indexOf('x-oss-process') >= 0) return u;
+    var sep = u.indexOf('?') >= 0 ? '&' : '?';
+    var gif = /\.gif([?#]|$)/i.test(u);
+    var proc = gif ? 'image/resize,w_' + w
+      : 'image/resize,w_' + w + '/format,webp/quality,q_80';
+    return u + sep + 'x-oss-process=' + encodeURIComponent(proc);
+  }
+
+  function otherThumb(item) {
+    // otherUrls 元素可能是对象 {url, height, width} 或字符串（多为第三方外链）
+    if (!item.otherUrls || !item.otherUrls.length) return '';
+    var other = item.otherUrls[0];
+    var otherUrl = (typeof other === 'string') ? other : (other && other.url || '');
+    if (!otherUrl) return '';
+    if (otherUrl.indexOf('http') !== 0) {
+      otherUrl = 'https://antucao.oss-cn-beijing.aliyuncs.com/' + otherUrl;
     }
-    return url;
+    return toHttps(otherUrl);
+  }
+
+  function thumbUrl(item) {
+    if (!item) return '';
+    var raw = imgUrl(item);
+    // OSS 原图必可用（rank 接口已过滤 ali_url 非空），裁剪图同源同可用性，优先用它提速省流量；
+    // 非 OSS 存量（理论上极少）才退回 otherUrls[0] 小图。
+    if (isOssUrl(raw)) return ossResize(raw, 400);
+    return otherThumb(item) || raw;
+  }
+
+  // 灯箱大图：OSS 图限宽 1920 展示（下载链接仍用原图，不受影响）
+  function lightboxImgUrl(item) {
+    var raw = imgUrl(item);
+    return isOssUrl(raw) ? ossResize(raw, 1920) : raw;
   }
 
   /* ------------------------------ API 请求 ------------------------------ */
@@ -121,7 +144,7 @@
 
   /* ------------------------------ 状态管理 ------------------------------ */
   var state = {
-    mode: 'home',       // home | browse | rank | category | search
+    mode: 'home',       // home | browse | rank | category | search | favorites
     page: 1,
     sort: '',
     type: '',
@@ -131,6 +154,21 @@
     items: [],
     controller: null,
   };
+
+  /* 计数展示工具：大数缩写入局（1.2万） */
+  function fmtCount(n) {
+    n = parseInt(n, 10) || 0;
+    if (n >= 10000) return (n / 10000).toFixed(1).replace(/\.0$/, '') + '万';
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return String(n);
+  }
+  function fmtTotal(n) {
+    return String(parseInt(n, 10) || 0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  function updateCount(msg) {
+    var el = $('#gmCount');
+    if (el) el.textContent = msg || '';
+  }
 
   /* ------------------------------ DOM 渲染 ------------------------------ */
   function createCard(item, index) {
@@ -154,7 +192,24 @@
       ? '<div class="gm-tags">' + tags.map(function (t) { return '<span class="gm-tag">' + escHtml(t) + '</span>'; }).join('') + '</div>'
       : '';
 
+    // 热度角标：接口附带 counts 时展示浏览/点赞/下载（全部为 0 则不占位）
+    var pops = [];
+    if (item.counts) {
+      if (item.counts.view) pops.push('<span title="浏览">👁 ' + fmtCount(item.counts.view) + '</span>');
+      if (item.counts.like) pops.push('<span title="点赞">♥ ' + fmtCount(item.counts.like) + '</span>');
+      if (item.counts.download) pops.push('<span title="下载">⤓ ' + fmtCount(item.counts.download) + '</span>');
+    }
+    var popHtml = pops.length ? '<div class="gm-pops">' + pops.join('') + '</div>' : '';
+
+    // 排行榜位序号：前 3 名金银铜特殊配色
+    var rankHtml = '';
+    if (state.mode === 'rank' && index >= 0 && index < 100) {
+      var topCls = index < 3 ? ' is-top' + (index + 1) : '';
+      rankHtml = '<span class="gm-rank-badge' + topCls + '">' + (index + 1) + '</span>';
+    }
+
     card.innerHTML =
+      rankHtml +
       '<div class="gm-actions">' +
         '<button class="gm-action-btn gm-fav' + favOn + '" data-fav="1" aria-label="收藏" title="收藏">♥</button>' +
         '<a class="gm-action-btn" href="' + escAttr(imgUrl(item)) + '" target="_blank" rel="noopener" aria-label="查看原图" title="查看原图" download>⤓</a>' +
@@ -167,8 +222,13 @@
           (item.format ? '<span>' + escHtml(item.format) + '</span>' : '') +
           (item.size ? '<span>' + formatSize(item.size) + '</span>' : '') +
         '</div>' +
+        popHtml +
         tagsHtml +
       '</div>';
+
+    // 入场渐入：首屏内逐张错开，追加批次不重复动画（重渲染时观感更柔和）
+    if (index >= 0 && index < 15) card.style.animationDelay = (index % 15) * 40 + 'ms';
+    else card.classList.add('gm-noanim');
 
     // 图片加载完成显示
     var img = $('img', card);
@@ -177,13 +237,12 @@
         img.setAttribute('data-loaded', '1');
       });
       img.addEventListener('error', function () {
-        // 缩略图（otherUrls[0] 常为第三方外链）失效时，回退到必定可用的 OSS 原图（ali_url）
-        var fallback = imgUrl(item);
-        if (fallback && img.getAttribute('src') !== fallback) {
-          img.setAttribute('src', fallback);
-          return;
-        }
-        // 回退后仍失败：标记 + 上报失效
+        // 回退链：OSS 裁剪图 → OSS 原图 → otherUrls[0] 外链 → 仍失败则标记 + 上报失效
+        var raw = imgUrl(item);
+        var other = otherThumb(item);
+        var cur = img.getAttribute('src');
+        if (raw && cur !== raw) { img.setAttribute('src', raw); return; }
+        if (other && cur !== other) { img.setAttribute('src', other); return; }
         img.setAttribute('data-loaded', '1');
         img.style.opacity = '0.3';
         apiPost('error', { img_id: item._id });
@@ -204,6 +263,22 @@
         var added = toggleFavorite(item);
         favBtn.classList.toggle('is-on', added);
         if (global.Tracker) global.Tracker.track('favorite', { action: added ? 'add' : 'remove', id: item._id });
+        // 收藏页内取消收藏：即时移除该卡，保持列表与存储一致
+        if (state.mode === 'favorites' && !added) {
+          if (card.parentNode) card.parentNode.removeChild(card);
+          state.items = state.items.filter(function (it) { return it._id !== item._id; });
+          updateCount(state.items.length ? '共 ' + state.items.length + ' 张收藏' : '');
+          if (!state.items.length) showState($('#gmState'), FAV_EMPTY_MSG);
+          closeLightbox();
+        }
+      });
+    }
+
+    // 卡片上直接下载/查看原图时补报一次下载计数（no-cors 火忘，不阻塞跳转）
+    var dlLink = $('.gm-actions a', card);
+    if (dlLink) {
+      dlLink.addEventListener('click', function () {
+        apiPost('operation', { img_id: item._id, type: 'download', inc: 1 });
       });
     }
 
@@ -238,11 +313,13 @@
   function hideState(el) {
     if (!el) return;
     el.hidden = true;
+    el.textContent = '';
   }
 
   /* ------------------------------ 灯箱 ------------------------------ */
   var lightboxEl = null;
   var lightboxIdx = -1;
+  var viewReported = {}; // 本次会话内同一张图只报一次浏览
 
   function ensureLightbox() {
     if (lightboxEl) return;
@@ -253,7 +330,7 @@
         '<button class="gm-lightbox-close" aria-label="关闭">✕</button>' +
         '<button class="gm-lightbox-nav gm-lightbox-prev" aria-label="上一张">‹</button>' +
         '<img class="gm-lightbox-img" src="" alt="">' +
-        '<div class="gm-lightbox-info"><h3></h3><p></p></div>' +
+        '<div class="gm-lightbox-info"><div class="gm-lightbox-top"><span class="gm-lightbox-counter"></span><button class="gm-lightbox-fav" type="button" aria-label="收藏">♥</button></div><h3></h3><p></p></div>' +
         '<a class="gm-lightbox-dl" href="" target="_blank" rel="noopener" download>⤓ 下载原图</a>' +
         '<button class="gm-lightbox-nav gm-lightbox-next" aria-label="下一张">›</button>' +
       '</div>';
@@ -265,12 +342,40 @@
     lightboxEl.addEventListener('click', function (e) {
       if (e.target === lightboxEl) closeLightbox();
     });
+    // 收藏：与网格卡片对应按钮双向同步
+    $('.gm-lightbox-fav', lightboxEl).addEventListener('click', function (e) {
+      e.stopPropagation();
+      var item = state.items[lightboxIdx];
+      if (!item) return;
+      var added = toggleFavorite(item);
+      this.classList.toggle('is-on', added);
+      var gridBtn = $('.gm-card[data-id="' + item._id + '"] .gm-fav');
+      if (gridBtn) gridBtn.classList.toggle('is-on', added);
+      if (global.Tracker) global.Tracker.track('favorite', { action: added ? 'add' : 'remove', id: item._id });
+    });
+    // 下载原图补报计数
+    $('.gm-lightbox-dl', lightboxEl).addEventListener('click', function () {
+      var item = state.items[lightboxIdx];
+      if (item) apiPost('operation', { img_id: item._id, type: 'download', inc: 1 });
+    });
     doc.addEventListener('keydown', function (e) {
       if (!lightboxEl.classList.contains('is-open')) return;
       if (e.key === 'Escape') closeLightbox();
       if (e.key === 'ArrowLeft') navLightbox(-1);
       if (e.key === 'ArrowRight') navLightbox(1);
     });
+    // 触屏左右滑动切换
+    var touchX = 0, touchY = 0;
+    lightboxEl.addEventListener('touchstart', function (e) {
+      var t = e.changedTouches && e.changedTouches[0];
+      if (t) { touchX = t.clientX; touchY = t.clientY; }
+    }, { passive: true });
+    lightboxEl.addEventListener('touchend', function (e) {
+      var t = e.changedTouches && e.changedTouches[0];
+      if (!t) return;
+      var dx = t.clientX - touchX, dy = t.clientY - touchY;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) navLightbox(dx < 0 ? 1 : -1);
+    }, { passive: true });
   }
 
   function openLightbox(index) {
@@ -279,7 +384,13 @@
     updateLightbox();
     lightboxEl.classList.add('is-open');
     doc.body.style.overflow = 'hidden';
-    if (global.Tracker) global.Tracker.track('lightbox_open', { id: state.items[index] && state.items[index]._id });
+    var item = state.items[index];
+    if (global.Tracker) global.Tracker.track('lightbox_open', { id: item && item._id });
+    // 首次打开某图时上报一次浏览，供热度排序积累真实数据
+    if (item && item._id && !viewReported[item._id]) {
+      viewReported[item._id] = 1;
+      apiPost('operation', { img_id: item._id, type: 'view', inc: 1 });
+    }
   }
 
   function closeLightbox() {
@@ -303,19 +414,33 @@
     var title = $('.gm-lightbox-info h3', lightboxEl);
     var meta = $('.gm-lightbox-info p', lightboxEl);
     var dl = $('.gm-lightbox-dl', lightboxEl);
-    img.src = imgUrl(item);
+    var counter = $('.gm-lightbox-counter', lightboxEl);
+    var favBtn = $('.gm-lightbox-fav', lightboxEl);
+    img.src = lightboxImgUrl(item);
     img.alt = item.title || '壁纸';
     title.textContent = item.title || '未命名壁纸';
     var parts = [];
     if (item.width && item.height) parts.push(item.width + '×' + item.height);
     if (item.format) parts.push(item.format);
     if (item.size) parts.push(formatSize(item.size));
+    if (item.counts) {
+      if (item.counts.view) parts.push('浏览 ' + fmtCount(item.counts.view));
+      if (item.counts.like) parts.push('点赞 ' + fmtCount(item.counts.like));
+      if (item.counts.download) parts.push('下载 ' + fmtCount(item.counts.download));
+    }
     if (item.copyright) parts.push('© ' + item.copyright);
     meta.textContent = parts.join(' · ');
     dl.href = imgUrl(item);
+    counter.textContent = (lightboxIdx + 1) + ' / ' + state.items.length;
+    favBtn.classList.toggle('is-on', isFavorited(item._id));
     // 禁用前后按钮
     $('.gm-lightbox-prev', lightboxEl).disabled = lightboxIdx <= 0;
     $('.gm-lightbox-next', lightboxEl).disabled = lightboxIdx >= state.items.length - 1;
+    // 预加载相邻大图，左右切换不再白屏等待
+    [-1, 1].forEach(function (d) {
+      var near = state.items[lightboxIdx + d];
+      if (near) { var im = new global.Image(); im.src = lightboxImgUrl(near); }
+    });
   }
 
   /* ------------------------------ 数据加载 ------------------------------ */
@@ -365,6 +490,13 @@
       .then(function (data) {
         global.clearTimeout(timeout);
         var list = Array.isArray(data) ? data : (data && data.list) || [];
+        // 接口分页信息：展示总张数，让“到底了/还有多少”对用户可预期
+        var pag = !Array.isArray(data) && data && data.pagination;
+        if (pag && pag.total && !append) {
+          updateCount(state.mode === 'search'
+            ? '找到 ' + fmtTotal(pag.total) + ' 个结果'
+            : '共 ' + fmtTotal(pag.total) + ' 张壁纸');
+        }
         if (append) {
           // 去重兵定：按 _id 剔除已展示过的条目，无新增即判定到底
           var seen = {};
@@ -380,7 +512,9 @@
           state.hasMore = false;
         }
         if (list.length === 0 && !append) {
-          showState(stateEl, '暂无图片，换个关键词试试');
+          showState(stateEl, state.mode === 'search'
+            ? '没有找到相关壁纸，换个关键词试试'
+            : (state.type ? '该分类暂无图片，看看其他分类吧' : '暂无图片，请稍后重试'));
           grid.innerHTML = '';
           return;
         }
@@ -392,12 +526,19 @@
       })
       .catch(function (err) {
         global.clearTimeout(timeout);
-        if (err && err.name === 'AbortError') return;
+        if (err && err.name === 'AbortError') {
+          // 被新请求/超时中断：清掉本次遗留的加载提示，后续状态由新请求接管
+          hideState(stateEl);
+          return;
+        }
         console.error('[gallery] loadImages error:', err);
         showState(stateEl, '加载失败，请稍后重试');
       })
       .finally(function () {
         state.loading = false;
+        // 新一批落地后主动复查哨兵：若按钮仍靠近视口（内容不足以滚动）则续发下一页，
+        // 避免 IO 只在「相交变化」时回调导致自动加载卡在最后一屏。
+        global.setTimeout(tryAutoMore, 300);
       });
   }
 
@@ -500,6 +641,49 @@
     return (bytes / 1048576).toFixed(1) + ' MB';
   }
 
+  /* ------------------------------ 无限滚动 ------------------------------ */
+  // 观察“加载更多”按钮：进入视口即自动触发下一页；每批加载完成后再主动复查一次位置，
+  // 补成 IO 只在相交「变化」时回调的盲区（短内容时哨兵常驻视口会停住不再续发）。
+  // 按钮本身保留，兼容不支持 IntersectionObserver 或不希望自动加载的场景。
+  var autoMore = null; // { moreBtn, grid, stateEl }
+  function tryAutoMore() {
+    if (!autoMore) return;
+    var moreBtn = autoMore.moreBtn;
+    if (moreBtn.hidden || state.loading || !state.hasMore) return;
+    if (state.mode === 'favorites') return;
+    var viewportH = global.innerHeight || doc.documentElement.clientHeight || 800;
+    var rect = moreBtn.getBoundingClientRect();
+    if (rect.top - viewportH > 700) return; // 还离得远，等 IO 再触发
+    loadImages(autoMore.grid, autoMore.stateEl, moreBtn, true);
+  }
+  function initAutoMore(moreBtn, grid, stateEl) {
+    autoMore = { moreBtn: moreBtn, grid: grid, stateEl: stateEl };
+    if (!moreBtn || !global.IntersectionObserver) return;
+    var io = new global.IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) tryAutoMore();
+      });
+    }, { rootMargin: '700px 0px' });
+    io.observe(moreBtn);
+  }
+
+  /* ------------------------------ 收藏页（纯本地） ------------------------------ */
+  function renderFavorites(grid, stateEl, moreBtn) {
+    state.mode = 'favorites';
+    state.items = getFavorites();
+    state.hasMore = false;
+    if (moreBtn) moreBtn.hidden = true;
+    grid.innerHTML = '';
+    if (!state.items.length) {
+      showState(stateEl, FAV_EMPTY_MSG);
+      updateCount('');
+      return;
+    }
+    hideState(stateEl);
+    state.items.forEach(function (item, i) { grid.appendChild(createCard(item, i)); });
+    updateCount('共 ' + state.items.length + ' 张收藏');
+  }
+
   /* ------------------------------ 页面初始化入口 ------------------------------ */
   function initPage() {
     var body = doc.body;
@@ -529,15 +713,31 @@
 
     // 排序
     initSort(sortEl, function (val) {
-      state.sort = val;
+      state.sort = val || '_add_time';
       loadImages(grid, stateEl, moreBtn, false);
     });
 
-    // 加载更多
+    // 加载更多 + 滚到底部自动加载
     if (moreBtn) {
       moreBtn.addEventListener('click', function () {
         loadImages(grid, stateEl, moreBtn, true);
       });
+      initAutoMore(moreBtn, grid, stateEl);
+    }
+
+    // 收藏页：数据源为 localStorage，不走 API
+    if (page === 'favorites') {
+      var clearBtn = $('#gmClearFavs');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+          saveFavorites([]);
+          if (global.Tracker) global.Tracker.track('clear_favorites', {});
+          renderFavorites(grid, stateEl, moreBtn);
+          toast('已清空收藏');
+        });
+      }
+      renderFavorites(grid, stateEl, moreBtn);
+      return;
     }
 
     // 根据页面模式设置初始状态

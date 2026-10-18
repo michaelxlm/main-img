@@ -94,11 +94,32 @@
   color: #fff; opacity: 0; transition: opacity .2s ease;
 }
 @media (hover: hover) { .gm-card:hover .gm-overlay { opacity: 1; } }
+/* 触屏无 hover：热度角标常显在底部（仅图存在时），避免信息完全不可见 */
+@media (hover: none) {
+  .gm-overlay { opacity: 1; background: linear-gradient(transparent 55%, rgba(0,0,0,.62)); padding-top: 44px; }
+  .gm-overlay-title { -webkit-line-clamp: 1; }
+  .gm-overlay-meta, .gm-tags { display: none; }
+}
 .gm-overlay-title {
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
   overflow: hidden; font-size: 0.875rem; font-weight: 600; line-height: 1.4;
 }
 .gm-overlay-meta { display: flex; gap: 10px; margin-top: 4px; font-size: 0.75rem; opacity: .8; }
+
+/* 热度角标（浏览/点赞/下载） */
+.gm-pops { display: flex; gap: 10px; margin-top: 5px; font-size: 0.75rem; opacity: .9; }
+
+/* 排行榜位序号徽章：左上角，前 3 名金银铜 */
+.gm-rank-badge {
+  position: absolute; top: 8px; left: 8px; z-index: 2;
+  min-width: 28px; height: 28px; padding: 0 7px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.55); color: #fff; font-size: 0.8125rem; font-weight: 800;
+  pointer-events: none;
+}
+.gm-rank-badge.is-top1 { background: linear-gradient(135deg, #f6c945, #d99a1b); color: #3b2b00; }
+.gm-rank-badge.is-top2 { background: linear-gradient(135deg, #d7dde4, #9aa6b2); color: #22303c; }
+.gm-rank-badge.is-top3 { background: linear-gradient(135deg, #e0a06a, #b06a34); color: #3a2109; }
 
 /* 图片标签 */
 .gm-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
@@ -125,6 +146,11 @@
 }
 .gm-action-btn:hover { background: rgba(0,0,0,.7); transform: scale(1.1); }
 .gm-action-btn.is-on { background: var(--accent-solid); }
+
+/* 卡片入场渐入（首屏前 15 张由 JS 逐个加 delay；追加批次加 gm-noanim 不参与动画） */
+@keyframes gm-fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.gm-card { animation: gm-fadeUp .45s ease both; }
+.gm-card.gm-noanim { animation: none; }
 
 /* ---------------------------------- 骨架屏 ---------------------------------- */
 .gm-skeleton {
@@ -166,6 +192,16 @@
   margin-top: 12px; color: #fff; text-align: center;
   font-size: 0.9375rem; max-width: 640px;
 }
+.gm-lightbox-top { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 6px; }
+.gm-lightbox-counter { color: rgba(255,255,255,.7); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+.gm-lightbox-fav {
+  width: 34px; height: 34px; border: 0; border-radius: 50%;
+  background: rgba(255,255,255,.15); color: #fff; font-size: 1rem; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background .15s ease, transform .15s ease;
+}
+.gm-lightbox-fav:hover { background: rgba(255,255,255,.3); transform: scale(1.08); }
+.gm-lightbox-fav.is-on { background: var(--accent-solid); }
 .gm-lightbox-info h3 { font-size: 1.0625rem; font-weight: 600; margin-bottom: 4px; }
 .gm-lightbox-info p { color: rgba(255,255,255,.7); font-size: 0.8125rem; }
 .gm-lightbox-close {
@@ -303,4 +339,5 @@ details.faq .faq-body { padding: 0 16px 12px; color: var(--text-muted); font-siz
   .gm-skeleton .gm-sk-img, .gm-skeleton .gm-sk-line { animation: none; }
   .gm-card, .gm-card:hover { transform: none; }
   .gm-card img, .gm-card:hover img { transform: none; }
+  .gm-card { animation: none; }
 }

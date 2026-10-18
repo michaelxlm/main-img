@@ -8,6 +8,7 @@
 - **三层 CSS 架构**：`tokens.css`（设计令牌）→ `main.css`（站点基础）→ `gallery.css`（画廊专用）
 - **模块化 JS**：`tracker.js`（埋点 SDK）→ `app.js`（主题/菜单）→ `gallery.js`（画廊交互）
 - **API 数据源**：`/api/v1/front/antucao/image/` 系列接口（sample / rank / search / detail）
+- **缩略图提速**：列表缩略图/灯箱展示图走 OSS `x-oss-process` 裁剪（w_400/w_1920 + webp），下载仍用原图；失效时回退原图→外链→上报
 - **图片域名**：`img.fangkelianmeng.com`
 - **PWA**：Service Worker 离线兜底
 - **SEO**：结构化数据 JSON-LD、Open Graph、sitemap.xml
@@ -34,8 +35,9 @@ main-img/
 │   └── nginx.conf           # Nginx 配置参考
 ├── index.html               # 首页（搜索 + 精选壁纸）
 ├── browse.html              # 全部图片（分页 + 排序）
-├── rank.html                # 热门排行
+├── rank.html                # 热门排行（Top 序号角标）
 ├── category.html            # 分类浏览
+├── favorites.html           # 我的收藏（纯本地，noindex 不入 sitemap）
 ├── about.html               # 关于与免责
 ├── 404.html                 # 404 页面
 ├── sw.js                    # Service Worker
@@ -49,12 +51,15 @@ main-img/
 
 | 页面 | 文件 | 说明 |
 |------|------|------|
-| 首页 | `index.html` | Hero 搜索 + 分类 chip + 瀑布流精选壁纸 |
-| 全部图片 | `browse.html` | 分页浏览 + 多排序方式 |
-| 热门排行 | `rank.html` | 按下载/点赞/浏览排序 |
+| 首页 | `index.html` | Hero 搜索 + 9 分类 chip + 瀑布流精选壁纸（滚动自动加载） |
+| 全部图片 | `browse.html` | 分页浏览 + 多排序方式，展示总张数 |
+| 热门排行 | `rank.html` | 按下载/点赞/浏览排序，卡片带名次角标（前 3 名金银铜） |
 | 分类 | `category.html` | 9 大分类卡片入口 |
+| 我的收藏 | `favorites.html` | 浏览本地收藏，支持取消/清空（noindex，不进 sitemap） |
 | 关于 | `about.html` | 数据来源、版权声明、FAQ |
 | 404 | `404.html` | 页面走丢了 |
+
+灯箱预览能力：第 n/共 N 计数、收藏（与卡片双向同步）、左右键/触屏滑动切换、相邻大图预加载、热度数据展示；打开灯箱会补报一次浏览、下载时补报一次下载计数（供热度排序积累真实数据）。
 
 ## API 接口
 
