@@ -39,6 +39,8 @@
   /* --------------------------------- 主题 --------------------------------- */
   var THEME_LEGACY = ['__theme'];
   var THEME_MODES = ['auto', 'light', 'dark'];
+  var THEME_LABEL = { auto: '自动', light: '亮色', dark: '暗色' };
+  var THEME_ICON = { auto: '🌗', light: '☀', dark: '🌙' };
 
   function systemTheme() {
     try {
@@ -68,26 +70,31 @@
     return pref === 'dark' || pref === 'light' ? pref : systemTheme();
   }
 
-  function applyTheme(actual) {
+  function applyTheme(actual, mode) {
     doc.documentElement.setAttribute('data-theme', actual);
     var btn = $('#themeToggle');
     if (btn) {
-      btn.textContent = actual === 'dark' ? '☀' : '🌙';
-      btn.setAttribute('aria-label', actual === 'dark' ? '切换到浅色' : '切换到深色');
+      // 图标反映「模式」而非解析后的主题：三态循环每点一次图标必变，消除 auto→当前主题 的视觉死步（对齐 color-tool 显示模式名）
+      var m = THEME_MODES.indexOf(mode) >= 0 ? mode : 'auto';
+      var next = THEME_MODES[(THEME_MODES.indexOf(m) + 1) % THEME_MODES.length];
+      btn.textContent = THEME_ICON[m];
+      btn.setAttribute('data-theme-mode', m);
+      btn.setAttribute('aria-label', '当前主题：' + THEME_LABEL[m] + '，点击切换为' + THEME_LABEL[next]);
+      btn.setAttribute('title', '当前主题：' + THEME_LABEL[m] + '（点击切换为' + THEME_LABEL[next] + '）');
     }
   }
 
   function setTheme(pref, persist) {
     var mode = THEME_MODES.indexOf(pref) >= 0 ? pref : 'auto';
     var actual = resolveTheme(mode);
-    applyTheme(actual);
+    applyTheme(actual, mode);
     if (persist !== false) writeStore(THEME_KEY, mode);
     if (global.Tracker) global.Tracker.track('theme_switch', { theme: mode });
   }
 
   function initTheme() {
     var pref = storedPref();
-    applyTheme(resolveTheme(pref));
+    applyTheme(resolveTheme(pref), pref);
     var btn = $('#themeToggle');
     if (!btn) return;
     btn.addEventListener('click', function () {
@@ -100,7 +107,7 @@
       if (mq && mq.addEventListener) {
         mq.addEventListener('change', function () {
           if (storedPref() !== 'auto') return;
-          applyTheme(systemTheme());
+          applyTheme(systemTheme(), 'auto');
         });
       }
     } catch (e) {}
