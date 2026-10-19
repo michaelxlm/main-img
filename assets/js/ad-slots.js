@@ -124,6 +124,18 @@
     return /^https?:\/\//i.test(value) ? value : '';
   }
 
+  // D-03（方案 12 §六）海外联盟参数追加：广告数据支持 tag（Amazon Associates 关联 ID）与
+  //   append（任意查询串，如速卖通 aff_short_key），在链接尾拼接且不改权威 URL 本体——
+  //   联盟位无需新增组件，ad-slots.json 加 type:'affiliate' 条目即可落地（已带 ? 用 & 分隔）
+  function applyAffiliate(url, ad) {
+    if (!url || !(ad.tag || ad.append)) return url;
+    var extra = [];
+    if (ad.tag) extra.push('tag=' + encodeURIComponent(ad.tag));
+    if (ad.append) extra.push(String(ad.append).replace(/^&+/, ''));
+    if (!extra.length) return url;
+    return url + (url.indexOf('?') >= 0 ? '&' : '?') + extra.join('&');
+  }
+
   function matchPage(ad, page) {
     var exclude = ad.excludePages;
     if (exclude && exclude.length) {
@@ -299,7 +311,7 @@
     var doc = global.document;
     var a = doc.createElement('a');
     a.className = 'adsl-card';
-    a.href = safeUrl(ad.url) || '#';
+    a.href = applyAffiliate(safeUrl(ad.url), ad) || '#';
     a.target = ad.target || '_blank';
     var isNext = placement === 'next';
     a.setAttribute('rel', ad.rel || (isNext ? 'noopener' : 'sponsored noopener'));

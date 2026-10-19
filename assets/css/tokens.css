@@ -1,7 +1,9 @@
 /* ==========================================================================
    六站共享设计令牌（Design Tokens）· 单一事实来源
+   由各站 build 注入到 <head>（先于站点样式），站点自有 :root 只保留品牌令牌。
    统一管理：间距节奏 / 圆角 / 阴影层级 / 容器宽度 / 字体。
    品牌差异（--accent / --bg / --surface / --border / --text 等）仍由各站定义。
+   下游站（visitor / aiWeb / color-tool）词汇不同，接入时按其命名对齐到本文件即可。
    ========================================================================== */
 
 :root {
@@ -27,21 +29,25 @@
 
   /* 布局 */
   --maxw: 1140px;
+  /* 页头高度：以多数站实测值 56px 为规范基线（七站用 56px）；
+     个别品牌特例（visitor 64px / color-tool 3.5rem）在本站 :root 覆盖，见各站主 CSS。 */
   --header-h: 56px;
 
   /* 字体 */
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
 
-  /* 断点 */
-  --breakpoint-xs: 480px;
-  --breakpoint-sm: 768px;
-  --breakpoint-md: 1024px;
-  --breakpoint-lg: 1280px;
-  --breakpoint-xl: 1440px;
+  /* 断点（响应式统一档位；对齐 main-tool design-tokens.scss）。
+     ⚠ 文档性约定：CSS 自定义属性无法用于 @media 条件，媒体查询只能直写下列档位字面值（勿写进 var()）；
+     本组变量仅供 JS / 文档参照，不构成媒体查询能力（审计 P2-2 · T10）。 */
+  --breakpoint-xs: 480px;   /* 超小屏（小屏手机） */
+  --breakpoint-sm: 768px;   /* 手机 / 平板分界 */
+  --breakpoint-md: 1024px;  /* 桌面起点 */
+  --breakpoint-lg: 1280px;  /* 宽屏 */
+  --breakpoint-xl: 1440px;  /* 超大屏 */
 
-  /* 层叠 */
-  --z-header: 100;
+  /* 层叠（z-index 台阶化，杜绝各站魔法数字；对齐 main-tool 的 Bootstrap 式台阶） */
+  --z-header: 100;          /* 固定页头 */
   --z-dropdown: 1000;
   --z-sticky: 1020;
   --z-fixed: 1030;
@@ -50,19 +56,46 @@
   --z-popover: 1060;
   --z-tooltip: 1070;
   --z-toast: 1080;
-  --z-lightbox: 1090;
 
-  /* 字阶 */
+  /* 字阶（字号节奏，与 --font 家族分离；对齐 main-tool $font-size-* 尺度） */
   --text-xs: 12px;
   --text-sm: 14px;
   --text-base: 16px;
   --text-lg: 20px;
   --text-xl: 24px;
   --text-2xl: 32px;
+
+  /* 滚动条（亮/暗统一，杜绝暗色页面残留系统亮色默认滚动条 · 审计 P2-6 · T14） */
+  --scrollbar-thumb: rgba(100, 116, 139, 0.45);
+  --scrollbar-thumb-hover: rgba(100, 116, 139, 0.7);
+  --scrollbar-track: transparent;
 }
 
+/* 暗色滚动条已归入下方统一 [data-theme="dark"] 块 */
+
+/* 滚动条基线（T14）：标准属性（Firefox + 现代 Chromium）+ WebKit/Blink 双轨，随本令牌分发至各站 */
+html {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-width: thin;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+
 [data-theme="dark"] {
+  /* 阴影层级（暗色：用纯黑低透明，亮色阴影在深底会发灰） */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.5);
+
+  /* 暗色滚动条（T14）：深底用浅灰半透明滑块 */
+  --scrollbar-thumb: rgba(148, 163, 184, 0.35);
+  --scrollbar-thumb-hover: rgba(148, 163, 184, 0.6);
 }
