@@ -30,6 +30,9 @@
     title: '全网优惠券 · 限时领取',
     moreText: '更多 →',
     debug: false,
+    // 曝光采样阈值（对齐 ad-slots.js）：券条进入视口≥viewRatio 且持续 viewDuration 毫秒才计一次曝光
+    viewRatio: 0.5,
+    viewDuration: 1000,
     // WO-90 官方活动混展示（可选开关，默认关=六站行为不变）：开启后在券条尾部追加活动卡，空池静默不追加
     showActivity: false,
     activityPath: '/api/v1/front/coupon/activity/list',
@@ -582,11 +585,45 @@
     }
   }
 
+  // 曝光埋点（补 §七 台账口径地基）：券条真实进入视口≥viewRatio 持续 viewDuration 才报 coupon_view。
+  // 【为何用专用名 coupon_view而非 case_view】§七已核实 case_view 是 visitor/notes 站「案件页浏览」事件、
+  // 与券无关（多站复用、语义含混），若复用会污染两端指标；故新增一个自描述、不歧义的券条专属曝光事件。
+  // 此前券条无任何曝光事件，台账只能用承载页 PV 近似；接上后 v4-ledger 真券 CTR = coupon_click / coupon_view。
+  // 每页每会话只报一次（sessionStorage 去重，与 ad-slots 同策略）；不支持 IntersectionObserver 时立即补报一次，
+  // 宁可少采也不虚采。
+  function alreadyViewed(key) { try { return global.sessionStorage.getItem(key) === '1'; } catch (e) { return false; } }
+  function markViewed(key) { try { global.sessionStorage.setItem(key, '1'); } catch (e) { /* 隐私模式忽略 */ } }
+
+  function trackCouponView(host) {
+    if (!host || host.getAttribute('data-coupon-viewed') === '1') return;
+    host.setAttribute('data-coupon-viewed', '1'); // 同一宿主实例只挂一次观察器（showActivity 重渲染不重复挂）
+    var key = '__coupon_view_' + currentPage();
+    var props = { page: currentPage(), via: 'coupon-slot' };
+    var report = function () {
+      if (alreadyViewed(key)) return;
+      markViewed(key);
+      try {
+        if (global.Tracker && typeof global.Tracker.track === 'function') global.Tracker.track('coupon_view', props);
+      } catch (e) { /* 埋点失败绝不影响页面 */ }
+    };
+    if (!global.IntersectionObserver) { report(); return; }
+    var timer = null;
+    var io = new global.IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].intersectionRatio >= CONFIG.viewRatio) {
+          if (!timer) timer = global.setTimeout(function () { report(); io.disconnect(); }, CONFIG.viewDuration);
+        } else if (timer) { global.clearTimeout(timer); timer = null; }
+      }
+    }, { threshold: [ 0, CONFIG.viewRatio, 1 ] });
+    io.observe(host);
+  }
+
   function renderAll(doc, hosts, coupons) {
     for (var i = 0; i < hosts.length; i++) {
       try { relocate(doc, hosts[i]); } catch (e) { log('relocate skipped:', e && e.message); }
       showHost(hosts[i]);
       render(hosts[i], coupons);
+      try { trackCouponView(hosts[i]); } catch (e) { log('exposure skipped:', e && e.message); }
     }
   }
 
