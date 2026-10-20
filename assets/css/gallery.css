@@ -17,7 +17,7 @@
   height: 44px; padding: 0 16px; border: 1px solid transparent;
   border-radius: var(--radius-sm); background: var(--accent-solid); color: #fff;
   font-size: 0.875rem; font-weight: 600; cursor: pointer;
-  transition: background .15s ease;
+  transition: background var(--dur-fast) ease;
 }
 .gm-search button:hover { background: var(--accent-solid-hover); }
 
@@ -27,9 +27,9 @@
   display: inline-flex; align-items: center; gap: 6px;
   /* 触控目标 ≥44px（审计 T5/main-img chips 提档） */
   padding: 11px 16px; min-height: 44px; border: 1px solid var(--border-strong);
-  border-radius: 999px; background: var(--surface); color: var(--text);
+  border-radius: var(--radius-pill); background: var(--surface); color: var(--text);
   font-size: 0.9375rem; font-weight: 600; text-decoration: none;
-  transition: border-color .15s ease, color .15s ease, background .15s ease;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease, background var(--dur-fast) ease;
 }
 .gm-cat-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .gm-cat-chip.is-active { border-color: var(--accent-solid); color: #fff; background: var(--accent-solid); }
@@ -60,7 +60,7 @@
   overflow: hidden;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  transition: transform var(--dur-base) ease, box-shadow var(--dur-base) ease, border-color var(--dur-base) ease;
   break-inside: avoid;
 }
 @media (hover: hover) {
@@ -72,7 +72,7 @@
   width: 100%; height: auto; display: block;
   border-radius: var(--radius) var(--radius) 0 0;
   background: var(--surface-2);
-  transition: opacity .3s ease, transform .35s ease;
+  transition: opacity var(--dur-slow) ease, transform var(--dur-slow) ease;
 }
 .gm-card img[data-loaded="0"] {
   opacity: 0.3;
@@ -91,7 +91,7 @@
   position: absolute; left: 0; right: 0; bottom: 0;
   padding: 32px 12px 10px;
   background: linear-gradient(transparent, rgba(0,0,0,.55));
-  color: #fff; opacity: 0; transition: opacity .2s ease;
+  color: #fff; opacity: 0; transition: opacity var(--dur-base) ease;
 }
 @media (hover: hover) { .gm-card:hover .gm-overlay { opacity: 1; } }
 /* 触屏无 hover：热度角标常显在底部（仅图存在时），避免信息完全不可见 */
@@ -112,7 +112,7 @@
 /* 排行榜位序号徽章：左上角，前 3 名金银铜 */
 .gm-rank-badge {
   position: absolute; top: 8px; left: 8px; z-index: 2;
-  min-width: 28px; height: 28px; padding: 0 7px; border-radius: 999px;
+  min-width: 28px; height: 28px; padding: 0 7px; border-radius: var(--radius-pill);
   display: inline-flex; align-items: center; justify-content: center;
   background: rgba(0,0,0,.55); color: #fff; font-size: 0.8125rem; font-weight: 800;
   pointer-events: none;
@@ -124,7 +124,7 @@
 /* 图片标签 */
 .gm-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
 .gm-tag {
-  padding: 2px 8px; border-radius: 999px;
+  padding: 2px 8px; border-radius: var(--radius-pill);
   background: rgba(255,255,255,.2); color: #fff;
   font-size: 0.6875rem; font-weight: 500;
 }
@@ -132,17 +132,17 @@
 /* 图片操作按钮 */
 .gm-actions {
   position: absolute; top: 8px; right: 8px; z-index: 2;
-  display: flex; gap: 6px; opacity: 0; transition: opacity .2s ease;
+  display: flex; gap: 6px; opacity: 0; transition: opacity var(--dur-base) ease;
 }
 @media (hover: hover) { .gm-card:hover .gm-actions { opacity: 1; } }
 /* 触屏设备无 hover，收藏/下载按钮常显，否则永久不可见 */
 @media (hover: none) { .gm-actions { opacity: 1; } }
 .gm-action-btn {
   /* 触控目标 ≥44px（审计 T5/main-img 实测 32px） */
-  min-width: 44px; min-height: 44px; border: 0; border-radius: 50%;
+  min-width: 44px; min-height: 44px; border: 0; border-radius: var(--radius-full);
   background: rgba(0,0,0,.45); color: #fff; font-size: 0.875rem;
   cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-  transition: background .15s ease, transform .15s ease;
+  transition: background var(--dur-fast) ease, transform var(--dur-fast) ease;
 }
 .gm-action-btn:hover { background: rgba(0,0,0,.7); transform: scale(1.1); }
 .gm-action-btn.is-on { background: var(--accent-solid); }
@@ -161,7 +161,7 @@
   margin-bottom: 14px;
 }
 .gm-sk-img { width: 100%; background: var(--surface-2); }
-.gm-sk-line { height: 14px; margin: 10px 12px; border-radius: 6px; background: var(--surface-2); }
+.gm-sk-line { height: 14px; margin: 10px 12px; border-radius: var(--radius-sm); background: var(--surface-2); }
 .gm-sk-line.is-short { width: 55%; height: 12px; }
 .gm-skeleton .gm-sk-img,
 .gm-skeleton .gm-sk-line { animation: gm-sk-shimmer 1.2s ease-in-out infinite; }
@@ -176,7 +176,7 @@
   position: fixed; inset: 0; z-index: var(--z-lightbox);
   background: rgba(0, 0, 0, .88);
   display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  opacity: 0; pointer-events: none; transition: opacity var(--dur-slow) ease;
 }
 .gm-lightbox.is-open { opacity: 1; pointer-events: auto; }
 .gm-lightbox-inner {
@@ -195,10 +195,10 @@
 .gm-lightbox-top { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 6px; }
 .gm-lightbox-counter { color: rgba(255,255,255,.7); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
 .gm-lightbox-fav {
-  width: 34px; height: 34px; border: 0; border-radius: 50%;
+  width: 34px; height: 34px; border: 0; border-radius: var(--radius-full);
   background: rgba(255,255,255,.15); color: #fff; font-size: 1rem; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
-  transition: background .15s ease, transform .15s ease;
+  transition: background var(--dur-fast) ease, transform var(--dur-fast) ease;
 }
 .gm-lightbox-fav:hover { background: rgba(255,255,255,.3); transform: scale(1.08); }
 .gm-lightbox-fav.is-on { background: var(--accent-solid); }
@@ -206,14 +206,14 @@
 .gm-lightbox-info p { color: rgba(255,255,255,.7); font-size: 0.8125rem; }
 .gm-lightbox-close {
   position: absolute; top: -40px; right: 0;
-  width: 36px; height: 36px; border: 0; border-radius: 50%;
+  width: 36px; height: 36px; border: 0; border-radius: var(--radius-full);
   background: rgba(255,255,255,.15); color: #fff; font-size: 1.25rem;
   cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
 }
 .gm-lightbox-close:hover { background: rgba(255,255,255,.3); }
 .gm-lightbox-nav {
   position: absolute; top: 50%; transform: translateY(-50%);
-  width: 44px; height: 44px; border: 0; border-radius: 50%;
+  width: 44px; height: 44px; border: 0; border-radius: var(--radius-full);
   background: rgba(255,255,255,.12); color: #fff; font-size: 1.5rem;
   cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
 }
@@ -242,9 +242,9 @@
 .gm-back-top {
   position: fixed; right: 18px; bottom: 22px; z-index: 50;
   width: 42px; height: 42px; border: 1px solid var(--border-strong);
-  border-radius: 50%; background: var(--surface); color: var(--text);
+  border-radius: var(--radius-full); background: var(--surface); color: var(--text);
   font-size: 1.125rem; cursor: pointer; box-shadow: var(--shadow);
-  transition: opacity .15s ease, transform .15s ease;
+  transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease;
 }
 .gm-back-top[hidden] { display: none; }
 .gm-back-top:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
@@ -254,12 +254,12 @@
 .gm-his[hidden] { display: none; }
 .gm-his-label { color: var(--text-soft); font-size: 0.8125rem; }
 .gm-his-chip {
-  border: 1px solid var(--border-strong); border-radius: 999px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-pill);
   background: transparent; color: var(--text-muted); text-decoration: none;
   /* 触控目标 ≥44px（审计 T5/main-img 实测 29px） */
   display: inline-flex; align-items: center; min-height: 44px;
   padding: 0 14px; font-size: 0.8125rem; cursor: pointer; font-family: inherit;
-  transition: border-color .15s ease, color .15s ease;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
 }
 .gm-his-chip:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
 
@@ -294,12 +294,12 @@ details.faq .faq-body { padding: 0 16px 12px; color: var(--text-muted); font-siz
 .card {
   display: block; padding: 20px; border: 1px solid var(--border);
   border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-sm);
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  transition: transform var(--dur-base) ease, box-shadow var(--dur-base) ease, border-color var(--dur-base) ease;
 }
 .card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--border-strong); }
 .card-icon {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 38px; height: 38px; margin-bottom: 10px; border-radius: 10px;
+  width: 38px; height: 38px; margin-bottom: 10px; border-radius: var(--radius-sm);
   background: var(--accent-soft); font-size: 1.2rem;
 }
 .card h3 { margin-bottom: 8px; }

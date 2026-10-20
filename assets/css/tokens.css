@@ -21,6 +21,8 @@
   --radius-sm: 8px;
   --radius: 14px;
   --radius-lg: 22px;
+  --radius-pill: 999px;   /* 胶囊/药丸（原 999px/9999px 字面归口，零视觉变化 · 审计 T13） */
+  --radius-full: 50%;     /* 圆形/头像（原 50% 字面归口，零视觉变化 · 审计 T13） */
 
   /* 阴影层级（亮色：用主题色低透明，避免深底发灰） */
   --shadow-sm: 0 1px 2px rgba(18, 23, 42, 0.06);
@@ -69,6 +71,14 @@
   --scrollbar-thumb: rgba(100, 116, 139, 0.45);
   --scrollbar-thumb-hover: rgba(100, 116, 139, 0.7);
   --scrollbar-track: transparent;
+
+  /* 时长台阶（transition duration）：收敛各站 0.1–0.45s 八档乱值（审计 P2-3 · T13）。
+     归口映射建议：≤~165ms→fast、~170–230ms→base、≥~240ms→slow；
+     ⚠ 台阶令牌为新增能力，各站把 transition 字面替换为 var() 属改值动作，需逐站双态抽查后落地。 */
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+  --dur-slow: 300ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 暗色滚动条已归入下方统一 [data-theme="dark"] 块 */
