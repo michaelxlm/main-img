@@ -16,6 +16,17 @@ Language: zh-CN
 
 - [关于本站](https://img.fangkelianmeng.com/about.html): 版权与使用说明
 
+## Datasets
+
+> 本期免费接入（面向 LLM / Agent 只读调用）；档位单价与付费结算暂未对客开放，计费能力已对接
+
+- [历史上的今天](https://api.xuyiheng.com/api/v1/front/automate/history/): history 数据集（入参：mdmm（可选，MMDD））；鉴权 x-api-key 请求头。
+- [周公解梦](https://api.xuyiheng.com/api/v1/front/automate/dream/): dream 数据集（入参：keyword）；鉴权 x-api-key 请求头。
+- [中国传统色彩](https://api.xuyiheng.com/api/v1/front/automate/color/): color 数据集；鉴权 x-api-key 请求头。
+- [文档解析数据集（AI 摘要 + 元信息）](https://api.xuyiheng.com/api/v1/front/documents/): documents 数据集；鉴权 x-api-key 请求头。
+- [MCP Server](https://api.xuyiheng.com/api/v1/mcp): JSON-RPC 2.0（Streamable HTTP），与 REST 共用同一把 x-api-key 与配额。工具：history_of_today / history_list / dream_search / color_list。
+- 接入与 Key 申请：开发者门户 https://api.xuyiheng.com/developer.html
+
 ## Sitemap
 
 - [Full URL index](https://img.fangkelianmeng.com/sitemap.xml): 全部页面清单（约 5 条 URL）
