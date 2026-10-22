@@ -135,11 +135,15 @@
   }
 
   function apiPost(path, body) {
+    // 跨域写接口必须用 cors：no-cors 下浏览器会把 Content-Type 降级为 text/plain，
+    // Egg bodyParser 不解析该类型 → 请求虽回 200 但 body 为空、计数不落库
+    // （实测同一 img_id 连续上报，no-cors 那次 view 不增长、cors 那次正常 +1）。
+    // keepalive：点下载链接会触发跳转，保证离页时埋点请求仍能完成。
     return global.fetch(API_BASE + '/' + path + '?mainUrl=' + encodeURIComponent(MAIN_URL), {
-      method: 'POST', mode: 'no-cors',
+      method: 'POST', mode: 'cors', keepalive: true,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    }).catch(function () {});
+    }).catch(function () {}); // 埋点失败静默，不阻断浏览/下载
   }
 
   /* ------------------------------ 状态管理 ------------------------------ */
