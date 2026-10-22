@@ -27,4 +27,4 @@ jobs:
       - name: Sync to /www/wwwroot/img.fangkelianmeng.com
         shell: bash
         run: |
-          tar cf - --exclude=.git --exclude=.github --exclude=.user.ini --exclude=.workbuddy . | ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=accept-new root@60.205.214.88 "mkdir -p /www/wwwroot/img.fangkelianmeng.com ; cd /www/wwwroot/img.fangkelianmeng.com ; tar xmf -"
+          tar cf - --exclude=.git --exclude=.github --exclude=.user.ini --exclude=.workbuddy --exclude=deploy . | ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=accept-new root@60.205.214.88 "mkdir -p /www/wwwroot/img.fangkelianmeng.com ; cd /www/wwwroot/img.fangkelianmeng.com ; tar xmf -"
