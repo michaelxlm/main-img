@@ -118,7 +118,54 @@
   }
 
   /* ------------------------------ 工具函数 ------------------------------ */
+  /** 单个图片值提取为 URL 字符串（兼容 { url/path/src } 对象） */
+  function pickImage(value) {
+    if (!value) return '';
+    if (typeof value === 'string') return value.trim();
+    if (typeof value === 'object') return String(value.url || value.path || value.src || '').trim();
+    return '';
+  }
+
+  /**
+   * 图片字段归一化为 URL 数组
+   * 兼容：数组、JSON 数组字符串（管理端 crudPage 落库格式）、逗号拼接、单个 URL/对象
+   */
+  function imageList(value) {
+    if (!value) return [];
+    if (Object.prototype.toString.call(value) === '[object Array]') {
+      return value.map(pickImage).filter(Boolean);
+    }
+    if (typeof value === 'object') {
+      var one = pickImage(value);
+      return one ? [ one ] : [];
+    }
+    if (typeof value !== 'string') return [];
+    var s = value.trim();
+    if (!s) return [];
+    if (s.charAt(0) === '[') {
+      try {
+        var arr = JSON.parse(s);
+        return Object.prototype.toString.call(arr) === '[object Array]' ? arr.map(pickImage).filter(Boolean) : [];
+      } catch (_e) {
+        return [];
+      }
+    }
+    // 逗号拼接：仅当逗号后紧跟新地址（http(s)://、// 或 /）时才拆分，避免误伤 query 含逗号的 URL
+    if (/[,，]\s*((https?:)?\/\/|\/)/i.test(s)) {
+      return s.split(/[,，]/).map(function (x) { return x.trim(); }).filter(Boolean);
+    }
+    return [ s ];
+  }
+
+  /** 取字段的首个图片 URL（无则空串） */
+  function firstImage(value) {
+    var list = imageList(value);
+    return list.length ? list[0] : '';
+  }
+
   function safeUrl(url) {
+    // 图片字段兼容：管理端 crudPage 可能把单图写成 JSON 数组字符串（'["https://..."]'）
+    url = firstImage(url) || url;
     if (typeof url !== 'string') return '';
     var value = url.trim();
     return /^https?:\/\//i.test(value) ? value : '';
@@ -303,6 +350,14 @@
   }
 
   /**
+   * 合规兜底：CTA 不出现「返利」字眼（数据侧已清洗，此兼容旧分片 / 浏览器缓存的旧 JSON）
+   * @param cta
+   */
+  function cleanCta(cta) {
+    return (typeof cta === 'string' && cta.indexOf('返利') !== -1) ? '去看看 →' : cta;
+  }
+
+  /**
    * 生成广告卡片 <a>：仅保留广告内容（标题/描述/CTA），不显示标签、副标题与图片
    * @param ad
    * @param placement
@@ -324,7 +379,7 @@
     appendText(a, 'adsl-badge', AD_BADGE_TEXT);
     appendText(a, 'adsl-title', ad.title);
     appendText(a, 'adsl-desc', ad.desc);
-    appendText(a, 'adsl-cta', ad.cta);
+    appendText(a, 'adsl-cta', cleanCta(ad.cta));
     return a;
   }
 
