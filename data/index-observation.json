@@ -1,15 +1,15 @@
 {
-  "_note": "收录观测台账（WO-98）：URL 与 main-img/sitemap.xml 保持一致；人工只维护 submitted_at / indexed / note。indexed 取值：unknown 未核对 / yes 已收录 / no 未收录 / dropped 收录后掉出。",
+  "_note": "收录观测台账（WO-98）：URL 与 main-img/sitemap.xml 保持一致；本台账只记技术可抓性。sitemap.xml 已提交，按知识库 D-index-backfill（2026-10-22）不人工回填 submitted_at / indexed。indexed 取值：unknown 未核对（默认）/ yes 已收录 / no 未收录 / dropped 收录后掉出。",
   "site": "https://img.fangkelianmeng.com",
-  "updated": "2026-10-17",
+  "updated": "2026-10-22",
   "platforms": [
     "baidu",
     "google"
   ],
   "check_guide": {
-    "baidu": "百度搜索资源平台 → 索引量 + site: 抽查；结果人工回填 indexed",
-    "google": "Google Search Console → 网页索引 →「已编入索引」",
-    "rhythm": "每周一次；新增 / 大改页面后立即补一次"
+    "baidu": "百度搜索资源平台 → 索引量（看趋势，不回填 indexed）；或 site: 抽查",
+    "google": "Google Search Console → 网页索引 →「已编入索引」（看覆盖率报表，不回填台账）",
+    "rhythm": "每月一次看趋势（可选）；收录量异常下跌时先跑脚本看技术可抓性，再查平台后台"
   },
   "cwv": {
     "_note": "Core Web Vitals 真实用户读数（RUM · 非实验室分）。本站 tracker.js 已为 SDK 2.3.0（默认 project=img-fangkelianmeng），数据源：中台 GET /api/v1/admin/system/webVitals/list?project=img-fangkelianmeng&terminal=web。待生产采集产生真实读数后经 backfill 回填；未接入前保持 null。",
@@ -17,9 +17,21 @@
     "terminal": "web",
     "updated": null,
     "sample": null,
-    "p75": { "LCP": null, "INP": null, "CLS": null },
-    "status": { "LCP": null, "INP": null, "CLS": null },
-    "ratingDist": { "LCP": null, "INP": null, "CLS": null }
+    "p75": {
+      "LCP": null,
+      "INP": null,
+      "CLS": null
+    },
+    "status": {
+      "LCP": null,
+      "INP": null,
+      "CLS": null
+    },
+    "ratingDist": {
+      "LCP": null,
+      "INP": null,
+      "CLS": null
+    }
   },
   "entries": [
     {
@@ -29,9 +41,9 @@
       "page": "home",
       "submitted_at": "",
       "indexed": "unknown",
-      "http_status": "",
+      "http_status": 200,
       "in_sitemap": true,
-      "checked_at": "",
+      "checked_at": "2026-10-22T08:47:54Z",
       "note": ""
     },
     {
@@ -41,9 +53,9 @@
       "page": "browse",
       "submitted_at": "",
       "indexed": "unknown",
-      "http_status": "",
+      "http_status": 200,
       "in_sitemap": true,
-      "checked_at": "",
+      "checked_at": "2026-10-22T08:47:54Z",
       "note": ""
     },
     {
@@ -53,9 +65,9 @@
       "page": "rank",
       "submitted_at": "",
       "indexed": "unknown",
-      "http_status": "",
+      "http_status": 200,
       "in_sitemap": true,
-      "checked_at": "",
+      "checked_at": "2026-10-22T08:47:54Z",
       "note": ""
     },
     {
@@ -65,9 +77,9 @@
       "page": "category",
       "submitted_at": "",
       "indexed": "unknown",
-      "http_status": "",
+      "http_status": 200,
       "in_sitemap": true,
-      "checked_at": "",
+      "checked_at": "2026-10-22T08:47:54Z",
       "note": ""
     },
     {
@@ -77,11 +89,11 @@
       "page": "about",
       "submitted_at": "",
       "indexed": "unknown",
-      "http_status": "",
+      "http_status": 200,
       "in_sitemap": true,
-      "checked_at": "",
+      "checked_at": "2026-10-22T08:47:54Z",
       "note": ""
     }
   ],
-  "note": "台账建立于 WO-98 上线纳管期；404.html 不入观测清单（不提交收录）。"
+  "note": "台账建立于 WO-98 上线纳管期；404.html 不入观测清单。sitemap.xml 已提交百度 / GSC / Bing；indexed / submitted_at 不人工回填（知识库 D-index-backfill），http_status / in_sitemap / checked_at 由 node scripts/index-observation.js 回写。"
 }

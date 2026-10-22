@@ -30,7 +30,11 @@ main-img/
 │       ├── app.js           # 站点交互（主题/菜单/回到顶部/PWA）
 │       └── gallery.js       # 图片画廊交互核心
 ├── data/
-│   └── categories.json      # 分类定义
+│   ├── categories.json      # 分类定义
+│   └── index-observation.json  # 收录观测台账（5 条，与 sitemap 一致）
+├── scripts/
+│   ├── build.js             # 构建：盖 ?v= 缓存令牌 + 重写 sitemap + 拉热门图
+│   └── index-observation.js # 线上可访问性 + 收录观测核对（回写台账）
 ├── deploy/
 │   └── nginx.conf           # Nginx 配置参考
 ├── index.html               # 首页（搜索 + 精选壁纸）
@@ -89,7 +93,13 @@ php -S localhost:8080
 
 ## 部署
 
-参考 `deploy/nginx.conf`，将全部文件上传至服务器 `/var/www/main-img`，配置域名 `img.fangkelianmeng.com` 指向该目录即可。
+参考 `deploy/nginx.conf`，将全部文件上传至服务器 `/www/wwwroot/img.fangkelianmeng.com`（push `main` 由 self-hosted runner 自动同步），域名 `img.fangkelianmeng.com` 指向该目录即可。
+
+## 收录观测
+
+- 台账：`data/index-observation.json`，5 条与 `sitemap.xml` 一一对应；`http_status / checked_at` 由脚本回写，`indexed` 不人工回填。
+- 核对：`node scripts/index-observation.js`（`--no-write` 只看不写）逐条查 HTTP / canonical / robots / sitemap，并校验 http→https，回写 `http_status / checked_at`，报告写到 `reports/index-observation-YYYY-MM-DD.md`（含百度 / GSC 核对入口）。
+- 2026-10-22 实测：5 条全部 `200`、robots 放行、均在 sitemap；`sitemap.xml` 已提交百度 / GSC，按 D-index-backfill 收录状态不再人工回填（`indexed` 保持 `unknown`）。
 
 ## 编码规范
 
