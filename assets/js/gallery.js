@@ -238,8 +238,16 @@
     var img = $('img', card);
     if (img) {
       img.addEventListener('load', function () {
+        // 内联 aspect-ratio 只是加载前占位（防 CLS）；DB 元数据比例可能与真实图不符
+        // 或极端比例被钳制，加载后必须清掉回落自然比例，否则 object-fit:fill 会拉伸变形
+        img.style.aspectRatio = '';
         img.setAttribute('data-loaded', '1');
       });
+      // 缓存命中时 load 可能已错过：已在文档中且解码完成的图立即回落
+      if (img.complete && img.naturalWidth) {
+        img.style.aspectRatio = '';
+        img.setAttribute('data-loaded', '1');
+      }
       img.addEventListener('error', function () {
         // 回退链：OSS 裁剪图 → OSS 原图 → otherUrls[0] 外链 → 仍失败则标记 + 上报失效
         var raw = imgUrl(item);
@@ -247,6 +255,7 @@
         var cur = img.getAttribute('src');
         if (raw && cur !== raw) { img.setAttribute('src', raw); return; }
         if (other && cur !== other) { img.setAttribute('src', other); return; }
+        img.style.aspectRatio = '';
         img.setAttribute('data-loaded', '1');
         img.style.opacity = '0.3';
         apiPost('error', { img_id: item._id });
