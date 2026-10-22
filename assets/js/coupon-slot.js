@@ -68,7 +68,7 @@
 
   /**
    * 图片字段归一化为 URL 数组
-   * 兼容：数组、JSON 数组字符串（管理端 crudPage 落库格式）、逗号拼接、单个 URL/对象
+   * 兼容：数组、JSON 数组/对象字符串（管理端 crudPage 落库格式）、逗号拼接、单个 URL/对象
    */
   function imageList(value) {
     if (!value) return [];
@@ -82,13 +82,18 @@
     if (typeof value !== 'string') return [];
     var s = value.trim();
     if (!s) return [];
-    if (s.charAt(0) === '[') {
+    if (s.charAt(0) === '[' || s.charAt(0) === '{') {
+      var parsed;
       try {
-        var arr = JSON.parse(s);
-        return Object.prototype.toString.call(arr) === '[object Array]' ? arr.map(pickImage).filter(Boolean) : [];
+        parsed = JSON.parse(s);
       } catch (_e) {
         return [];
       }
+      if (Object.prototype.toString.call(parsed) === '[object Array]') {
+        return parsed.map(pickImage).filter(Boolean);
+      }
+      var single = pickImage(parsed);
+      return single ? [ single ] : [];
     }
     // 逗号拼接：仅当逗号后紧跟新地址（http(s)://、// 或 /）时才拆分，避免误伤 query 含逗号的 URL
     if (/[,，]\s*((https?:)?\/\/|\/)/i.test(s)) {
