@@ -220,13 +220,21 @@
 .gm-lightbox-nav:hover { background: rgba(255,255,255,.25); }
 .gm-lightbox-prev { left: -56px; }
 .gm-lightbox-next { right: -56px; }
+.gm-lightbox-actions { margin-top: 10px; display: flex; align-items: center; gap: 8px; }
 .gm-lightbox-dl {
-  margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;
+  display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 18px; border-radius: var(--radius-sm);
   background: var(--accent-solid); color: #fff; font-size: 0.875rem;
   font-weight: 600; text-decoration: none; border: 0; cursor: pointer;
 }
 .gm-lightbox-dl:hover { background: var(--accent-solid-hover); color: #fff; }
+.gm-lightbox-detail {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; border-radius: var(--radius-sm);
+  background: rgba(255,255,255,.15); color: #fff; font-size: 0.875rem;
+  font-weight: 600; text-decoration: none; border: 0;
+}
+.gm-lightbox-detail:hover { background: rgba(255,255,255,.3); color: #fff; }
 
 /* ---------------------------------- 统计数字 ---------------------------------- */
 .gm-stats {

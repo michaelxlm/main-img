@@ -344,7 +344,10 @@
         '<button class="gm-lightbox-nav gm-lightbox-prev" aria-label="上一张">‹</button>' +
         '<img class="gm-lightbox-img" src="" alt="">' +
         '<div class="gm-lightbox-info"><div class="gm-lightbox-top"><span class="gm-lightbox-counter"></span><button class="gm-lightbox-fav" type="button" aria-label="收藏">♥</button></div><h3></h3><p></p></div>' +
+        '<div class="gm-lightbox-actions">' +
         '<a class="gm-lightbox-dl" href="" target="_blank" rel="noopener" download>⤓ 下载原图</a>' +
+        '<a class="gm-lightbox-detail" href="" hidden>查看详情 →</a>' +
+        '</div>' +
         '<button class="gm-lightbox-nav gm-lightbox-next" aria-label="下一张">›</button>' +
       '</div>';
     doc.body.appendChild(lightboxEl);
@@ -427,6 +430,7 @@
     var title = $('.gm-lightbox-info h3', lightboxEl);
     var meta = $('.gm-lightbox-info p', lightboxEl);
     var dl = $('.gm-lightbox-dl', lightboxEl);
+    var detailLink = $('.gm-lightbox-detail', lightboxEl);
     var counter = $('.gm-lightbox-counter', lightboxEl);
     var favBtn = $('.gm-lightbox-fav', lightboxEl);
     img.src = lightboxImgUrl(item);
@@ -444,6 +448,10 @@
     if (item.copyright) parts.push('© ' + item.copyright);
     meta.textContent = parts.join(' · ');
     dl.href = imgUrl(item);
+    // 预渲染详情页精选集（build.js 产出的 detail-set.js）：命中则展示「查看详情」入口
+    var hasDetail = !!(global.GM_DETAIL_IDS && global.GM_DETAIL_IDS[item._id]);
+    detailLink.hidden = !hasDetail;
+    if (hasDetail) detailLink.href = '/p/' + item._id + '.html';
     counter.textContent = (lightboxIdx + 1) + ' / ' + state.items.length;
     favBtn.classList.toggle('is-on', isFavorited(item._id));
     // 禁用前后按钮

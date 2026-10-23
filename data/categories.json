@@ -1,14 +1,26 @@
 {
-  "note": "壁纸分类定义。type 对应 API 的 type 参数（images 集合的 type 字段）。新增分类后需同步更新 category.html 和首页 chip。",
+  "note": "壁纸分类定义。slug 对应 API 的 type 参数（images 集合 type 字段，即中台字典 imageType 的 code，2026-10-22 经 API 枚举核实）。构建时以 API 实际存在的分类为准：本表提供中文名/图标/文案，命中的分类才生成 /category/{slug}.html 落地页。首页 chip 与 category.html 卡片需与本表同步。",
   "categories": [
-    { "slug": "anime",     "name": "动漫",   "icon": "🎨", "desc": "二次元动漫角色、场景壁纸，热血、治愈、唯美风格应有尽有。" },
-    { "slug": "landscape", "name": "风景",   "icon": "🏔️", "desc": "山川湖海、日出日落、星空银河等自然风景高清壁纸。" },
-    { "slug": "girl",      "name": "美女",   "icon": "💃", "desc": "清新、甜美、时尚风格的美女写真壁纸精选。" },
-    { "slug": "game",      "name": "游戏",   "icon": "🎮", "desc": "热门游戏角色、场景、CG 壁纸，游戏迷必备。" },
-    { "slug": "animal",    "name": "动物",   "icon": "🐾", "desc": "萌宠猫咪、狗狗、野生动物等可爱动物壁纸。" },
-    { "slug": "car",       "name": "汽车",   "icon": "🏎️", "desc": "超级跑车、经典车型、赛车运动等汽车壁纸。" },
-    { "slug": "art",       "name": "艺术",   "icon": "🖼️", "desc": "抽象艺术、插画、概念设计等创意艺术壁纸。" },
-    { "slug": "city",      "name": "城市",   "icon": "🌃", "desc": "城市夜景、天际线、建筑摄影等都市风光壁纸。" },
-    { "slug": "tech",      "name": "科技",   "icon": "💻", "desc": "赛博朋克、科幻未来、数字艺术等科技风壁纸。" }
+    { "slug": "anime",             "name": "动漫",     "icon": "🎨",  "desc": "二次元动漫角色、场景壁纸，热血、治愈、唯美风格应有尽有。" },
+    { "slug": "beauty",            "name": "美女",     "icon": "💃",  "desc": "清新、甜美、时尚风格的美女写真壁纸精选。" },
+    { "slug": "4K",                "name": "4K",       "icon": "📺",  "desc": "4K 超高清壁纸，细节拉满的极致画质。" },
+    { "slug": "scenery",           "name": "风景",     "icon": "🏔️", "desc": "山川湖海、日出日落、星空银河等自然风景高清壁纸。" },
+    { "slug": "quadraticElement",  "name": "二次元",   "icon": "✨",  "desc": "二次元插画、立绘与同人创作高清壁纸。" },
+    { "slug": "pet",               "name": "宠物",     "icon": "🐾",  "desc": "萌宠猫咪、狗狗等可爱动物壁纸。" },
+    { "slug": "game",              "name": "游戏",     "icon": "🎮",  "desc": "热门游戏角色、场景、CG 壁纸，游戏迷必备。" },
+    { "slug": "buyers",            "name": "买家秀",   "icon": "📦",  "desc": "真实买家秀好图合集，生活感十足。" },
+    { "slug": "star",              "name": "明星",     "icon": "⭐",  "desc": "人气明星写真与舞台高清壁纸。" },
+    { "slug": "film",              "name": "影视",     "icon": "🎬",  "desc": "电影、剧集、海报与经典场面影视壁纸。" },
+    { "slug": "freshness",         "name": "小清新",   "icon": "🌿",  "desc": "清新淡雅、治愈系小清新壁纸。" },
+    { "slug": "cool",              "name": "炫酷",     "icon": "🚀",  "desc": "赛博朋克、科幻未来等炫酷风格壁纸。" },
+    { "slug": "car",               "name": "汽车",     "icon": "🏎️", "desc": "超级跑车、经典车型、赛车运动等汽车壁纸。" },
+    { "slug": "affection",         "name": "爱情",     "icon": "❤️",  "desc": "甜蜜爱情主题壁纸，情侣背景首选。" },
+    { "slug": "text",              "name": "文字",     "icon": "🔤",  "desc": "个性文字、标语与字体设计壁纸。" },
+    { "slug": "holiday",           "name": "节日",     "icon": "🎉",  "desc": "节庆主题壁纸，春节、圣诞等节日氛围拉满。" },
+    { "slug": "calendar",          "name": "日历",     "icon": "📅",  "desc": "日历排版壁纸，好看又能看日期。" },
+    { "slug": "baby",              "name": "婴儿",     "icon": "👶",  "desc": "可爱婴儿主题壁纸。" },
+    { "slug": "hd",                "name": "高清",     "icon": "🖼️", "desc": "高清精选好图，桌面手机两相宜。" },
+    { "slug": "sports",            "name": "体育",     "icon": "⚽",  "desc": "赛场瞬间、运动健将和热血体育壁纸。" },
+    { "slug": "mcj",               "name": "MCJ",      "icon": "🧊",  "desc": "MCJ 主题系列壁纸。" }
   ]
 }
