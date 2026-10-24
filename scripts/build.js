@@ -115,7 +115,7 @@ var CATS = []; // 由 categories.json 填充，供页头导航/相关分类使�
 
 function renderHead(o) {
   var canonical = SITE_URL + o.canonical;
-  var ogImage = o.ogImage || (SITE_URL + '/assets/img/og-cover.svg');
+  var ogImage = o.ogImage || (SITE_URL + '/assets/img/og-cover.png');
   return '<!DOCTYPE html>\n<html lang="zh-CN" data-theme="light">\n<head>\n'
     + '  <meta charset="UTF-8" />\n'
     + '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n'
@@ -228,6 +228,20 @@ function staticCard(item, detailSet) {
 }
 
 /* ------------------------------ 分类落地页 ------------------------------ */
+/* 分类页 SEO 正文与 FAQ 模板（可见文本与 FAQPage 同源，随分类名/数量定制） */
+function catSeoIntro(name, total, desc) {
+  return name + '高清壁纸专区汇集 ' + total + ' 张精选图片'
+    + (desc ? ('（' + desc + '）') : '')
+    + '，持续更新。你可以在这里按缩略图快速预览，点进任意一张图片的详情页查看分辨率、格式与文件大小，并下载原图用作电脑或手机桌面背景。想浏览更多同类美图，可通过顶部「分类」导航或画廊查看。';
+}
+function catSeoFaq(name) {
+  return [
+    [name + '壁纸都有哪些尺寸和分辨率？', '本页' + name + '高清壁纸包含多种常见分辨率，适配桌面与手机屏幕；每张详情页都标注了尺寸、格式与文件大小，可按自己的屏幕挑选。'],
+    ['如何下载' + name + '壁纸？', '点进任意一张图片的详情页即可查看并下载原图；全站图片支持免费浏览。'],
+    [name + '壁纸可以用于商用吗？', '请查看具体图片详情页标注的来源与授权说明，商用前务必确认其可用范围，以免产生侵权风险。']
+  ];
+}
+
 function genCategoryPage(cat, items, detailSet) {
   var slug = cat.slug, name = cat.name;
   var total = (cat._pagination && cat._pagination.total) || items.length;
@@ -261,7 +275,25 @@ function genCategoryPage(cat, items, detailSet) {
       return { '@type': 'ListItem', position: i + 1, url: SITE_URL + '/p/' + it._id + '.html' };
     }),
   };
-  var jsonld = ld([collection, breadcrumb, itemList]);
+  var faqPairs = catSeoFaq(name);
+  var faqLd = {
+    '@context': 'https://schema.org', '@type': 'FAQPage', inLanguage: 'zh-CN',
+    mainEntity: faqPairs.map(function (qa) {
+      return { '@type': 'Question', name: qa[0], acceptedAnswer: { '@type': 'Answer', text: qa[1] } };
+    }),
+  };
+  var jsonld = ld([collection, breadcrumb, itemList, faqLd]);
+
+  var faqHtml = faqPairs.map(function (qa) {
+    return '        <details>\n          <summary>' + esc(qa[0]) + '</summary>\n          <p>' + esc(qa[1]) + '</p>\n        </details>';
+  }).join('\n');
+  var seoText =
+    '    <section class="section"><div class="container">\n'
+    + '      <div class="section-head left"><h2>关于' + esc(name) + '壁纸</h2></div>\n'
+    + '      <p>' + esc(catSeoIntro(name, total, cat.desc)) + '</p>\n'
+    + '      <div class="section-head left mt-32"><h2>常见问题</h2></div>\n'
+    + faqHtml + '\n'
+    + '    </div></section>\n';
 
   var body = '  <main id="main">\n    <section class="section hero">\n      <div class="container">\n'
     + '        <span class="eyebrow">分类 · ' + esc(name) + '</span>\n        <h1>' + esc(name) + '高清壁纸</h1>\n'
@@ -272,7 +304,9 @@ function genCategoryPage(cat, items, detailSet) {
     + '      <div class="gm-grid">\n          ' + grid + '\n      </div>\n'
     + '      <div class="btn-row center mt-32"><a class="btn btn-primary" href="/browse.html?type=' + xenc(slug) + '">在画廊中浏览全部 ' + esc(name) + ' →</a></div>\n'
     + '      <div class="section-head left mt-32"><h2>其他分类</h2></div>\n<div class="btn-row">' + otherCats + '</div>\n'
-    + '    </div></section>\n  </main>\n';
+    + '    </div></section>\n'
+    + seoText
+    + '  </main>\n';
 
   return { file: path.join(ROOT, 'category', slug + '.html'), rel: canonical, title: title, changefreq: 'weekly', priority: '0.8',
     html: renderShell({ title: title, desc: desc, keywords: keywords, canonical: canonical, jsonld: jsonld, body: body, activeNav: 'category', page: 'category-landing' }) };
