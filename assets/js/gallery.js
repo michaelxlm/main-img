@@ -803,10 +803,10 @@
     } else if (urlType) {
       state.mode = 'category';
       state.type = urlType;
-      // 激活对应 chip
+      // 激活对应 chip（按 data-type 精确切换，清除「全部」在 HTML 里的硬编码 is-active，避免 ?type= 进入时双高亮）
       if (catContainer) {
         $$('.gm-cat-chip', catContainer).forEach(function (c) {
-          if (c.getAttribute('data-type') === urlType) c.classList.add('is-active');
+          c.classList.toggle('is-active', c.getAttribute('data-type') === urlType);
         });
       }
     }
