@@ -3,6 +3,15 @@
    复用 tokens.css / main.css 的设计令牌；本文件只放图片画廊页独有组件。
    ========================================================================== */
 
+/* ---------------------------------- 统一筛选面板 ---------------------------------- */
+.gm-filter {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-bottom: 14px; padding: 12px 14px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.gm-filter .gm-cats { margin: 0; }
+
 /* ---------------------------------- 搜索栏 ---------------------------------- */
 .gm-search { display: flex; gap: 8px; }
 .gm-search input {

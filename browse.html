@@ -83,6 +83,47 @@
           <h2>图片列表</h2>
         </div>
 
+        <div class="gm-filter" role="search" aria-label="壁纸筛选">
+          <form class="gm-search" id="gmSearchForm">
+            <input id="gmSearchInput" type="search" placeholder="搜索壁纸，如 风景 / 动漫 / 星空" aria-label="搜索壁纸" />
+            <button type="submit">搜索</button>
+          </form>
+          <div class="gm-his" aria-label="热门搜索">
+            <span class="gm-his-label">热门搜索</span>
+            <button class="gm-his-chip" type="button">风景</button>
+            <button class="gm-his-chip" type="button">动漫</button>
+            <button class="gm-his-chip" type="button">星空</button>
+            <button class="gm-his-chip" type="button">猫咪</button>
+            <button class="gm-his-chip" type="button">赛博朋克</button>
+            <button class="gm-his-chip" type="button">极简</button>
+          </div>
+          <div class="gm-his" id="gmHistory" hidden></div>
+          <div class="gm-cats" id="gmCats" aria-label="分类筛选">
+            <a class="gm-cat-chip is-active" href="/browse.html" data-type="">全部</a>
+            <a class="gm-cat-chip" href="/browse.html?type=anime" data-type="anime">动漫</a>
+            <a class="gm-cat-chip" href="/browse.html?type=beauty" data-type="beauty">美女</a>
+            <a class="gm-cat-chip" href="/browse.html?type=4K" data-type="4K">4K</a>
+            <a class="gm-cat-chip" href="/browse.html?type=scenery" data-type="scenery">风景</a>
+            <a class="gm-cat-chip" href="/browse.html?type=quadraticElement" data-type="quadraticElement">二次元</a>
+            <a class="gm-cat-chip" href="/browse.html?type=pet" data-type="pet">宠物</a>
+            <a class="gm-cat-chip" href="/browse.html?type=game" data-type="game">游戏</a>
+            <a class="gm-cat-chip" href="/browse.html?type=buyers" data-type="buyers">买家秀</a>
+            <a class="gm-cat-chip" href="/browse.html?type=star" data-type="star">明星</a>
+            <a class="gm-cat-chip" href="/browse.html?type=film" data-type="film">影视</a>
+            <a class="gm-cat-chip" href="/browse.html?type=freshness" data-type="freshness">小清新</a>
+            <a class="gm-cat-chip" href="/browse.html?type=cool" data-type="cool">炫酷</a>
+            <a class="gm-cat-chip" href="/browse.html?type=car" data-type="car">汽车</a>
+            <a class="gm-cat-chip" href="/browse.html?type=affection" data-type="affection">爱情</a>
+            <a class="gm-cat-chip" href="/browse.html?type=text" data-type="text">文字</a>
+            <a class="gm-cat-chip" href="/browse.html?type=holiday" data-type="holiday">节日</a>
+            <a class="gm-cat-chip" href="/browse.html?type=calendar" data-type="calendar">日历</a>
+            <a class="gm-cat-chip" href="/browse.html?type=baby" data-type="baby">婴儿</a>
+            <a class="gm-cat-chip" href="/browse.html?type=hd" data-type="hd">高清</a>
+            <a class="gm-cat-chip" href="/browse.html?type=sports" data-type="sports">体育</a>
+            <a class="gm-cat-chip" href="/browse.html?type=mcj" data-type="mcj">MCJ</a>
+          </div>
+        </div>
+
         <div class="gm-toolbar">
           <span class="muted" id="gmCount">全部高清壁纸，点「加载更多」或下滑自动加载</span>
           <label class="gm-sort">
@@ -163,7 +204,7 @@
   <script src="/assets/js/tracker.js?v=2026.10.22"></script>
   <script src="/assets/js/app.js?v=2026.10.22"></script>
   <script src="/assets/js/detail-set.js"></script>
-  <script src="/assets/js/gallery.js?v=2026.10.22"></script>
+  <script src="/assets/js/gallery.js?v=2026.10.28"></script>
   <script>window.AdSlotsConfig={site:"img-fangkelianmeng",fallbackSrc:'data/ad-slots.json'};</script>
   <script src="/assets/js/coupon-slot.js?v=2026.10.22" defer></script>
   <script src="/assets/js/ad-slots.js?v=2026.10.22" defer></script>

@@ -604,6 +604,7 @@
       var moreBtn = $('#gmMore');
       if (grid) loadImages(grid, stateEl, moreBtn, false);
       if (global.Tracker) global.Tracker.track('search', { keyword: kw });
+      syncBrowseUrl();
     }
 
     formEl.addEventListener('submit', function (e) {
@@ -647,6 +648,17 @@
     selectEl.addEventListener('change', function () {
       if (onChange) onChange(selectEl.value);
     });
+  }
+
+  /* 筛选状态回写 URL（仅 browse 页）：分类/搜索/排序可分享、可前进后退 */
+  function syncBrowseUrl() {
+    if (!doc.body || doc.body.getAttribute('data-page') !== 'browse') return;
+    var p = new URLSearchParams();
+    if (state.type) p.set('type', state.type);
+    if (state.mode === 'search' && state.keyword) p.set('s', state.keyword);
+    if (state.sort && state.sort !== '_add_time') p.set('sort', state.sort);
+    var q = p.toString();
+    try { history.replaceState(null, '', location.pathname + (q ? '?' + q : '')); } catch (e) {}
   }
 
   /* ------------------------------ 工具函数 ------------------------------ */
@@ -730,12 +742,14 @@
       state.mode = type ? 'category' : 'home';
       loadImages(grid, stateEl, moreBtn, false);
       if (global.Tracker) global.Tracker.track('category_pick', { type: type || 'all' });
+      syncBrowseUrl();
     });
 
     // 排序
     initSort(sortEl, function (val) {
       state.sort = val || '_add_time';
       loadImages(grid, stateEl, moreBtn, false);
+      syncBrowseUrl();
     });
 
     // 加载更多 + 滚到底部自动加载
@@ -779,6 +793,8 @@
     var params = new URLSearchParams(global.location.search);
     var urlType = params.get('type');
     var urlSearch = params.get('s') || params.get('keyword');
+    var urlSort = params.get('sort');
+    if (urlSort && sortEl) { sortEl.value = urlSort; state.sort = urlSort; }
     if (urlSearch) {
       state.mode = 'search';
       state.keyword = urlSearch;
