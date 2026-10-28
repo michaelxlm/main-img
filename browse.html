@@ -98,6 +98,7 @@
             <button class="gm-his-chip" type="button">极简</button>
           </div>
           <div class="gm-his" id="gmHistory" hidden></div>
+          <p class="gm-facet-label" id="gmCatsLabel">分类</p>
           <div class="gm-cats" id="gmCats" aria-label="分类筛选">
             <a class="gm-cat-chip is-active" href="/browse.html" data-type="">全部</a>
             <a class="gm-cat-chip" href="/browse.html?type=anime" data-type="anime">动漫</a>
@@ -122,6 +123,13 @@
             <a class="gm-cat-chip" href="/browse.html?type=sports" data-type="sports">体育</a>
             <a class="gm-cat-chip" href="/browse.html?type=mcj" data-type="mcj">MCJ</a>
           </div>
+          <div class="gm-facet" id="gmSizes" role="group" aria-label="画质大小筛选">
+            <span class="gm-facet-label">画质 / 大小</span>
+            <button class="gm-size-chip is-active" type="button" data-size="">不限</button>
+            <button class="gm-size-chip" type="button" data-size="uhd">超清 ≥ 1MB</button>
+            <button class="gm-size-chip" type="button" data-size="hd">高清 300KB–1MB</button>
+            <button class="gm-size-chip" type="button" data-size="sd">精选 &lt; 300KB</button>
+          </div>
         </div>
 
         <div class="gm-toolbar">
@@ -136,6 +144,7 @@
               <option value="collect">收藏最多</option>
             </select>
           </label>
+          <button id="gmReset" class="btn btn-ghost gm-reset" type="button">清除筛选</button>
         </div>
 
         <div id="gmState" class="gm-state" role="status" aria-live="polite" aria-atomic="true" hidden></div>

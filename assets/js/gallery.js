@@ -13,6 +13,13 @@
   var HIS_KEY = 'gm_search_history';
   var PAGE_SIZE = 30;
   var FAV_EMPTY_MSG = '还没有收藏，去首页或热门排行挑选喜欢的壁纸吧';
+  // 画质/体积档（size 字段为字节数）：前端只传档位，档位→min/max 在此映射为后端 rank 的
+  // minSize/maxSize（走 (status,size) 索引）；min=1 天然排除 size=0 的未落库项。
+  var SIZE_BUCKETS = {
+    uhd: { label: '超清', min: 1048576, max: 0 },        // ≥1MB
+    hd: { label: '高清', min: 307200, max: 1048576 },     // 300KB–1MB
+    sd: { label: '精选', min: 1, max: 307200 },           // <300KB
+  };
 
   var doc = global.document;
   function $(sel, root) { return (root || doc).querySelector(sel); }
@@ -152,6 +159,7 @@
     page: 1,
     sort: '',
     type: '',
+    size: '',
     keyword: '',
     loading: false,
     hasMore: true,
@@ -501,6 +509,12 @@
       params.page = state.page;
       params.sort = state.sort || '_add_time';
       if (state.type) params.type = state.type;
+      // 画质/体积 facet（与分类/排序正交叠加）：将档位换算为 minSize/maxSize 传后端 rank
+      var sb = SIZE_BUCKETS[state.size];
+      if (sb) {
+        if (sb.min) params.minSize = sb.min;
+        if (sb.max) params.maxSize = sb.max;
+      }
     }
 
     var timeout = global.setTimeout(function () {
@@ -642,6 +656,30 @@
     });
   }
 
+  /* ------------------------------ 大小/画质 chip（与分类可叠加） ------------------------------ */
+  function initSizes(container, onPick) {
+    if (!container) return;
+    $$('.gm-size-chip', container).forEach(function (chip) {
+      chip.addEventListener('click', function (e) {
+        e.preventDefault();
+        var size = chip.getAttribute('data-size') || '';
+        // 再次点当前非「不限」档 => 取消（回到不限）
+        if (size && size === state.size) size = '';
+        $$('.gm-size-chip', container).forEach(function (c) {
+          c.classList.toggle('is-active', (c.getAttribute('data-size') || '') === size);
+        });
+        if (onPick) onPick(size);
+      });
+    });
+  }
+
+  function activateSize(container, size) {
+    if (!container) return;
+    $$('.gm-size-chip', container).forEach(function (c) {
+      c.classList.toggle('is-active', (c.getAttribute('data-size') || '') === (size || ''));
+    });
+  }
+
   /* ------------------------------ 排序 ------------------------------ */
   function initSort(selectEl, onChange) {
     if (!selectEl) return;
@@ -650,11 +688,12 @@
     });
   }
 
-  /* 筛选状态回写 URL（仅 browse 页）：分类/搜索/排序可分享、可前进后退 */
+  /* 筛选状态回写 URL（仅 browse 页）：分类/大小/搜索/排序可分享、可前进后退 */
   function syncBrowseUrl() {
     if (!doc.body || doc.body.getAttribute('data-page') !== 'browse') return;
     var p = new URLSearchParams();
     if (state.type) p.set('type', state.type);
+    if (state.size) p.set('size', state.size);
     if (state.mode === 'search' && state.keyword) p.set('s', state.keyword);
     if (state.sort && state.sort !== '_add_time') p.set('sort', state.sort);
     var q = p.toString();
@@ -729,6 +768,7 @@
     var historyEl = $('#gmHistory');
     var hotEl = $('#gmHotWords');
     var catContainer = $('#gmCats');
+    var sizeContainer = $('#gmSizes');
     var sortEl = $('#gmSort');
 
     if (!grid) return;
@@ -739,9 +779,18 @@
     // 分类 chip
     initCats(catContainer, function (type) {
       state.type = type;
-      state.mode = type ? 'category' : 'home';
+      state.mode = type ? 'category' : (state.size ? 'browse' : 'home');
       loadImages(grid, stateEl, moreBtn, false);
       if (global.Tracker) global.Tracker.track('category_pick', { type: type || 'all' });
+      syncBrowseUrl();
+    });
+
+    // 大小/画质 chip（与分类叠加）
+    initSizes(sizeContainer, function (size) {
+      state.size = size;
+      if (state.mode !== 'search') state.mode = size || state.type ? (state.type ? 'category' : 'browse') : 'home';
+      loadImages(grid, stateEl, moreBtn, false);
+      if (global.Tracker) global.Tracker.track('size_pick', { size: size || 'any' });
       syncBrowseUrl();
     });
 
@@ -794,7 +843,9 @@
     var urlType = params.get('type');
     var urlSearch = params.get('s') || params.get('keyword');
     var urlSort = params.get('sort');
+    var urlSize = params.get('size');
     if (urlSort && sortEl) { sortEl.value = urlSort; state.sort = urlSort; }
+    if (urlSize && SIZE_BUCKETS[urlSize]) state.size = urlSize;
     if (urlSearch) {
       state.mode = 'search';
       state.keyword = urlSearch;
@@ -812,6 +863,25 @@
     }
 
     loadImages(grid, stateEl, moreBtn, false);
+
+    // 尺寸 chip 初始激活（按 URL 回显）+ 重置按钮
+    activateSize(sizeContainer, state.size);
+    var resetBtn = $('#gmReset');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function () {
+        state.type = '';
+        state.size = '';
+        state.sort = '_add_time';
+        state.keyword = '';
+        state.mode = doc.body.getAttribute('data-page') === 'browse' ? 'browse' : 'home';
+        if (catContainer) $$('.gm-cat-chip', catContainer).forEach(function (c) { c.classList.toggle('is-active', (c.getAttribute('data-type') || '') === ''); });
+        activateSize(sizeContainer, '');
+        if (sortEl) sortEl.value = '_add_time';
+        if (searchInput) searchInput.value = '';
+        loadImages(grid, stateEl, moreBtn, false);
+        syncBrowseUrl();
+      });
+    }
   }
 
   /* ------------------------------ 启动 ------------------------------ */

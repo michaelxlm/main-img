@@ -43,6 +43,21 @@
 .gm-cat-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .gm-cat-chip.is-active { border-color: var(--accent-solid); color: #fff; background: var(--accent-solid); }
 
+/* 多维 facet：维度标签 + 可叠加的大小/画质 chips（复用分类 chip 视觉） */
+.gm-facet-label { margin: 6px 0 8px; font-size: 0.8125rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.02em; }
+.gm-facet { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; }
+.gm-facet .gm-facet-label { margin: 0 4px 0 0; }
+.gm-size-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 14px; min-height: 40px; border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill); background: var(--surface); color: var(--text);
+  font-family: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease, background var(--dur-fast) ease;
+}
+.gm-size-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.gm-size-chip.is-active { border-color: var(--accent-solid); color: #fff; background: var(--accent-solid); }
+.gm-reset { padding: 8px 14px; min-height: 36px; font-size: 0.875rem; }
+
 /* ---------------------------------- 工具栏 ---------------------------------- */
 .gm-toolbar {
   display: flex; flex-wrap: wrap; align-items: center;
