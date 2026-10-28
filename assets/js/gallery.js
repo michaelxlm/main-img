@@ -687,6 +687,15 @@
     });
   }
 
+  /* 分类 chip 初始激活（按 data-type 精确切换，清除「全部」在 HTML 里的硬编码 is-active，避免双高亮） */
+  function activateCats(container, type) {
+    if (!container) return;
+    type = type || '';
+    $$('.gm-cat-chip', container).forEach(function (c) {
+      c.classList.toggle('is-active', (c.getAttribute('data-type') || '') === type);
+    });
+  }
+
   /* ------------------------------ 排序 ------------------------------ */
   function initSort(selectEl, onChange) {
     if (!selectEl) return;
@@ -702,7 +711,8 @@
     if (state.type) p.set('type', state.type);
     if (state.size) p.set('size', state.size);
     if (state.mode === 'search' && state.keyword) p.set('s', state.keyword);
-    if (state.sort && state.sort !== '_add_time') p.set('sort', state.sort);
+    // 排序仅对 rank 生效；search 接口不支持交互排序，搜索态不写入 sort，避免 URL 死参数（与请求不一致）
+    if (state.sort && state.sort !== '_add_time' && state.mode !== 'search') p.set('sort', state.sort);
     var q = p.toString();
     try { history.replaceState(null, '', location.pathname + (q ? '?' + q : '')); } catch (e) {}
   }
@@ -804,6 +814,8 @@
 
     // 排序
     initSort(sortEl, function (val) {
+      // 搜索态：search 接口不支持交互排序，不污染 state.sort、也不写进 URL（避免死参数），保持结果一致
+      if (state.mode === 'search') { if (sortEl) sortEl.value = state.sort || '_add_time'; return; }
       state.sort = val || '_add_time';
       loadImages(grid, stateEl, moreBtn, false);
       syncBrowseUrl();
@@ -852,23 +864,21 @@
     var urlSearch = params.get('s') || params.get('keyword');
     var urlSort = params.get('sort');
     var urlSize = params.get('size');
-    if (urlSort && sortEl) { sortEl.value = urlSort; state.sort = urlSort; }
     if (urlSize && SIZE_BUCKETS[urlSize]) state.size = urlSize;
+    // 关键词与分类正交：此前 type 处理挂在 urlSearch 的 else 分支，?s=&type= 同现时 type 被整体丢弃
+    // （结果集放大、URL 残留死参数、高亮与请求不一致）。改为独立解析 state.type，交由下方统一 chip 激活。
+    if (urlType) state.type = urlType;
     if (urlSearch) {
       state.mode = 'search';
       state.keyword = urlSearch;
       if (searchInput) searchInput.value = urlSearch;
       addSearchHistory(urlSearch);
-    } else if (urlType) {
-      state.mode = 'category';
-      state.type = urlType;
-      // 激活对应 chip（按 data-type 精确切换，清除「全部」在 HTML 里的硬编码 is-active，避免 ?type= 进入时双高亮）
-      if (catContainer) {
-        $$('.gm-cat-chip', catContainer).forEach(function (c) {
-          c.classList.toggle('is-active', c.getAttribute('data-type') === urlType);
-        });
-      }
     }
+    // 排序：搜索态不支持交互排序（rank 专用），回填下拉为默认并复位 state.sort，避免高亮/下拉与请求不一致
+    if (urlSort && sortEl && state.mode !== 'search') { sortEl.value = urlSort; state.sort = urlSort; }
+    else if (sortEl) { sortEl.value = state.sort || '_add_time'; }
+    // 统一激活分类 chip（覆盖 ?type= 与 ?s=&type= 两种入口，与 state.type 严格一致，消除双高亮/死参数）
+    activateCats(catContainer, state.type);
 
     loadImages(grid, stateEl, moreBtn, false);
 
