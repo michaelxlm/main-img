@@ -501,6 +501,12 @@
       params.keyword = state.keyword;
       params.page = state.page;
       if (state.type) params.type = state.type;
+      // 画质/体积 facet 与关键词/分类叠加：换算档位为 minSize/maxSize 传后端 search（现已支持）
+      var sbs = SIZE_BUCKETS[state.size];
+      if (sbs) {
+        if (sbs.min) params.minSize = sbs.min;
+        if (sbs.max) params.maxSize = sbs.max;
+      }
     } else {
       // home | category | browse | rank —— 统一走 rank 接口：
       // 旧实现 home/category 用 sample（随机取样、无 page 游标），既不能分页（“加载更多”返回同
@@ -608,7 +614,8 @@
       addSearchHistory(kw);
       state.mode = 'search';
       state.keyword = kw;
-      state.type = '';
+      // 保留已选分类/画质档：search 接口已支持 type + size 区间，令关键词与二者正交叠加，
+      // 不再清空 state.type/state.size（旧实现清空后端却仍支持，且 chip 高亮/URL 残留成死参数）。
       state.hasMore = true;
       if (inputEl) inputEl.value = kw;
       renderHistory();
@@ -779,7 +786,8 @@
     // 分类 chip
     initCats(catContainer, function (type) {
       state.type = type;
-      state.mode = type ? 'category' : (state.size ? 'browse' : 'home');
+      // 搜索态下点分类：作为叠加维度（关键词×分类），不切出 search 模式；非搜索态沿用原 mode 推断。
+      if (state.mode !== 'search') state.mode = type ? 'category' : (state.size ? 'browse' : 'home');
       loadImages(grid, stateEl, moreBtn, false);
       if (global.Tracker) global.Tracker.track('category_pick', { type: type || 'all' });
       syncBrowseUrl();
