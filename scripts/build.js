@@ -170,15 +170,15 @@ function renderHeader(active) {
 
 function renderFooter() {
   var more = [
-    ['https://xuliming.com/', '明先生日常 · xuliming.com'],
-    ['https://2002cs.com/', 'cs调色盘 · 2002cs.com'],
-    ['https://fangkelianmeng.com/', '访客小站 · fangkelianmeng.com'],
-    ['https://zangeng.com/', '小满手记 · zangeng.com'],
-    ['https://585.ink/', '实测手记 · 585.ink'],
-    ['https://20101115.com/', '年表拾遗 · 20101115.com'],
-    ['https://coupon.zangeng.com/', '小满券仓 · coupon.zangeng.com'],
-    ['https://xuyiheng.com/', '一成长笔记 · xuyiheng.com'],
-    ['https://store.fangkelianmeng.com/', '东北电动车汇 · store.fangkelianmeng.com'],
+    ['https://xuliming.com/?src=hub', '明先生日常 · xuliming.com'],
+    ['https://2002cs.com/?src=hub', 'cs调色盘 · 2002cs.com'],
+    ['https://fangkelianmeng.com/?src=hub', '访客小站 · fangkelianmeng.com'],
+    ['https://zangeng.com/?src=hub', '小满手记 · zangeng.com'],
+    ['https://585.ink/?src=hub', '实测手记 · 585.ink'],
+    ['https://20101115.com/?src=hub', '年表拾遗 · 20101115.com'],
+    ['https://coupon.zangeng.com/?src=hub', '小满券仓 · coupon.zangeng.com'],
+    ['https://xuyiheng.com/?src=hub', '一成长笔记 · xuyiheng.com'],
+    ['https://store.fangkelianmeng.com/?src=hub', '东北电动车汇 · store.fangkelianmeng.com'],
   ].map(function (m) { return '            <li><a href="' + m[0] + '" target="_blank" rel="noopener">' + m[1] + '</a></li>'; }).join('\n');
   return '  <footer class="site-footer">\n    <div class="container">\n      <div class="footer-grid">\n'
     + '        <div class="footer-brand">\n          <a class="brand" href="/">\n            <span class="brand-mark">图</span>\n            <span class="brand-text">' + SITE_NAME + '</span>\n          </a>\n'

@@ -61,6 +61,7 @@
     'gg', 'baidu', 'bing', 'gzh', 'xcx',
     'wx-mp', 'dy-mp', 'ks-mp',
     'juejin', 'zhihu', 'v2ex', 'sspai', 'smzdm', 'sheji', 'shequ', 'mcp-landing',
+    'wx-menu', 'wx-reply', 'wx-qrcode', 'hub', // WO-138 add: wx local-life entries + hub cross-site, keep in sync with CHANNEL_LABELS
   ];
 
   /** 渠道值归一：只保留小写字母/数字/下划线/短横线，且必须在白名单内 */

@@ -1,6 +1,6 @@
 {
   "_note": "已命中的 images.type 分类码登记（build.js 自动维护，防 sample 随机抽样波动导致落地页反复生成/清退）",
-  "updated": "2026-10-22",
+  "updated": "2026-10-30",
   "codes": {
     "4K": "4K",
     "film": "影视",
@@ -22,6 +22,7 @@
     "calendar": "日历",
     "baby": "婴儿",
     "buyers": "买家秀",
-    "hd": "高清"
+    "hd": "高清",
+    "military": "军事"
   }
 }
