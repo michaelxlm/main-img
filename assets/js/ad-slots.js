@@ -203,6 +203,8 @@
     return false;
   }
 
+  // 历史能力保留：carousel 顶部轮播默认不启用，启用时按 placement 过滤候选位
+  // eslint-disable-next-line no-unused-vars
   function matchPlacement(ad, placement) {
     var list = ad.placements;
     if (!list || !list.length) return true;
@@ -425,10 +427,12 @@
 
   /**
    * carousel 渲染：顶部大图轮播（优先带 image 的位），自动切换 + 指示点
+   * 历史能力保留（默认不启用，见文件头的渲染策略说明）
    * @param host
    * @param ads
    * @param placement
    */
+  // eslint-disable-next-line no-unused-vars
   function renderCarousel(host, ads, placement) {
     var doc = global.document;
     var wrap = doc.createElement('div');
