@@ -169,16 +169,19 @@ function renderHeader(active) {
 }
 
 function renderFooter() {
+  // 「更多站点」页脚链接不带 ?src=hub 跟踪参数（owner 1d3bb04 口径：移除全部
+  // 页面该参数）。此前 build 仍生成 src=hub，任何一次全量构建都会把已提交页脚
+  // 回退成带参版本，故此处与基线对齐，杜绝再被构建覆盖。
   var more = [
-    ['https://xuliming.com/?src=hub', '明先生日常 · xuliming.com'],
-    ['https://2002cs.com/?src=hub', 'cs调色盘 · 2002cs.com'],
-    ['https://fangkelianmeng.com/?src=hub', '访客小站 · fangkelianmeng.com'],
-    ['https://zangeng.com/?src=hub', '小满手记 · zangeng.com'],
-    ['https://585.ink/?src=hub', '实测手记 · 585.ink'],
-    ['https://20101115.com/?src=hub', '年表拾遗 · 20101115.com'],
-    ['https://coupon.zangeng.com/?src=hub', '小满券仓 · coupon.zangeng.com'],
-    ['https://xuyiheng.com/?src=hub', '一成长笔记 · xuyiheng.com'],
-    ['https://store.fangkelianmeng.com/?src=hub', '东北电动车汇 · store.fangkelianmeng.com'],
+    [ 'https://xuliming.com/', '明先生日常 · xuliming.com' ],
+    [ 'https://2002cs.com/', 'cs调色盘 · 2002cs.com' ],
+    [ 'https://fangkelianmeng.com/', '访客小站 · fangkelianmeng.com' ],
+    [ 'https://zangeng.com/', '小满手记 · zangeng.com' ],
+    [ 'https://585.ink/', '实测手记 · 585.ink' ],
+    [ 'https://20101115.com/', '年表拾遗 · 20101115.com' ],
+    [ 'https://coupon.zangeng.com/', '小满券仓 · coupon.zangeng.com' ],
+    [ 'https://xuyiheng.com/', '一成长笔记 · xuyiheng.com' ],
+    [ 'https://store.fangkelianmeng.com/', '东北电动车汇 · store.fangkelianmeng.com' ],
   ].map(function (m) { return '            <li><a href="' + m[0] + '" target="_blank" rel="noopener">' + m[1] + '</a></li>'; }).join('\n');
   return '  <footer class="site-footer">\n    <div class="container">\n      <div class="footer-grid">\n'
     + '        <div class="footer-brand">\n          <a class="brand" href="/">\n            <span class="brand-mark">图</span>\n            <span class="brand-text">' + SITE_NAME + '</span>\n          </a>\n'
@@ -225,6 +228,30 @@ function staticCard(item, detailSet) {
     + '<div class="gm-overlay-meta">' + (item.width && item.height ? '<span>' + esc(item.width) + '×' + esc(item.height) + '</span>' : '') + '</div>'
     + (tags ? '<div class="gm-tags">' + tags + '</div>' : '')
     + '</div></a>';
+}
+
+// WO-155：列表页（首页 / browse / rank）首屏预渲染上限。全站 33 万图仍走
+// gallery.js 运行时取数，此处仅把首屏若干张热门图静态写入 #gmGrid，供无 JS
+// 爬虫抓取首屏（运行时 JS 会 innerHTML='' 覆盖，不影响交互），与分类/详情页同口径。
+const LIST_PRERENDER = 12;
+
+// 幂等注入：用 SSG:GRID 标记包裹首屏卡片，重跑只替换标记内内容，不叠加。
+// 锚点为仓库内三页的 `<div id="gmGrid" class="gm-grid"></div>`（构建前为空壳）。
+function injectListGrid(file, items, detailSet, limit) {
+  if (!fs.existsSync(file)) return 0;
+  var html = fs.readFileSync(file, 'utf8');
+  var inner = items.slice(0, limit).map(function (it) { return staticCard(it, detailSet); }).join('\n          ');
+  var block = '<!--SSG:GRID-START-->\n          ' + inner + '\n        <!--SSG:GRID-END-->';
+  if (/<!--SSG:GRID-START-->[\s\S]*?<!--SSG:GRID-END-->/.test(html)) {
+    html = html.replace(/<!--SSG:GRID-START-->[\s\S]*?<!--SSG:GRID-END-->/, block);
+  } else {
+    var replaced = html.replace(/<div id="gmGrid" class="gm-grid"><\/div>/,
+      '<div id="gmGrid" class="gm-grid">' + block + '</div>');
+    if (replaced === html) return 0; // 锚点未命中（页面结构已变）→ 不动文件
+    html = replaced;
+  }
+  fs.writeFileSync(file, html, 'utf8');
+  return Math.min(items.length, limit);
 }
 
 /* ------------------------------ 分类落地页 ------------------------------ */
@@ -598,6 +625,17 @@ async function main() {
     // 4. detail-set.js（供运行时灯箱判定可跳转详情页）
     fs.writeFileSync(path.join(ROOT, 'assets', 'js', 'detail-set.js'),
       'window.GM_DETAIL_IDS=' + JSON.stringify(detailSet) + ';\n', 'utf8');
+
+    // 4b. WO-155：首页 / browse / rank 列表页首屏预渲染。取详情页精选集 picked
+    //     （已按质量门槛筛过、且全部在 detailSet 内）→ 静态卡片稳定内链 /p/ 详情页，
+    //     与分类页内链同口径；不用裸下载榜头部（多为无 title/tags 的未命名图，内链退化成 browse?type=）。
+    if (picked.length) {
+      console.log('\nPrerendering list-page first screen...');
+      [ 'index.html', 'browse.html', 'rank.html' ].forEach(function (f) {
+        var n = injectListGrid(path.join(ROOT, f), picked, detailSet, LIST_PRERENDER);
+        console.log('  ' + f + ' → 注入首屏 ' + n + ' 张');
+      });
+    }
   } else {
     console.log('\nAPI 不可达，跳过预渲染（仅重写主页面 sitemap，保留既有生成页）。');
   }
