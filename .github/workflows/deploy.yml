@@ -22,8 +22,18 @@ jobs:
       - name: Encoding gate (UTF-8 only)
         shell: bash
         run: |
-          # 八站统一编码门禁（静态网站字符编码规范）：非 UTF-8/带 BOM 即中断部署，防乱码上线
-          node scripts/check-encoding.js
+          # 十站统一编码门禁（静态网站字符编码规范）：非 UTF-8/带 BOM 即中断部署，防乱码上线
+          NODE=/www/server/nodejs/v20.18.3/bin/node
+          [ -x "$NODE" ] || NODE=node
+          $NODE scripts/check-encoding.js
+      - name: Build (cache-bust ?v + prerender landing pages)
+        shell: bash
+        run: |
+          NODE=/www/server/nodejs/v20.18.3/bin/node
+          [ -x "$NODE" ] || NODE=node
+          echo "[info] node: $NODE ($($NODE -v))"
+          # 预渲染分类/详情落地页 + 扩量 sitemap；API 不可达时降级为仅重写主页面（不阻断部署）
+          $NODE scripts/build.js || echo "[warn] build.js 降级：API 不可达，保留仓库原页面"
       - name: Sync to /www/wwwroot/img.fangkelianmeng.com
         shell: bash
         run: |
