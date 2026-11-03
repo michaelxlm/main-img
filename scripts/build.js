@@ -169,27 +169,33 @@ function renderHeader(active) {
 }
 
 function renderFooter() {
-  // 「更多站点」页脚链接不带 ?src=hub 跟踪参数（owner 1d3bb04 口径：移除全部
-  // 页面该参数）。此前 build 仍生成 src=hub，任何一次全量构建都会把已提交页脚
-  // 回退成带参版本，故此处与基线对齐，杜绝再被构建覆盖。
+  // 「更多站点」跟其他站一样带 ?src=hub：这是归因字典里的「九站互推」渠道
+  // （main-api/app/utils/channelSrcHelper.js），不带参的页脚互推全部落未归因。
+  // 口径已于 2026-11-03 定回“带 hub”并归位到单源 main-api/shared/partials；旧注释
+  //（owner 1d3bb04 “移除全部页面该参数”）作废。本页硬编码需与单源一致，否则
+  // sync-more-sites --check 会与本构建产物互相覆盖（就是当初 142/149 页漂移的同款成因）。
+  // sync-more-sites.js --write 对 main-img 生成的「更多站点」块是逐字节不动点：
+  //   </h4> 后换行、<ul> 顶格（缩进 0）、每个 <li> 缩进 2 空格、</ul> 顶格。
+  //   本构建产物必须产出同一结构，否则 build.js 与守卫会轮流覆盖（当初 142/149
+  //   页漂移的同款病根）。条目与单源 SISTER_SITES 一致（已按本站域名 img.fangkelianmeng.com 自我排除）。
   var more = [
-    [ 'https://xuliming.com/', '明先生日常 · xuliming.com' ],
-    [ 'https://2002cs.com/', 'cs调色盘 · 2002cs.com' ],
-    [ 'https://fangkelianmeng.com/', '访客小站 · fangkelianmeng.com' ],
-    [ 'https://zangeng.com/', '小满手记 · zangeng.com' ],
-    [ 'https://585.ink/', '实测手记 · 585.ink' ],
-    [ 'https://20101115.com/', '年表拾遗 · 20101115.com' ],
-    [ 'https://coupon.zangeng.com/', '小满券仓 · coupon.zangeng.com' ],
-    [ 'https://xuyiheng.com/', '一成长笔记 · xuyiheng.com' ],
-    [ 'https://store.fangkelianmeng.com/', '东北电动车汇 · store.fangkelianmeng.com' ],
-  ].map(function (m) { return '            <li><a href="' + m[0] + '" target="_blank" rel="noopener">' + m[1] + '</a></li>'; }).join('\n');
+    [ 'https://xuliming.com/?src=hub', '明先生日常 · xuliming.com' ],
+    [ 'https://2002cs.com/?src=hub', 'cs调色盘 · 2002cs.com' ],
+    [ 'https://fangkelianmeng.com/?src=hub', '访客小站 · fangkelianmeng.com' ],
+    [ 'https://zangeng.com/?src=hub', '小满手记 · zangeng.com' ],
+    [ 'https://585.ink/?src=hub', '实测手记 · 585.ink' ],
+    [ 'https://20101115.com/?src=hub', '年表拾遗 · 20101115.com' ],
+    [ 'https://coupon.zangeng.com/?src=hub', '小满券仓 · coupon.zangeng.com' ],
+    [ 'https://xuyiheng.com/?src=hub', '一成长笔记 · xuyiheng.com' ],
+    [ 'https://store.fangkelianmeng.com/?src=hub', '东北电动车汇 · store.fangkelianmeng.com' ],
+  ].map(function (m) { return '  <li><a href="' + m[0] + '" target="_blank" rel="noopener">' + m[1] + '</a></li>'; }).join('\n');
   return '  <footer class="site-footer">\n    <div class="container">\n      <div class="footer-grid">\n'
     + '        <div class="footer-brand">\n          <a class="brand" href="/">\n            <span class="brand-mark">图</span>\n            <span class="brand-text">' + SITE_NAME + '</span>\n          </a>\n'
     + '          <p>高清壁纸图片精选，发现美图，装点屏幕</p>\n          <div class="footer-contact"><h4>联系</h4><ul>\n'
     + '            <li><a href="mailto:xlm8826@gmail.com">xlm8826@gmail.com</a></li>\n            <li><a href="https://antucao.com" target="_blank" rel="noopener">反馈 / 其他 → antucao.com</a></li>\n          </ul></div>\n        </div>\n'
     + '        <div class="footer-col"><h4>站点</h4><ul>\n'
     + '          <li><a href="/">首页</a></li>\n          <li><a href="/browse.html">全部图片</a></li>\n          <li><a href="/rank.html">热门排行</a></li>\n          <li><a href="/category.html">分类浏览</a></li>\n          <li><a href="/favorites.html">我的收藏</a></li>\n          <li><a href="/about.html">关于与免责</a></li>\n        </ul></div>\n'
-    + '        <div class="footer-col"><h4>更多站点</h4><ul>\n' + more + '\n        </ul></div>\n      </div>\n'
+    + '        <div class="footer-col"><h4>更多站点</h4>\n<ul>\n' + more + '\n</ul></div>\n      </div>\n'
     + '      <div class="container"><div class="ad-slot" data-ad-slot="footer"></div></div>\n'
     + '      <div class="footer-bottom"><span>© 2026 ' + SITE_NAME + '</span><div class="footer-links"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">京ICP备18062653号-23</a></div></div>\n    </div>\n  </footer>\n';
 }
