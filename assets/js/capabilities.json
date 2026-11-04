@@ -1,0 +1,110 @@
+{
+  "version": "1.1.0",
+  "updated": "2026-10-11",
+  "source": "main-api/app/docs/knowledge-base/05-项目优化建议.md §Part 6 五 功能归属与迁移总览（原 07 已并入）；工单见 11-开发任务清单.md §4.2",
+  "note": "跨站能力单一事实源。每站对外可嵌入能力唯一清单，供前端软互联出站组件（WO-83）与功能落点评估脚本 feature-placement.js（WO-79）同一份数据消费。改动本文件即六站同步。",
+  "fieldLegend": {
+    "site": "承载站点",
+    "capability": "能力标识（机器可读）",
+    "label": "展示名",
+    "entryUrl": "直达 URL",
+    "embedMode": "接线方式：copy-link（软互联）| iframe（H5 硬内嵌，按 embedAllowlist 放行）| web-view（小程序，永依 E7 不内嵌 H5）",
+    "hostConstraint": "宿主约束（引用 07/09 结论，不重述）",
+    "embedParam": "已落地的嵌入参数（如有）",
+    "namespace": "已模块化的全局命名空间（如有）",
+    "status": "live（可即刻接线）| blocked（仍受限，如 E7 小程序不内嵌）| planned（规划中）"
+  },
+  "embedAllowlist": {
+    "note": "H5 端 iframe / web-view 硬内嵌的跨站域名业务白名单（WO-84）。仅列于此的站点 origin 可被本站内嵌；小程序端永依 E7 不内嵌 H5，本白名单只对 H5 生效。域名备案接入（WO-56）不作为本白名单开关——按业务直接放行，服务端各站 nginx 以 CSP frame-ancestors 同步放行这些 origin。",
+    "origins": {
+      "color-tool": "https://2002cs.com",
+      "visitor": "https://fangkelianmeng.com",
+      "aiWeb": "https://xuliming.com",
+      "main-tool": "https://xuyiheng.com",
+      "notes": "https://585.ink",
+      "history": "https://20101115.com",
+      "zangeng": "https://zangeng.com",
+      "coupon": "https://coupon.zangeng.com",
+      "main-store": "https://2002cs.com"
+    }
+  },
+  "capabilities": [
+    {
+      "site": "color-tool",
+      "capability": "palette-picker",
+      "label": "配色 / 取色",
+      "entryUrl": "https://2002cs.com/color-wheel.html",
+      "embedMode": "copy-link | iframe",
+      "hostConstraint": "E7：小程序不内嵌 H5（走复制链接）；H5 端可 iframe（命中 embedAllowlist 即放行）",
+      "embedParam": "?embed=1",
+      "namespace": null,
+      "status": "live"
+    },
+    {
+      "site": "visitor",
+      "capability": "text-tools",
+      "label": "文本 / 编码 / JSON / 时间戳 / 哈希等实用工具",
+      "entryUrl": "https://fangkelianmeng.com/json.html",
+      "embedMode": "copy-link | iframe",
+      "hostConstraint": "E7：小程序不内嵌 H5；H5 端可 iframe / 脚本引用",
+      "embedParam": null,
+      "namespace": "window.VisitorCore",
+      "status": "live"
+    },
+    {
+      "site": "visitor",
+      "capability": "visitor-info",
+      "label": "访客 / IP 信息检测",
+      "entryUrl": "https://fangkelianmeng.com/",
+      "embedMode": "copy-link | iframe",
+      "hostConstraint": "E7：小程序不内嵌 H5；H5 端可嵌入采集组件",
+      "embedParam": null,
+      "namespace": "window.VisitorLite",
+      "status": "live"
+    },
+    {
+      "site": "aiWeb",
+      "capability": "site-wizard",
+      "label": "建站向导 / SEO 内容 / 教程",
+      "entryUrl": "https://xuliming.com/",
+      "embedMode": "copy-link",
+      "hostConstraint": "不进小程序（无收录价值）；仅网站承载吃搜索长尾",
+      "embedParam": null,
+      "namespace": null,
+      "status": "live"
+    },
+    {
+      "site": "main-store",
+      "capability": "mall-model",
+      "label": "电动车 / 车型 / 商城",
+      "entryUrl": "https://2002cs.com/store/",
+      "embedMode": "copy-link | web-view",
+      "hostConstraint": "小程序为主端（web-view 永依 E7 不内嵌）；H5 端可 iframe（命中 embedAllowlist 即放行），交易走京东外部、站内不支付",
+      "embedParam": "?embed=1",
+      "namespace": null,
+      "status": "live"
+    },
+    {
+      "site": "main-tool",
+      "capability": "content-share",
+      "label": "美图 / 文案 / 工具聚合",
+      "entryUrl": "https://xuyiheng.com/",
+      "embedMode": "copy-link | iframe",
+      "hostConstraint": "生产在网站/中台吃收录，小程序消费 + 分享卡片吃裂变",
+      "embedParam": null,
+      "namespace": null,
+      "status": "live"
+    },
+    {
+      "site": "notes",
+      "capability": "official-site",
+      "label": "产品官网 / 留资转化",
+      "entryUrl": "https://585.ink/",
+      "embedMode": "copy-link",
+      "hostConstraint": "官网形态，承接被发现→留资，不参与工具划分",
+      "embedParam": null,
+      "namespace": null,
+      "status": "live"
+    }
+  ]
+}

@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 /* ==========================================================================
-   check-wcag.js · accent 白字对比度门禁（审计 T4，零依赖 Node 18+）
+   check-wcag.js · 反色字对比度门禁（审计 T4，零依赖 Node 18+）
+   store-web 变体（品牌主色直校：--primary / --primary-strong，单亮色主题）。
    校验两件事：
-     1. 令牌层：每个主题作用域（:root / [data-theme="dark"] / 大促皮肤等）里
-        --accent-solid 必须存在且对白色对比度 ≥4.5:1（--accent-solid-hover 可选，定义了才校）；
-     2. 载体层：配置清单内的选择器，若声明里有白字（#fff/white），其 background
-        不得直接用 var(--accent)/var(--accent-strong)，必须走 var(--accent-solid[-hover])。
+     1. 令牌层：:root 里承载白字的品牌色令牌（--primary、--primary-strong）
+        对 #ffffff 的对比度必须 ≥4.5:1；
+     2. 载体层：反色字载体的 background 不得使用未验证的辅助色
+        --accent（#007AFF 白字约 4.0:1，不达标），必须走已校对的品牌主色。
    用法：node scripts/check-wcag.js          （独立跑，违例 exit 1）
-        require('./check-wcag')()            （被 check.js 集成，返回违例数组）
+        require('./check-wcag')()            （被 check 链集成，返回违例数组）
    ========================================================================== */
 
 'use strict';
@@ -17,24 +18,30 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 
-/* ---------------------------- 每站配置 ---------------------------- */
+/* ---------------------------- 本站配置 ---------------------------- */
 const CONFIG = {
-  cssFiles: ['assets/css/main.css', 'assets/css/gallery.css'],
-  // 必须定义 --accent-solid 的主题作用域（选择器全文精确匹配）
-  solidScopes: [':root', '[data-theme="dark"]'],
-  // 白字载体选择器（子串匹配）；命中且规则含白字时，background 必须用 solid
+  cssDir: 'assets/css',
+  // 令牌层：作用域内 bg 令牌 × 反色字（fg 为 -- 开头时到同作用域查找，回退 :root）
+  pairs: [
+    { scope: ':root', bg: '--primary', fg: '#ffffff' },
+    { scope: ':root', bg: '--primary-strong', fg: '#ffffff' },
+  ],
+  // 反色字载体选择器（子串匹配）
   carriers: [
     '.skip-link',
+    '.header-search button',
+    '.header-cta',
     '.btn-primary',
-    '.brand-mark',
-    '.gm-search button',
-    '.gm-cat-chip.is-active',
-    '.gm-lightbox-dl',
+    '.tab.is-active',
+    '.merchant-pick-check',
+    '.merchant-plan-flag',
   ],
+  // 不保证反色字达标的辅助色：反色字载体背景出现即违例
+  badBgTokens: ['--accent'],
   minContrast: 4.5,
 };
 
-/* ---------------------------- WCAG 工具 ---------------------------- */
+/* ---------------------------- 对比度工具 ---------------------------- */
 function hexToRgb(hex) {
   const h = hex.trim().replace('#', '');
   const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
@@ -50,13 +57,29 @@ function luminance(hex) {
   });
   return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
 }
-function contrastWithWhite(hex) {
-  const l = luminance(hex);
-  if (l === null) return null;
-  return (1.05) / (l + 0.05);
+function contrast(a, b) {
+  const la = luminance(a);
+  const lb = luminance(b);
+  if (la === null || lb === null) return null;
+  const [hi, lo] = la >= lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
 }
 
 /* ---------------------------- CSS 解析 ---------------------------- */
+function collectCssFiles() {
+  const base = path.join(ROOT, CONFIG.cssDir);
+  const out = [];
+  (function walk(dir) {
+    for (const name of fs.readdirSync(dir)) {
+      const p = path.join(dir, name);
+      if (fs.statSync(p).isDirectory()) { walk(p); continue; }
+      if (name.endsWith('.css') && !name.endsWith('.min.css')) {
+        out.push(path.relative(ROOT, p).split(path.sep).join('/'));
+      }
+    }
+  })(base);
+  return out.sort();
+}
 function stripComments(css) {
   return css.replace(/\/\*[\s\S]*?\*\//g, '');
 }
@@ -72,53 +95,52 @@ function cssRules(css) {
   }
   return out;
 }
+// 取某作用域内某令牌的 hex 值（多个同名规则取首个命中）
+function tokenValue(rules, scope, token) {
+  const re = new RegExp(token + '\\s*:\\s*(#[0-9a-fA-F]{3,6})');
+  for (const r of rules) {
+    if (r.selector !== scope) continue;
+    const m = r.body.match(re);
+    if (m) return m[1];
+  }
+  return null;
+}
 
 /* ---------------------------- 检查项 ---------------------------- */
 function run() {
   const problems = [];
-  let allRules = [];
-  for (const f of CONFIG.cssFiles) {
-    const full = path.join(ROOT, f);
-    if (!fs.existsSync(full)) { problems.push(`缺少样式文件 ${f}`); continue; }
-    allRules = allRules.concat(cssRules(stripComments(fs.readFileSync(full, 'utf8'))));
+  let rules = [];
+  for (const f of collectCssFiles()) {
+    rules = rules.concat(cssRules(stripComments(fs.readFileSync(path.join(ROOT, f), 'utf8'))));
   }
 
-  // 1. 令牌层：每个作用域都要有达标的 solid 令牌（hover 可选，定义了才校）
-  for (const scope of CONFIG.solidScopes) {
-    for (const token of ['--accent-solid', '--accent-solid-hover']) {
-      const required = token === '--accent-solid';
-      const vals = [];
-      for (const r of allRules) {
-        if (r.selector !== scope) continue;
-        const re = new RegExp(token + '\\s*:\\s*(#[0-9a-fA-F]{3,6})', 'g');
-        let m;
-        while ((m = re.exec(r.body)) !== null) vals.push(m[1]);
-      }
-      if (!vals.length) {
-        if (required) problems.push(`${scope} 缺少 ${token}（白字专用深阶，审计 T4）`);
-        continue;
-      }
-      for (const hex of vals) {
-        const c = contrastWithWhite(hex);
-        if (c === null) { problems.push(`${scope} ${token}: ${hex} 不是合法 hex`); continue; }
-        if (c < CONFIG.minContrast) {
-          problems.push(`${scope} ${token}: ${hex} 对白字对比度 ${c.toFixed(2)} < ${CONFIG.minContrast}（审计 T4）`);
-        }
-      }
+  // 1. 令牌层：白字背景令牌的对比度
+  for (const { scope, bg, fg } of CONFIG.pairs) {
+    const bgHex = tokenValue(rules, scope, bg);
+    if (!bgHex) { problems.push(`${scope} 缺少 ${bg}（品牌主色令牌，审计 T4）`); continue; }
+    let fgHex = fg;
+    if (fg.startsWith('--')) {
+      fgHex = tokenValue(rules, scope, fg) || tokenValue(rules, ':root', fg);
+      if (!fgHex) { problems.push(`${scope} 缺少 ${fg}（反色字令牌，审计 T4）`); continue; }
+    }
+    const c = contrast(bgHex, fgHex);
+    if (c === null) { problems.push(`${scope} ${bg}: ${bgHex} 或 ${fg}: ${fgHex} 不是合法 hex`); continue; }
+    if (c < CONFIG.minContrast) {
+      problems.push(`${scope} ${bg}(${bgHex}) 与 ${fg}(${fgHex}) 对比度 ${c.toFixed(2)} < ${CONFIG.minContrast}（审计 T4）`);
     }
   }
 
-  // 2. 载体层：白字载体的 background 必须走 solid
-  const WHITE_RE = /color:\s*(#fff\b|#ffffff\b|white\b|var\(--on-accent\))/i;
-  const BAD_BG_RE = /var\(--accent(-strong)?\)/;
-  const SOLID_BG_RE = /var\(--accent-solid(-hover)?\)/;
-  for (const r of allRules) {
+  // 2. 载体层：反色字载体的 background 不得用未验证辅助色
+  const INVERSE_RE = /color:\s*(#fff\b|#ffffff\b|white\b|var\(--on-primary\))/i;
+  for (const r of rules) {
     if (!CONFIG.carriers.some((c) => r.selector.includes(c))) continue;
-    if (!WHITE_RE.test(r.body)) continue; // 非白字载体（如描边/软底）不强制
+    if (!INVERSE_RE.test(r.body)) continue; // 非反色字载体（软底/描边）不强制
     const bg = (r.body.match(/background(-image)?:\s*[^;]*/g) || []).join(';');
     if (!bg) continue;
-    if (BAD_BG_RE.test(bg) && !SOLID_BG_RE.test(bg)) {
-      problems.push(`载体 ${r.selector} 的白字 background 仍用 var(--accent)/--accent-strong，应改 var(--accent-solid)（审计 T4）`);
+    for (const t of CONFIG.badBgTokens) {
+      if (bg.includes('var(' + t + ')')) {
+        problems.push(`载体 ${r.selector} 反色字背景用了未验证的 var(${t})，应改 var(--primary)（审计 T4）`);
+      }
     }
   }
 
@@ -130,7 +152,7 @@ module.exports = run;
 if (require.main === module) {
   const problems = run();
   if (!problems.length) {
-    console.log('[check-wcag] ✓ accent 白字对比度门禁通过（令牌达标 + 载体全走 solid）');
+    console.log('[check-wcag] ✓ 品牌主色白字门禁通过（--primary/--primary-strong 达标 + 载体无未验证色）');
   } else {
     for (const p of problems) console.error('[check-wcag] ✗ ' + p);
     console.error(`[check-wcag] ${problems.length} 处违例`);
