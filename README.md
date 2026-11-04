@@ -1,3 +1,12 @@
+---
+title: 小满美图（img.fangkelianmeng.com）
+owner: Michaelxlm
+updated: 2026-11-04
+scope: main-img
+status: 有效
+tags: [main-img, 静态站]
+---
+
 # 小满美图（img.fangkelianmeng.com）
 
 高清壁纸图片精选站，汇聚海量精美壁纸，支持搜索、分类浏览与热门排行。
