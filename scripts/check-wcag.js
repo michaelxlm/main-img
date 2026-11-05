@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /* ==========================================================================
    check-wcag.js · 反色字对比度门禁（审计 T4，零依赖 Node 18+）
-   store-web 变体（品牌主色直校：--primary / --primary-strong，单亮色主题）。
+   按站点分派配置（ROOT 目录名登记）：默认 store-web 变体直校
+   --primary / --primary-strong；zangeng 变体直校 --accent-solid 体系。
    校验两件事：
-     1. 令牌层：:root 里承载白字的品牌色令牌（--primary、--primary-strong）
-        对 #ffffff 的对比度必须 ≥4.5:1；
+     1. 令牌层：:root 里承载白字的品牌色令牌对 #ffffff 的对比度必须 ≥4.5:1；
      2. 载体层：反色字载体的 background 不得使用未验证的辅助色
-        --accent（#007AFF 白字约 4.0:1，不达标），必须走已校对的品牌主色。
+        --accent（亮阶主色，白字约 4.0-4.4:1 不达标），必须走已校对的深阶令牌。
    用法：node scripts/check-wcag.js          （独立跑，违例 exit 1）
         require('./check-wcag')()            （被 check 链集成，返回违例数组）
    ========================================================================== */
@@ -19,7 +19,29 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 
 /* ---------------------------- 本站配置 ---------------------------- */
-const CONFIG = {
+// 站点专属配置：新站令牌命名与默认不同时在此登记（键 = 站点目录名）
+const SITE_CONFIGS = {
+  zangeng: {
+    // 令牌层：作用域内 bg 令牌 × 反色字（fg 为 -- 开头时到同作用域查找，回退 :root）
+    pairs: [
+      { scope: ':root', bg: '--accent-solid', fg: '#ffffff' },
+      { scope: ':root', bg: '--accent-solid-hover', fg: '#ffffff' },
+    ],
+    // 反色字载体选择器（子串匹配）
+    carriers: [
+      '.skip-link',
+      '.btn-primary',
+      '.brand-mark',
+      '.plan-badge',
+      '.filter-chips .chip.is-active',
+      '.dialogue-msg--user .dialogue-bubble',
+    ],
+    // 不保证反色字达标的辅助色：反色字载体背景出现即违例（--accent #3b6cff 白字约 4.40:1）
+    badBgTokens: ['--accent'],
+  },
+};
+
+const DEFAULT_CONFIG = {
   cssDir: 'assets/css',
   // 令牌层：作用域内 bg 令牌 × 反色字（fg 为 -- 开头时到同作用域查找，回退 :root）
   pairs: [
@@ -36,10 +58,12 @@ const CONFIG = {
     '.merchant-pick-check',
     '.merchant-plan-flag',
   ],
-  // 不保证反色字达标的辅助色：反色字载体背景出现即违例
+  // 不保证反色字达标的辅助色：反色字载体背景出现即违例（--accent #007AFF 白字约 4.0:1）
   badBgTokens: ['--accent'],
   minContrast: 4.5,
 };
+
+const CONFIG = Object.assign({}, DEFAULT_CONFIG, SITE_CONFIGS[path.basename(ROOT)]);
 
 /* ---------------------------- 对比度工具 ---------------------------- */
 function hexToRgb(hex) {
