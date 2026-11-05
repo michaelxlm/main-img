@@ -219,9 +219,11 @@
       flushTimer = null;
     }
     if (!queue.length) return;
-    var events = queue.slice(0, CONFIG.maxBatch);
-    queue = queue.slice(CONFIG.maxBatch);
+    var events = queue.splice(0, CONFIG.maxBatch);
     send(events);
+    // P2-9：剩余事件继续排期冲刷。原实现只发首批 20 条，剩余滞留队列；
+    // 页面关闭时 flush 只执行一次，溢出部分（如高频点击流）直接丢失。滚动排期直到清空。
+    if (queue.length) flushTimer = global.setTimeout(flush, CONFIG.flushInterval);
   }
 
   /**
