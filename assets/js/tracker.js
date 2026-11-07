@@ -76,7 +76,8 @@
     'juejin', 'zhihu', 'v2ex', 'sspai', 'smzdm', 'sheji', 'shequ', 'mcp-landing',
     // WO-138 补齐：微信本地生活入口（wechatLocalCommerce 生成链）+ 九站互推，
     //   与中台 utils/channelSrcHelper.CHANNEL_LABELS 同步登记，客户端不先拦才能到服务端归一
-    'wx-menu', 'wx-reply', 'wx-qrcode', 'hub', 'wx-topic',];
+    'wx-menu', 'wx-reply', 'wx-qrcode', 'hub',
+  ];
 
   /** 渠道值归一：只保留小写字母/数字/下划线/短横线，且必须在白名单内 */
   function normalizeSrc(value) {
