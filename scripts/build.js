@@ -84,9 +84,19 @@ function ossResize(u, w) {
   var proc = gif ? 'image/resize,w_' + w : 'image/resize,w_' + w + '/format,webp/quality,q_80';
   return u + sep + xenc('x-oss-process=' + proc);
 }
+function ossAvif(u, w) {
+  if (!u || u.indexOf('x-oss-process') >= 0) return u;
+  var sep = u.indexOf('?') >= 0 ? '&' : '?';
+  var gif = /\.gif([?#]|$)/i.test(u);
+  if (gif) return u;
+  var proc = 'image/resize,w_' + w + '/format,avif/quality,q_80';
+  return u + sep + xenc('x-oss-process=' + proc);
+}
 function xenc(s) { return encodeURIComponent(s); }
 function thumbUrl(item) { var raw = imgUrl(item); if (!raw) return ''; return isOssUrl(raw) ? ossResize(raw, 400) : raw; }
+function thumbUrlAvif(item) { var raw = imgUrl(item); if (!raw || !isOssUrl(raw) || /\.gif([?#]|$)/i.test(raw)) return ''; return ossAvif(raw, 400); }
 function bigUrl(item) { var raw = imgUrl(item); if (!raw) return ''; return isOssUrl(raw) ? ossResize(raw, 1920) : raw; }
+function bigUrlAvif(item) { var raw = imgUrl(item); if (!raw || !isOssUrl(raw) || /\.gif([?#]|$)/i.test(raw)) return ''; return ossAvif(raw, 1920); }
 
 /* ------------------------------ 文本工具 ------------------------------ */
 function esc(s) {
@@ -228,8 +238,12 @@ function staticCard(item, detailSet) {
   var w = parseInt(item.width, 10) || 400, h = parseInt(item.height, 10) || 300;
   var ratio = w / h; if (ratio < 0.3) ratio = 0.3; if (ratio > 4) ratio = 4;
   var tags = (item.tag || []).slice(0, 3).map(function (t) { return '<span class="gm-tag">' + esc(t) + '</span>'; }).join('');
+  var avif = thumbUrlAvif(item);
+  var imgHtml = avif
+    ? '<picture><source srcset="' + escAttr(avif) + '" type="image/avif"><img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.title || '壁纸') + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '"></picture>'
+    : '<img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.title || '壁纸') + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '">';
   return '<a class="gm-card" href="' + escAttr(href) + '">'
-    + '<img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.title || '壁纸') + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '">'
+    + imgHtml
     + '<div class="gm-overlay"><div class="gm-overlay-title">' + esc(item.title || '未命名壁纸') + '</div>'
     + '<div class="gm-overlay-meta">' + (item.width && item.height ? '<span>' + esc(item.width) + '×' + esc(item.height) + '</span>' : '') + '</div>'
     + (tags ? '<div class="gm-tags">' + tags + '</div>' : '')
@@ -356,6 +370,7 @@ function genDetailPage(item, detailSet, siblings) {
   var keywords = [catName].concat(item.tag || []).concat([item.title]).filter(Boolean).join(',');
   var canonical = '/p/' + id + '.html';
   var big = bigUrl(item);
+  var bigAvif = bigUrlAvif(item);
 
   var metaParts = [];
   if (item.width && item.height) metaParts.push('分辨率 ' + esc(item.width) + '×' + esc(item.height));
@@ -398,7 +413,9 @@ function genDetailPage(item, detailSet, siblings) {
     + (item.desc ? '        <p class="hero-sub">' + esc(item.desc) + '</p>\n' : '')
     + '        <p class="muted" style="margin:6px 0">' + metaHtml + '</p>\n'
     + (tagsHtml ? '        <div class="gm-tags" style="opacity:1;margin:6px 0 16px">' + tagsHtml + '</div>\n' : '')
-    + '        <figure style="margin:0 0 16px"><img src="' + escAttr(big) + '" alt="' + escAttr(item.title || '壁纸') + '" decoding="async" referrerpolicy="no-referrer" style="width:100%;height:auto;border-radius:12px;display:block"></figure>\n'
+    + '        <figure style="margin:0 0 16px">' + (bigAvif
+        ? '<picture><source srcset="' + escAttr(bigAvif) + '" type="image/avif"><img src="' + escAttr(big) + '" alt="' + escAttr(item.title || '壁纸') + '"' + (item.width && item.height ? ' width="' + esc(item.width) + '" height="' + esc(item.height) + '"' : '') + ' decoding="async" referrerpolicy="no-referrer" style="width:100%;height:auto;border-radius:12px;display:block"></picture>'
+        : '<img src="' + escAttr(big) + '" alt="' + escAttr(item.title || '壁纸') + '"' + (item.width && item.height ? ' width="' + esc(item.width) + '" height="' + esc(item.height) + '"' : '') + ' decoding="async" referrerpolicy="no-referrer" style="width:100%;height:auto;border-radius:12px;display:block">') + '</figure>\n'
     + '        <div class="btn-row">\n'
     + '          <a class="btn btn-primary" href="' + escAttr(imgUrl(item)) + '" target="_blank" rel="noopener" download onclick=\'try{fetch("' + opUrl + '",{method:"POST",mode:"cors",keepalive:true,headers:{"Content-Type":"application/json"},body:JSON.stringify({img_id:"' + id.replace(/[^0-9a-fA-F]/g, "") + '",type:"download",inc:1})})}catch(e){}\'>⤓ 下载原图</a>\n'
     + (catSlug ? '          <a class="btn btn-ghost" href="/category/' + esc(catSlug) + '.html">更多' + esc(catName) + '壁纸 →</a>\n' : '')

@@ -81,7 +81,7 @@
   }
 
   // OSS 图片处理（x-oss-process）：缩略图/大图展示统一走 OSS 原图裁剪，
-  // 避免直接拉几 MB 的原图；gif 不转格式（会丢动画）。实测生产 OSS 支持 resize/webp/quality。
+  // 避免直接拉几 MB 的原图；gif 不转格式（会丢动画）。实测生产 OSS 支持 resize/webp/quality/avif。
   function isOssUrl(u) { return !!u && u.indexOf('aliyuncs.com') >= 0; }
   function ossResize(u, w) {
     if (!u || u.indexOf('x-oss-process') >= 0) return u;
@@ -89,6 +89,15 @@
     var gif = /\.gif([?#]|$)/i.test(u);
     var proc = gif ? 'image/resize,w_' + w
       : 'image/resize,w_' + w + '/format,webp/quality,q_80';
+    return u + sep + 'x-oss-process=' + encodeURIComponent(proc);
+  }
+  // AVIF 变体：比 WebP 压缩率更高，现代浏览器优先使用；gif 不转格式
+  function ossAvif(u, w) {
+    if (!u || u.indexOf('x-oss-process') >= 0) return u;
+    var sep = u.indexOf('?') >= 0 ? '&' : '?';
+    var gif = /\.gif([?#]|$)/i.test(u);
+    if (gif) return u; // gif 不支持 AVIF 转码
+    var proc = 'image/resize,w_' + w + '/format,avif/quality,q_80';
     return u + sep + 'x-oss-process=' + encodeURIComponent(proc);
   }
 
@@ -107,16 +116,24 @@
   function thumbUrl(item) {
     if (!item) return '';
     var raw = imgUrl(item);
-    // OSS 原图必可用（rank 接口已过滤 ali_url 非空），裁剪图同源同可用性，优先用它提速省流量；
-    // 非 OSS 存量（理论上极少）才退回 otherUrls[0] 小图。
     if (isOssUrl(raw)) return ossResize(raw, 400);
     return otherThumb(item) || raw;
   }
+  function thumbUrlAvif(item) {
+    if (!item) return '';
+    var raw = imgUrl(item);
+    if (isOssUrl(raw) && !/\.gif([?#]|$)/i.test(raw)) return ossAvif(raw, 400);
+    return '';
+  }
 
-  // 灯箱大图：OSS 图限宽 1920 展示（下载链接仍用原图，不受影响）
   function lightboxImgUrl(item) {
     var raw = imgUrl(item);
     return isOssUrl(raw) ? ossResize(raw, 1920) : raw;
+  }
+  function lightboxImgUrlAvif(item) {
+    var raw = imgUrl(item);
+    if (isOssUrl(raw) && !/\.gif([?#]|$)/i.test(raw)) return ossAvif(raw, 1920);
+    return '';
   }
 
   /* ------------------------------ API 请求 ------------------------------ */
@@ -190,6 +207,7 @@
     card.setAttribute('data-index', index);
 
     var src = thumbUrl(item);
+    var avifSrc = thumbUrlAvif(item);
     var w = parseInt(item.width, 10) || 400;
     var h = parseInt(item.height, 10) || 300;
     // 计算 aspect-ratio，限制在合理范围防止极端比例导致拉伸
@@ -226,7 +244,10 @@
         '<button class="gm-action-btn gm-fav' + favOn + '" data-fav="1" aria-label="收藏" title="收藏">♥</button>' +
         '<a class="gm-action-btn" href="' + escAttr(imgUrl(item)) + '" target="_blank" rel="noopener" aria-label="查看原图" title="查看原图" download>⤓</a>' +
       '</div>' +
-      '<img src="' + escAttr(src) + '" alt="' + escAttr(item.title || '壁纸') + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '">' +
+      (avifSrc
+        ? '<picture><source srcset="' + escAttr(avifSrc) + '" type="image/avif">'
+          + '<img src="' + escAttr(src) + '" alt="' + escAttr(item.title || '壁纸') + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '"></picture>'
+        : '<img src="' + escAttr(src) + '" alt="' + escAttr(item.title || '壁纸') + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '">') +
       '<div class="gm-overlay">' +
         '<div class="gm-overlay-title">' + escHtml(item.title || '未命名壁纸') + '</div>' +
         '<div class="gm-overlay-meta">' +
@@ -350,7 +371,7 @@
       '<div class="gm-lightbox-inner">' +
         '<button class="gm-lightbox-close" aria-label="关闭">✕</button>' +
         '<button class="gm-lightbox-nav gm-lightbox-prev" aria-label="上一张">‹</button>' +
-        '<img class="gm-lightbox-img" src="" alt="">' +
+        '<picture class="gm-lightbox-picture"><source class="gm-lightbox-avif" type="image/avif"><img class="gm-lightbox-img" src="" alt=""></picture>' +
         '<div class="gm-lightbox-info"><div class="gm-lightbox-top"><span class="gm-lightbox-counter"></span><button class="gm-lightbox-fav" type="button" aria-label="收藏">♥</button></div><h3></h3><p></p></div>' +
         '<div class="gm-lightbox-actions">' +
         '<a class="gm-lightbox-dl" href="" target="_blank" rel="noopener" download>⤓ 下载原图</a>' +
@@ -435,13 +456,16 @@
     var item = state.items[lightboxIdx];
     if (!item) return;
     var img = $('.gm-lightbox-img', lightboxEl);
+    var avifSource = $('.gm-lightbox-avif', lightboxEl);
     var title = $('.gm-lightbox-info h3', lightboxEl);
     var meta = $('.gm-lightbox-info p', lightboxEl);
     var dl = $('.gm-lightbox-dl', lightboxEl);
     var detailLink = $('.gm-lightbox-detail', lightboxEl);
     var counter = $('.gm-lightbox-counter', lightboxEl);
     var favBtn = $('.gm-lightbox-fav', lightboxEl);
+    var avifUrl = lightboxImgUrlAvif(item);
     img.src = lightboxImgUrl(item);
+    if (avifSource && avifUrl) avifSource.srcset = avifUrl;
     img.alt = item.title || '壁纸';
     title.textContent = item.title || '未命名壁纸';
     var parts = [];
@@ -704,9 +728,10 @@
     });
   }
 
-  /* 筛选状态回写 URL（仅 browse 页）：分类/大小/搜索/排序可分享、可前进后退 */
+  /* 筛选状态回写 URL（home / browse 页）：分类/大小/搜索/排序可分享、可前进后退 */
   function syncBrowseUrl() {
-    if (!doc.body || doc.body.getAttribute('data-page') !== 'browse') return;
+    var page = doc.body && doc.body.getAttribute('data-page');
+    if (page !== 'browse' && page !== 'home') return;
     var p = new URLSearchParams();
     if (state.type) p.set('type', state.type);
     if (state.size) p.set('size', state.size);

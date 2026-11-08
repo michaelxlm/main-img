@@ -1,7 +1,7 @@
 {
   "_note": "收录观测台账（WO-98）：URL 与 main-img/sitemap.xml 保持一致；本台账只记技术可抓性。sitemap.xml 已提交，按知识库 D-index-backfill（2026-10-22）不人工回填 submitted_at / indexed。indexed 取值：unknown 未核对（默认）/ yes 已收录 / no 未收录 / dropped 收录后掉出。",
   "site": "https://img.fangkelianmeng.com",
-  "updated": "2026-10-30",
+  "updated": "2026-11-08",
   "platforms": [
     "baidu",
     "google"
@@ -95,186 +95,6 @@
       "note": ""
     },
     {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbf514943be8c.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbf4217b57b97.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbf3734035703.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbf2b543e249c.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbf296a41c8d3.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbf222b251825.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbf2054a76eb5.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbf19571a41fd.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbf104b266948.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbe6e2aad2905.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbe632f448e07.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbe627ae4a9cb.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbe5b4ecfa642.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbe572317dd64.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbe4d600fcda0.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbe4c23f94f4d.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbf0d19ca35c0.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbe813d27f1fe.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
       "url": "https://img.fangkelianmeng.com/category/anime.html",
       "lang": "zh",
       "type": "category",
@@ -298,116 +118,6 @@
       "url": "https://img.fangkelianmeng.com/category/car.html",
       "lang": "zh",
       "type": "category",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbe8d3199b1a5.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbe8848e44f74.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbe69194fb87d.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbe583187f078.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/1b9686ec67e95239002f42336b6af102.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/1b9686ec67e95239002f420a15712539.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/9f86c65667e95239002fb65e43aba818.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/9f86c65667e95239002fb65d48d613bb.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/9f86c65667e95239002fb64f05f08ebb.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/9f86c65667e95239002fb64e3a25d2f6.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/9f86c65667e95239002fb64b3bd1b2d4.html",
-      "lang": "zh",
-      "type": "image",
       "http_status": "",
       "in_sitemap": true,
       "indexed": "unknown",
@@ -676,16 +386,6 @@
     },
     {
       "url": "https://img.fangkelianmeng.com/p/d33be42267e9522900315c6e1b7247e0.html",
-      "lang": "zh",
-      "type": "image",
-      "http_status": "",
-      "in_sitemap": true,
-      "indexed": "unknown",
-      "checked_at": "",
-      "submitted_at": ""
-    },
-    {
-      "url": "https://img.fangkelianmeng.com/p/dcffa82467e95251002fbf27469fb542.html",
       "lang": "zh",
       "type": "image",
       "http_status": "",
@@ -1028,6 +728,86 @@
       "url": "https://img.fangkelianmeng.com/category/military.html",
       "lang": "zh",
       "type": "category",
+      "http_status": "",
+      "in_sitemap": true,
+      "indexed": "unknown",
+      "checked_at": "",
+      "submitted_at": ""
+    },
+    {
+      "url": "https://img.fangkelianmeng.com/p/e1cff63567e95225003006cb1b35ba9c.html",
+      "lang": "zh",
+      "type": "image",
+      "http_status": "",
+      "in_sitemap": true,
+      "indexed": "unknown",
+      "checked_at": "",
+      "submitted_at": ""
+    },
+    {
+      "url": "https://img.fangkelianmeng.com/p/e1cff63567e952250030069f41ba2041.html",
+      "lang": "zh",
+      "type": "image",
+      "http_status": "",
+      "in_sitemap": true,
+      "indexed": "unknown",
+      "checked_at": "",
+      "submitted_at": ""
+    },
+    {
+      "url": "https://img.fangkelianmeng.com/p/e1cff63567e95225003006862e02f0ea.html",
+      "lang": "zh",
+      "type": "image",
+      "http_status": "",
+      "in_sitemap": true,
+      "indexed": "unknown",
+      "checked_at": "",
+      "submitted_at": ""
+    },
+    {
+      "url": "https://img.fangkelianmeng.com/p/e1cff63567e952250030067331fea4a2.html",
+      "lang": "zh",
+      "type": "image",
+      "http_status": "",
+      "in_sitemap": true,
+      "indexed": "unknown",
+      "checked_at": "",
+      "submitted_at": ""
+    },
+    {
+      "url": "https://img.fangkelianmeng.com/p/e1cff63567e952250030064c2ca3b516.html",
+      "lang": "zh",
+      "type": "image",
+      "http_status": "",
+      "in_sitemap": true,
+      "indexed": "unknown",
+      "checked_at": "",
+      "submitted_at": ""
+    },
+    {
+      "url": "https://img.fangkelianmeng.com/p/e1cff63567e9522500300605192de62f.html",
+      "lang": "zh",
+      "type": "image",
+      "http_status": "",
+      "in_sitemap": true,
+      "indexed": "unknown",
+      "checked_at": "",
+      "submitted_at": ""
+    },
+    {
+      "url": "https://img.fangkelianmeng.com/p/e1cff63567e95225003005e35d610a97.html",
+      "lang": "zh",
+      "type": "image",
+      "http_status": "",
+      "in_sitemap": true,
+      "indexed": "unknown",
+      "checked_at": "",
+      "submitted_at": ""
+    },
+    {
+      "url": "https://img.fangkelianmeng.com/p/e1cff63567e95225003005c70913ce26.html",
+      "lang": "zh",
+      "type": "image",
       "http_status": "",
       "in_sitemap": true,
       "indexed": "unknown",
