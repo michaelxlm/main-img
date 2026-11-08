@@ -1,0 +1,211 @@
+/* ==========================================================================
+   site-shell.css · 十站展示层统一皮肤（Site Shell Spec v1.0）
+   单一事实源：packages/static-build-kit/shared/site-shell.css
+   由 sync-shell.js 分发到各站 assets/css/site-shell.css，禁止站点内改动。
+   仅作用于 .ss-* / #site-shell-* 组件，不改各站业务样式。
+   ========================================================================== */
+
+:root {
+  --ss-maxw: 1140px;
+  --ss-read: 760px;
+  --ss-brand: #3b6cff;           /* 运行时由 site-shell.js 按注册表覆盖 */
+  --ss-bg: #ffffff;
+  --ss-surface: #f6f8fc;
+  --ss-fg: #1f2937;
+  --ss-muted: #64748b;
+  --ss-line: rgba(15, 23, 42, 0.12);
+  --ss-radius: 14px;
+  --ss-shadow: 0 1px 2px rgba(18, 23, 42, 0.06);
+  --ss-z: 1030;
+}
+
+[data-theme="dark"] {
+  --ss-bg: #0f1623;
+  --ss-surface: #172033;
+  --ss-fg: #e6edf7;
+  --ss-muted: #9aa8bd;
+  --ss-line: rgba(226, 235, 247, 0.16);
+  --ss-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* ---------- 全局收敛：超额推广模块 / 空态 / 覆盖型层 ---------- */
+[data-shell-muted],
+[data-ad-empty] {
+  display: none !important;
+}
+[data-ad-slot],
+[data-coupon-slot],
+[data-img-slot],
+[data-mp-slot] {
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+/* 规范 S4：顶部轮播与页脚广告位默认关闭（原容器保留，门禁仍可检出） */
+[data-ad-slot="carousel"],
+[data-ad-slot="footer"] {
+  display: none !important;
+}
+/* 空态统一不占高（三套历史写法收敛为一条） */
+[data-ad-slot]:empty,
+[data-coupon-slot]:empty,
+[data-img-slot]:empty,
+[data-mp-slot]:empty {
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* ------------------------------ 统一页脚 ------------------------------ */
+.ss-footer,
+footer.ss-footer {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: var(--ss-bg) !important;
+  color: var(--ss-fg) !important;
+  border-top: 1px solid var(--ss-line) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+  text-align: left !important;
+}
+.ss-footer *,
+.ss-footer *::before,
+.ss-footer *::after {
+  box-sizing: border-box;
+}
+.ss-footer a {
+  color: var(--ss-fg) !important;
+  text-decoration: none !important;
+  border: 0 !important;
+  background: none !important;
+}
+.ss-footer a:hover,
+.ss-footer a:focus-visible { color: var(--ss-brand) !important; text-decoration: underline !important; }
+.ss-footer ul { list-style: none !important; margin: 0 !important; padding: 0 !important; }
+.ss-footer h2, .ss-footer h3, .ss-footer h4 { margin: 0 !important; font-weight: 650 !important; color: var(--ss-fg) !important; }
+
+.ss-wrap {
+  max-width: var(--ss-maxw);
+  margin: 0 auto;
+  padding: 32px 20px 24px;
+}
+
+/* 区块 1：相关站点 */
+.ss-related { padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--ss-line); }
+.ss-related-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.ss-related h2 { font-size: 18px !important; }
+.ss-all { color: var(--ss-brand) !important; font-weight: 600; white-space: nowrap; }
+.ss-related > ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 16px !important; }
+.ss-related li { min-width: 0; }
+.ss-related li a {
+  display: block; height: 100%; padding: 14px 16px;
+  border: 1px solid var(--ss-line) !important; border-radius: var(--ss-radius);
+  background: var(--ss-surface) !important; box-shadow: var(--ss-shadow);
+  transition: border-color 200ms ease, transform 200ms ease;
+}
+.ss-related li a:hover { border-color: var(--ss-brand) !important; transform: translateY(-2px); }
+.ss-related strong { display: block; font-size: 15px; color: var(--ss-fg) !important; }
+.ss-related span { display: block; margin-top: 4px; font-size: 13px; line-height: 1.55; color: var(--ss-muted) !important; }
+.ss-related em { display: block; margin-top: 8px; font-size: 12px; font-style: normal; color: var(--ss-brand) !important; }
+
+/* 区块 2：三栏 */
+.ss-grid { display: grid; grid-template-columns: 1.15fr 0.9fr 1.8fr; gap: 28px; }
+.ss-col h3, .ss-col h4 { font-size: 14px !important; margin-bottom: 12px !important; }
+.ss-brand-link { display: inline-block; font-size: 18px; font-weight: 700; color: var(--ss-brand) !important; }
+.ss-brand p { margin: 8px 0 0 !important; color: var(--ss-muted) !important; font-size: 13px; }
+.ss-contact { margin-top: 12px !important; }
+.ss-contact span { display: block; font-size: 12px; color: var(--ss-muted) !important; }
+.ss-contact a { color: var(--ss-brand) !important; }
+.ss-col ul { display: grid; gap: 6px; }
+.ss-col ul.ss-sister { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 16px; }
+.ss-col li { font-size: 13px; line-height: 1.6; }
+.ss-col li a { color: var(--ss-muted) !important; }
+
+/* 区块 3：推广位收纳（隐藏） */
+.ss-slots { display: none !important; }
+
+/* 区块 4：底栏 */
+.ss-bottom {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 8px 20px; margin-top: 24px; padding-top: 16px;
+  border-top: 1px solid var(--ss-line); font-size: 12px; color: var(--ss-muted) !important;
+}
+.ss-bottom nav { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.ss-bottom a { font-size: 12px; color: var(--ss-muted) !important; }
+
+/* ---------------------------- 关于页信息卡 ---------------------------- */
+.ss-about {
+  max-width: var(--ss-read);
+  margin: 40px auto 0;
+  padding: 24px 26px;
+  border: 1px solid var(--ss-line);
+  border-radius: var(--ss-radius);
+  background: var(--ss-surface);
+  color: var(--ss-fg);
+  font-size: 15px;
+  line-height: 1.75;
+}
+.ss-about h2 { margin: 0 0 16px !important; font-size: 20px !important; color: var(--ss-fg) !important; }
+.ss-about dl { margin: 0 !important; }
+.ss-about-row { display: grid; grid-template-columns: 132px 1fr; gap: 12px; padding: 10px 0; border-top: 1px solid var(--ss-line); }
+.ss-about-row:first-child { border-top: 0; }
+.ss-about dt { margin: 0 !important; font-weight: 600; color: var(--ss-fg) !important; }
+.ss-about dd { margin: 0 !important; color: var(--ss-muted) !important; }
+.ss-about a { color: var(--ss-brand) !important; }
+.ss-about-links { margin: 18px 0 0 !important; font-size: 13px; }
+.ss-about-links a { margin-right: 6px; }
+
+/* ------------------------------ 回到顶部 ------------------------------ */
+#site-shell-top {
+  position: fixed; right: 20px; bottom: 20px; z-index: var(--ss-z);
+  display: none; width: 42px; height: 42px; padding: 0;
+  border: 1px solid var(--ss-line) !important; border-radius: 50%;
+  background: var(--ss-bg) !important; color: var(--ss-brand) !important;
+  font-size: 18px; line-height: 40px; text-align: center; cursor: pointer;
+  box-shadow: 0 6px 24px rgba(18, 23, 42, 0.12);
+}
+#site-shell-top.is-visible { display: block; }
+
+/* ------------------------------ 站群页 ------------------------------ */
+.ss-hub { margin: 0; background: var(--ss-bg); color: var(--ss-fg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+.ss-hub-main { max-width: var(--ss-maxw); margin: 0 auto; padding: 40px 20px 64px; }
+.ss-hub-head h1 { margin: 20px 0 6px !important; font-size: 30px !important; }
+.ss-hub-head p { margin: 0 !important; color: var(--ss-muted); font-size: 15px; }
+.ss-hub-back, .ss-hub a { color: var(--ss-brand) !important; text-decoration: none; }
+.ss-hub-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; list-style: none; margin: 28px 0 0 !important; padding: 0 !important; }
+.ss-hub-card a { position: relative; display: block; height: 100%; padding: 18px; border: 1px solid var(--ss-line); border-radius: var(--ss-radius); background: var(--ss-surface); color: var(--ss-fg) !important; }
+.ss-hub-card a:hover { border-color: var(--ss-brand); }
+.ss-hub-card.is-self a { border-color: var(--ss-brand); }
+.ss-hub-dot { display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; background: var(--ss-card-brand, var(--ss-brand)); }
+.ss-hub-card strong { font-size: 16px; }
+.ss-hub-card em { display: block; margin: 4px 0 10px; font-size: 12px; font-style: normal; color: var(--ss-brand); }
+.ss-hub-card .ss-hub-desc { display: block; font-size: 13px; color: var(--ss-muted); line-height: 1.6; }
+.ss-hub-card b { display: inline-block; margin-top: 10px; font-size: 12px; color: var(--ss-brand); }
+.ss-hub-foot { margin-top: 32px !important; font-size: 13px; color: var(--ss-muted); }
+.ss-hub-foot a { margin: 0 4px; }
+
+/* ------------------------------ 响应式（980/720/420） ------------------------------ */
+@media (max-width: 980px) {
+  .ss-grid { grid-template-columns: 1fr 1fr; }
+  .ss-brand { grid-column: 1 / -1; }
+  .ss-related > ul, .ss-hub-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .ss-wrap { padding: 26px 16px 20px; }
+  .ss-related > ul, .ss-hub-grid { grid-template-columns: 1fr; }
+  .ss-grid { grid-template-columns: 1fr; gap: 20px; }
+  .ss-col ul.ss-sister { grid-template-columns: 1fr; }
+  .ss-bottom { flex-direction: column; align-items: flex-start; }
+  .ss-about { margin: 28px 12px 0; padding: 18px; }
+  .ss-about-row { grid-template-columns: 1fr; gap: 2px; }
+}
+@media (max-width: 420px) {
+  .ss-related li a { padding: 12px; }
+  .ss-wrap { padding: 22px 12px 16px; }
+  #site-shell-top { right: 12px; bottom: 12px; width: 38px; height: 38px; line-height: 36px; }
+}
