@@ -37,6 +37,8 @@
     site: '',
     // 无 [data-mp-slot] 容器时，是否自动在页脚链接区之上补一个页脚位
     autoFooter: true,
+    // 是否自动在页脚区补一个话题活动码位（WO-176②，[data-mp-slot="topic"]）；九站可在引入前设 autoTopic:false 关掉
+    autoTopic: true,
     // 码图展示边长(px)：112 是页脚窄栏里仍能扫清的最小舒适值；manifest.width 决定源图分辨率
     size: 112,
     debug: false,
@@ -186,6 +188,15 @@
       if (!it || !it.url || it.ok === false) continue;
       if (code && String(it.scene || '') === code) return it;
     }
+    // 话题活动码（WO-174 / WO-176②）：跨站投放的 campaign 物料，按 kind 命中、不参与本站 site/position 匹配，
+    // 归因 src=wx-topic（落地承接页 reportTopicLanding 据此置会话渠道），与 九站 自身 web- 物料码（src=xcx）分列
+    if (want === 'topic') {
+      for (var t = 0; t < items.length; t++) {
+        var tk = items[t];
+        if (tk && tk.kind === 'topic' && tk.url && tk.ok !== false) return tk;
+      }
+      return null;
+    }
     for (var j = 0; j < items.length; j++) {
       var x = items[j];
       if (!x || !x.url || x.ok === false) continue;
@@ -235,6 +246,13 @@
     } catch (e) { /* 无 SDK 静默降级 */ }
   }
 
+  // 渠道归因：话题活动码走独立 wx-topic 列（WO-176④ 周报 toChannelRows/srcLabel 据此分列），
+  // 与 九站 自身 web- 物料码（src=xcx）互不串源；其余沿用 manifest.src 或默认 xcx
+  function channelSrc(item, manifest) {
+    if (item && item.kind === 'topic') return 'wx-topic';
+    return (manifest && manifest.src) || 'xcx';
+  }
+
   function buildCard(doc, item, manifest) {
     var wrap = doc.createElement('div');
     wrap.className = 'mps' + (hostIsDark() ? ' mps--dark' : '');
@@ -273,14 +291,14 @@
 
     // 点击 = 长按二维码提示（网页上点码本身不跳转），记一次 click 供渠道漏斗读数
     wrap.addEventListener('click', function () {
-      track('mp_code_click', Object.assign({ src: manifest.src || 'xcx' }, props));
+      track('mp_code_click', Object.assign({ src: channelSrc(item, manifest) }, props));
     });
     // 曝光：进入视口 ≥50% 且停留 1s 计一次，同码同会话只报一次（与广告位 ad_view 同口径）
     observeView(wrap, function () {
       var sk = String(item.scene || '') + '|' + currentPage();
       if (viewed[sk]) return;
       viewed[sk] = 1;
-      track('mp_code_view', Object.assign({ src: manifest.src || 'xcx' }, props));
+      track('mp_code_view', Object.assign({ src: channelSrc(item, manifest) }, props));
     });
     return wrap;
   }
@@ -357,6 +375,38 @@
     return host;
   }
 
+  // 话题活动码位（WO-174 / WO-176②）：跨站 campaign，默认在页脚区补一个 [data-mp-slot="topic"] 容器，
+  // 与本站 web- 物料码并列投放；九站若已在 HTML 显式写了该容器则优先用显式位。autoTopic=false 可整站关掉自动补位。
+  function autoInsertTopicHost(doc) {
+    if (CONFIG.autoTopic === false) return null;
+    var footer = doc.querySelector('.site-footer, footer.site-footer') || doc.querySelector('footer');
+    if (!footer) return null;
+    var host = doc.createElement('div');
+    host.className = 'mp-slot mp-slot--topic';
+    host.setAttribute('data-mp-slot', 'topic');
+    host.setAttribute('data-mp-auto', '1');
+    host.setAttribute('data-mp-scanned', '1');
+    var shell = footer.querySelector('.shell');
+    var grid = shell && shell.querySelector('.footer-grid');
+    if (shell && grid) shell.insertBefore(host, grid);
+    else if (shell) shell.insertBefore(host, shell.firstChild);
+    else footer.insertBefore(host, footer.firstChild);
+    return host;
+  }
+
+  // 页脚位统一归位：构建期注入的显式容器（inject-mp-slot.js）可能落在 .shell 之外（版权栏下方、满屏铺宽），
+  // 这里把任意 footer 位容器搬进 .shell 内、.footer-grid 之前——随站内宽度对齐、远离视口右下的固定悬浮按钮。
+  function normalizeFooterHost(host, doc) {
+    if (String(host.getAttribute('data-mp-slot') || '').trim() !== 'footer') return;
+    var footer = doc.querySelector('.site-footer, footer.site-footer') || doc.querySelector('footer');
+    if (!footer) return;
+    var shell = footer.querySelector('.shell');
+    if (!shell) return;
+    var grid = shell.querySelector('.footer-grid');
+    if (grid) shell.insertBefore(host, grid);
+    else shell.insertBefore(host, shell.firstChild);
+  }
+
   function boot() {
     var doc = global.document;
     if (!doc) return;
@@ -367,6 +417,15 @@
       if (!auto) { log('无容器且未找到页脚，跳过'); return; }
       hosts = [ auto ];
     }
+    // 话题活动码位（WO-176②）：显式 [data-mp-slot="topic"] 优先，否则自动在页脚补一个
+    var topicHost = null;
+    for (var ti = 0; ti < hosts.length; ti++) {
+      if (String(hosts[ti].getAttribute('data-mp-slot') || '').trim() === 'topic') { topicHost = hosts[ti]; break; }
+    }
+    if (!topicHost) topicHost = autoInsertTopicHost(doc);
+    if (topicHost) hosts.push(topicHost);
+    // 归位页脚位容器（构建期注入的显式容器可能落在 .shell 之外）；inline 位不受影响；topic 位已自带归位
+    for (var h = 0; h < hosts.length; h++) normalizeFooterHost(hosts[h], doc);
     loadManifest(function (manifest) {
       var ok = manifest && manifest.enabled !== false;
       if (!ok) {
