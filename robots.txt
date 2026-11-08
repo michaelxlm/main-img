@@ -13,3 +13,4 @@ User-agent: CCBot
 Allow: /
 
 Sitemap: https://img.fangkelianmeng.com/sitemap.xml
+Sitemap: https://img.fangkelianmeng.com/image-sitemap.xml

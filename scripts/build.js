@@ -459,6 +459,30 @@ function refreshSitemap(extraPages) {
   return pages.length;
 }
 
+/* ------------------------------ Image Sitemap ------------------------------ */
+// 图片型站点补全 image sitemap（Google 图片索引弱）：每个详情页对应一张原图，
+// 与 genDetailPage 同口径取 imgUrl（原图，非裁剪 resize）作 image:loc；detail 集合即 p/ 全集。
+function refreshImageSitemap(items) {
+  if (!items || !items.length) return 0;
+  var xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+  xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n';
+  items.forEach(function (it) {
+    var loc = imgUrl(it);
+    if (!loc) return;
+    xml += '  <url>\n';
+    xml += '    <loc>' + esc(SITE_URL + '/p/' + it._id + '.html') + '</loc>\n';
+    xml += '    <image:image>\n';
+    xml += '      <image:loc>' + escAttr(loc) + '</image:loc>\n';
+    if (it.title) xml += '      <image:title>' + esc(String(it.title).slice(0, 200)) + '</image:title>\n';
+    if (it.desc) xml += '      <image:caption>' + esc(String(it.desc).slice(0, 200)) + '</image:caption>\n';
+    xml += '    </image:image>\n';
+    xml += '  </url>\n';
+  });
+  xml += '</urlset>\n';
+  fs.writeFileSync(path.join(ROOT, 'image-sitemap.xml'), xml, 'utf8');
+  return items.length;
+}
+
 /* ------------------------------ 收录观测台账同步 ------------------------------ */
 // 保持 data/index-observation.json 的 URL 与 sitemap 一一对应：
 // 新增条目补入（indexed 一律 unknown），sitemap 里已移除的旧 URL 条目删除，保留既有状态字段
@@ -587,6 +611,10 @@ async function main() {
       fs.writeFileSync(page.file, page.html, 'utf8');
       extraPages.push({ loc: page.rel, changefreq: page.changefreq, priority: page.priority });
     });
+
+    // 5b. image sitemap（图片型站点补全，提升图片索引；与详情页同口径取原图）
+    var imgSm = refreshImageSitemap(picked);
+    console.log('  image-sitemap.xml refreshed (' + imgSm + ' images)');
 
     // 清退：删除精选集之外的旧详情页（仅在本轮 apiOk 且有产出时执行，防 API 抖动清空仓库）
     if (picked.length) {
