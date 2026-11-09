@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "updated": "2026.10.15",
-  "source": "本地兜底广告位；远程 OSS 同步 JSON 优先，本文件仅作远程不可用时的兜底。main-img 未纳入管理端集中 OSS 分片（config.adSlots.sites 含 img-fangkelianmeng），此处自营位为本地兜底，跨链同族站点。",
+  "updated": "2026-11-01",
+  "source": "本地兜底广告位；远程 OSS 同步 JSON 优先，本文件仅作远程不可用时的兜底。main-img 未纳入管理端集中 OSS 分片（config.adSlots.sites 含 img-fangkelianmeng），此处自营位为本地兜底，跨链同族站点。 | 保守合并刷新于 2026-11-01（保留本地独有位，仅补 OSS 增量）",
   "settings": {
     "enabled": true,
     "maxPerSlot": 3,
@@ -9,11 +9,106 @@
     "rotateInterval": 4000
   },
   "slots": [
-    { "id": "self-aiweb", "type": "self", "weight": 2, "eyebrow": "同站推荐 · 建站向导", "title": "明先生日常 · xuliming.com", "desc": "21 个场景 99 步，跟着做就能把站搭起来：服务器、域名、部署、SEO 一次讲清。", "cta": "打开建站向导 →", "url": "https://xuliming.com/", "rel": "noopener", "enabled": true, "placements": ["carousel", "footer", "inline"], "pages": ["*"] },
-    { "id": "self-color-tool", "type": "self", "weight": 2, "eyebrow": "同站推荐 · 免费配色工具", "title": "cs 调色盘 · 2002cs.com", "desc": "在线取色、配色方案、CSS 渐变与 WCAG 对比度检测，纯本地计算，免费用。", "cta": "打开调色盘 →", "url": "https://2002cs.com/", "rel": "noopener", "enabled": true, "placements": ["carousel", "footer", "inline"], "pages": ["*"] },
-    { "id": "self-visitor", "type": "self", "weight": 2, "eyebrow": "同站推荐 · 开发者工具箱", "title": "访客小站 · fangkelianmeng.com", "desc": "IP 归属地、JSON 格式化、时间戳、Base64、哈希计算，打开即用。", "cta": "打开访客小站 →", "url": "https://fangkelianmeng.com/", "rel": "noopener", "enabled": true, "placements": ["carousel", "footer", "inline"], "pages": ["*"] },
-    { "id": "self-coupon", "type": "self", "weight": 1, "eyebrow": "同站推荐 · 领券中心", "title": "小满券仓 · coupon.zangeng.com", "desc": "实时全网优惠券、满减券与品类券，先领券再下单更省。", "cta": "去领券 →", "url": "https://coupon.zangeng.com/", "rel": "noopener", "enabled": true, "placements": ["carousel", "footer", "inline"], "pages": ["*"] },
-    { "id": "self-antucao", "type": "self", "weight": 1, "eyebrow": "同站推荐 · 吐槽与反馈", "title": "暗吐槽 · antucao.com", "desc": "建站卡住了？来这里留言提问，问题统一在这里收口。", "cta": "去留言 →", "url": "https://antucao.com/", "rel": "noopener", "enabled": true, "placements": ["carousel", "footer", "inline"], "pages": ["*"] },
+    {
+      "id": "self-aiweb",
+      "type": "self",
+      "weight": 2,
+      "eyebrow": "同站推荐 · 建站向导",
+      "title": "明先生日常 · xuliming.com",
+      "desc": "21 个场景 99 步，跟着做就能把站搭起来：服务器、域名、部署、SEO 一次讲清。",
+      "cta": "打开建站向导 →",
+      "url": "https://xuliming.com/",
+      "rel": "noopener",
+      "enabled": true,
+      "placements": [
+        "carousel",
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ]
+    },
+    {
+      "id": "self-color-tool",
+      "type": "self",
+      "weight": 2,
+      "eyebrow": "同站推荐 · 免费配色工具",
+      "title": "cs 调色盘 · 2002cs.com",
+      "desc": "在线取色、配色方案、CSS 渐变与 WCAG 对比度检测，纯本地计算，免费用。",
+      "cta": "打开调色盘 →",
+      "url": "https://2002cs.com/",
+      "rel": "noopener",
+      "enabled": true,
+      "placements": [
+        "carousel",
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ]
+    },
+    {
+      "id": "self-visitor",
+      "type": "self",
+      "weight": 2,
+      "eyebrow": "同站推荐 · 开发者工具箱",
+      "title": "访客小站 · fangkelianmeng.com",
+      "desc": "IP 归属地、JSON 格式化、时间戳、Base64、哈希计算，打开即用。",
+      "cta": "打开访客小站 →",
+      "url": "https://fangkelianmeng.com/",
+      "rel": "noopener",
+      "enabled": true,
+      "placements": [
+        "carousel",
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ]
+    },
+    {
+      "id": "self-coupon",
+      "type": "self",
+      "weight": 1,
+      "eyebrow": "同站推荐 · 领券中心",
+      "title": "小满券仓 · coupon.zangeng.com",
+      "desc": "实时全网优惠券、满减券与品类券，先领券再下单更省。",
+      "cta": "去领券 →",
+      "url": "https://coupon.zangeng.com/",
+      "rel": "noopener",
+      "enabled": true,
+      "placements": [
+        "carousel",
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ]
+    },
+    {
+      "id": "self-antucao",
+      "type": "self",
+      "weight": 1,
+      "eyebrow": "同站推荐 · 吐槽与反馈",
+      "title": "暗吐槽 · antucao.com",
+      "desc": "建站卡住了？来这里留言提问，问题统一在这里收口。",
+      "cta": "去留言 →",
+      "url": "https://antucao.com/",
+      "rel": "noopener",
+      "enabled": true,
+      "placements": [
+        "carousel",
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ]
+    },
     {
       "id": "self-zangeng",
       "type": "self",
@@ -25,8 +120,13 @@
       "url": "https://zangeng.com/",
       "rel": "noopener",
       "enabled": true,
-      "placements": ["footer", "inline"],
-      "pages": ["*"]
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ]
     },
     {
       "id": "self-585",
@@ -39,8 +139,13 @@
       "url": "https://585.ink/",
       "rel": "noopener",
       "enabled": true,
-      "placements": ["footer", "inline"],
-      "pages": ["*"]
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ]
     },
     {
       "id": "self-20101115",
@@ -53,8 +158,1017 @@
       "url": "https://20101115.com/",
       "rel": "noopener",
       "enabled": true,
-      "placements": ["footer", "inline"],
-      "pages": ["*"]
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ]
+    },
+    {
+      "id": "aff-jx-xuliming-com-1d6e8474",
+      "type": "self",
+      "adType": "InterAd",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "scene": "friendlyLink",
+      "scenes": [
+        "friendlyLink"
+      ],
+      "eyebrow": "同站推荐",
+      "title": "优惠券精选",
+      "desc": "网购不想多花冤枉钱？优惠券精选帮你集中筛选有效优惠券，按需查找，省时省力。经常网购、想省点钱的朋友，不妨试试这个工具。",
+      "cta": "去看看 →",
+      "logo": "https://antucao.oss-accelerate.aliyuncs.com/admin/2025/08/09/5071691466524454-7YywewyB2rx731.png",
+      "url": "https://jx.xuliming.com/?cid=LYhCzoT#/index/home",
+      "rel": "noopener",
+      "weight": 1,
+      "badge": "友情链接",
+      "sponsorType": "platform",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-ad/1791838209346-16x9.jpg"
+    },
+    {
+      "id": "aff-cms-xuliming-com-0c68f2f5",
+      "type": "self",
+      "adType": "InterAd",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "scene": "friendlyLink",
+      "scenes": [
+        "friendlyLink"
+      ],
+      "eyebrow": "同站推荐",
+      "title": "超级优惠券网",
+      "desc": "优惠券聚合领取",
+      "cta": "去看看 →",
+      "logo": "https://antucao.oss-accelerate.aliyuncs.com/admin/2025/08/09/5071691466524454-7YywewyB2rx731.png",
+      "url": "https://cms.xuliming.com",
+      "rel": "noopener",
+      "weight": 1,
+      "badge": "友情链接",
+      "sponsorType": "platform",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-ad/1791838206311-16x9.jpg"
+    },
+    {
+      "id": "aff-antucao-com-1c7e52da",
+      "type": "self",
+      "adType": "InterAd",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "scene": "friendlyLink",
+      "scenes": [
+        "friendlyLink"
+      ],
+      "eyebrow": "同站推荐",
+      "title": "暗吐槽",
+      "desc": "犀利吐槽，优雅开撕！拒绝无效内耗，专治职场奇葩与生活槽点。匿名发声，抱团取暖，做最快乐的键盘侠。",
+      "cta": "去看看 →",
+      "logo": "http://antucao.oss-cn-beijing.aliyuncs.com/logo.png",
+      "url": "https://www.antucao.com",
+      "rel": "noopener",
+      "weight": 1,
+      "badge": "友情链接",
+      "sponsorType": "platform",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-ad/1791838292183-16x9.jpg"
+    },
+    {
+      "id": "aff-xuyiheng-com-46208ca4",
+      "type": "self",
+      "adType": "InterAd",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "scene": "friendlyLink",
+      "scenes": [
+        "friendlyLink"
+      ],
+      "eyebrow": "同站推荐",
+      "title": "一珩成长笔记",
+      "desc": "一珩成长笔记是专注美图、文案、优惠券展示的内容平台，海量高清美图可下载分享，精品文案一键复制，每日精选优惠券天天领取。",
+      "cta": "去看看 →",
+      "logo": "https://antucao.oss-accelerate.aliyuncs.com/admin/2025/08/09/5071691466524454-7YywewyB2rx731.png",
+      "url": "https://xuyiheng.com",
+      "rel": "noopener",
+      "weight": 1,
+      "badge": "友情链接",
+      "sponsorType": "platform",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-ad/1791838298273-16x9.jpg"
+    },
+    {
+      "id": "aff-yuminhang-com-8ce5370a",
+      "type": "self",
+      "adType": "InterAd",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "scene": "friendlyLink",
+      "scenes": [
+        "friendlyLink"
+      ],
+      "eyebrow": "同站推荐",
+      "title": "于总日常",
+      "desc": "您的专属信息枢纽！探索我们的多元化平台，获取最新的网址导航、深入的文章分析、实用的App推荐及精选书籍评论。无论是追踪于总的日常动态，还是寻找灵感与知识，这里都有您需要的一切。访问我们的网站，下载配套App，随时随地享受便捷的信息服务。加入我们，一起开启学习与发现的新旅程！",
+      "cta": "去看看 →",
+      "logo": "https://antucao.oss-accelerate.aliyuncs.com/admin/2025/08/09/5071691466524454-7YywewyB2rx731.png",
+      "url": "https://yuminhang.com",
+      "rel": "noopener",
+      "weight": 1,
+      "badge": "友情链接",
+      "sponsorType": "platform",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-ad/1791838375255-16x9.jpg"
+    },
+    {
+      "id": "aff-mi-aliyun-com-475da59f",
+      "type": "domain",
+      "adType": "InterAd",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "scene": "sites",
+      "scenes": [
+        "sites"
+      ],
+      "eyebrow": "域名出售",
+      "title": "域名专卖出售",
+      "desc": "阿里米店-52603",
+      "cta": "前往询价 →",
+      "logo": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791838458945-0.jpg",
+      "url": "https://mi.aliyun.com/shop/52603",
+      "rel": "noopener",
+      "weight": 1,
+      "sponsorType": "platform",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-ad/1791838378299-16x9.jpg"
+    },
+    {
+      "id": "rebate-aliyun-com-a6794cb5",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "🔥 阿里云百炼新户首购立减 10 元，再送 Token 折扣，手慢无",
+      "desc": "做 AI 应用、调大模型 API 的注意了！阿里云百炼现在 Qwen / DeepSeek 全系可调用，新用户首购 Token 包直接减 10 元，还能叠加夜间折扣，模型成本压到最低 💰 我这边有内部邀请通道，走链接注册首购即享，老用户也能关联返福利（规则以内测为准）。一人公司、独立开发者、接外包的，模型账单能省一大截。名额有限，先到先得！",
+      "cta": "去看看 →",
+      "url": "https://www.aliyun.com/minisite/goods?userCode=66ds2hhd",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "aliyun.com",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837012473-0.jpg"
+    },
+    {
+      "id": "rebate-bt-cn-0af33c79",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "宝塔服务器面板，一键全能部署及管理",
+      "desc": "宝塔,安全高效的服务器运维面板",
+      "cta": "去看看 →",
+      "url": "https://www.bt.cn/u/LQ9dSL",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "bt.cn",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837009535-0.jpg"
+    },
+    {
+      "id": "rebate-bt-cn-56dcc321",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "宝塔Linux企业版仅需￥3999.00/三年",
+      "desc": "宝塔Linux企业版；包含专业版所有功能；包含PHP网站安全告警、堡塔防入侵和堡塔企业级防篡改等27款价值27000多元的企业版插件；送2张1年的商业SSL证书",
+      "cta": "去看看 →",
+      "url": "https://www.bt.cn/p/PG7NJn",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "bt.cn",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791878327142-0.jpg"
+    },
+    {
+      "id": "rebate-bt-cn-fae7bc33",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "宝塔Linux面板高效运维的服务器管理软件 ￥4888.00/永久",
+      "desc": "包含免费版所有功能；包含web应用防火墙、网站监控报表和异常监控推送等13款价值3500多元的专业版插件",
+      "cta": "去看看 →",
+      "url": "https://www.bt.cn/p/PhqlKZ",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "bt.cn",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837032518-0.jpg"
+    },
+    {
+      "id": "rebate-bt-cn-166624c6",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "宝塔-锐安信DV SSL证书",
+      "desc": "DV SSL证书(域名型SSL证书) 是实现网站HTTPS化快速且价格便宜的SSL证书； 仅验证域名所有权，3-5分钟签发，快速提供网站HTTPS安全加密保护； 个人站长/博客、小微企业、小程序等加密应用最喜欢的SSL证书！",
+      "cta": "去看看 →",
+      "url": "https://www.bt.cn/p/hcwJ82",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "bt.cn",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837032537-0.jpg"
+    },
+    {
+      "id": "rebate-bt-cn-74e6fbe4",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "宝塔Nginx防火墙",
+      "desc": "有效防止sql注入/xss/一句话木马/防采集等常见渗透攻击，建议和PHP网站安全告警配合使用，符合GB/T 32917-2016标准，公安三所安全认证",
+      "cta": "去看看 →",
+      "url": "https://www.bt.cn/p/P90vA9",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "bt.cn",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791878347443-0.jpg"
+    },
+    {
+      "id": "rebate-tianapi-com-00187772",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "天聚数行TianAPI - 应用开发者API数据调用平台",
+      "desc": "天聚数行TianAPI应用开发者数据调用平台天行数据，在这里您可以免费且轻松的调用各种API数据接口用于系统软件、应用App、网站、小程序开发等",
+      "cta": "去看看 →",
+      "url": "https://www.tianapi.com/source/0c74a63663",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "tianapi.com",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837057353-0.jpg"
+    },
+    {
+      "id": "rebate-jisuapi-com-141af9e7",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "API接口_数据接口平台_免费数据大全 - 极速数据",
+      "desc": "极速数据平台提供各类生活数据API，方便开发者快速简单的开发APP、软件及其他服务平台。快递、企业工商、汽车、商标等数据应有尽有。",
+      "cta": "去看看 →",
+      "url": "https://www.jisuapi.com/my/reg?usercode=9TzPU6",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "jisuapi.com",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791878375070-0.jpg"
+    },
+    {
+      "id": "rebate-sinacloud-com-a3e390a8",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "新浪云",
+      "desc": "「新浪云福利」1000云豆免费领！低成本、免运维、灵活、安全稳定，轻松应对业务爆发式增长，一起来用吧！",
+      "cta": "去看看 →",
+      "url": "https://www.sinacloud.com/public/login/inviter/gaimrn-mddmzeKWrhKWvZoKIn65-eH2xf4yydg.html",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "sinacloud.com"
+    },
+    {
+      "id": "rebate-s-qiniu-com-79d7abc1",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "七牛云",
+      "desc": "·存储一体机，开箱即用，单节点 500 TB，EB 级扩展，智能多媒体处理",
+      "cta": "去看看 →",
+      "url": "https://s.qiniu.com/aqQbMj",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "s.qiniu.com",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837075393-0.jpg"
+    },
+    {
+      "id": "rebate-didi-seowhy-com-b007d26c",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "这个自动上链功能太牛逼了，我现在都不用去网站就可以交换友链了",
+      "desc": "搜外滴滴外链",
+      "cta": "去看看 →",
+      "url": "https://didi.seowhy.com/index.php?ruid=7560",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "didi.seowhy.com",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837075255-0.jpg"
+    },
+    {
+      "id": "rebate-chat-topthink-com-9cfa674d",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "🌟推荐一款超赞的 AI 智能助手：ThinkChat 📖阅读、📝翻译、🔍搜索和🎨画图样样都行  🖥️ 模型切换和丰富插件 📦 大量现成智能体应用 🤖 零代码私人定制智能体  💎 限时福利：注册即可享受 100K Token免费额度！",
+      "desc": "顶想云",
+      "cta": "去看看 →",
+      "url": "https://chat.topthink.com/invited?c=dyo921",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "chat.topthink.com",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837110522-0.jpg"
+    },
+    {
+      "id": "rebate-login-123pan-com-d0c573c9",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "2T超大容量！点击领取 >>",
+      "desc": "123云盘",
+      "cta": "去看看 →",
+      "url": "https://login.123pan.com/centerlogin?register=invite&ref=4Ekavd",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "login.123pan.com",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837134577-0.jpg"
+    },
+    {
+      "id": "rebate-cloud-siliconflow-cn-7f9c40ff",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "🎁 免费领 16 元 API 调用金！无门槛，不限期，邀好友再送",
+      "desc": "调过 AI 接口的都知道，模型调用费是隐形黑洞。硅基流动一个账号接 DeepSeek / Qwen / GLM / Kimi 等几十款模型，不用挨个申请 Key 🔌 现在通过我的邀请链接注册 + 实名，直接送你 16 元通用代金券，API 调用、批量推理、微调全都能抵，180 天有效，邀请人数无上限，多邀多送！做 AI 编程、Agent 后端、模型中转的，这波等于白捡算力，不领就亏了。",
+      "cta": "去看看 →",
+      "url": "https://cloud.siliconflow.cn/i/NwEtTmES",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "cloud.siliconflow.cn",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791878408397-0.jpg"
+    },
+    {
+      "id": "rebate-bigmodel-cn-e110b0a7",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "🇨🇳 国产大模型扛把子！新户注册送 2000 万 Token，每月都能领",
+      "desc": "GLM 系列国产大模型，长文本理解、代码生成、RAG 知识库都稳 🧠 通过邀请链接注册，直接送你 2000 万 Token（每月上限 10 人），做中文业务系统、客服机器人、文档摘要的，智谱的中文能力比海外模型更适合国内场景。一人公司做 AI 产品，模型底座选它没错，关键是——白送的 Token 不领白不领！",
+      "cta": "去看看 →",
+      "url": "https://www.bigmodel.cn/invite?icode=HHem0jsxP%2BiYu%2BFFsNNWWgZ3c5owLmCCcMQXWcJRS8E%3D",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "bigmodel.cn",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837134646-0.jpg"
+    },
+    {
+      "id": "rebate-s-qiniu-com-8c42f1bc",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "🚀 新户专享：300 万 Token 免费送 + 20% 返利名额，速抢",
+      "desc": "七牛云 AI 推理平台，聚合 Claude / Gemini / Kimi / DeepSeek 等主流模型接口 ☁️ 现在通过邀请通道注册并完成首次调用，直接送你 300 万 Token 融合资源包，还能额外解锁 20% 推广返利资格（限个人用户）。做 API 中转、模型代理、AI 应用的独立开发者，接口稳定、计费透明，这 300 万 Token 够你跑不少项目了。名额不多，先到先得！",
+      "cta": "去看看 →",
+      "url": "https://s.qiniu.com/RnAbqa",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "s.qiniu.com",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837169861-0.jpg"
+    },
+    {
+      "id": "rebate-aiping-cn-4fdd9787",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "💸 全场模型通用！新户注册送 6 元，实名再送 5 元，邀请好友再得 10 元",
+      "desc": "GLM / DeepSeek / Kimi 旗舰模型一个平台全调通，现在新用户注册立得 1 元，实名认证再送 5 元，合计 6 元算力赠金直接到账 💰 通过我的链接注册，你还能额外获得邀请奖励：每邀请 1 位实名好友，双方各得 10 元算力赠金，上不封顶！做模型对比、备用线路、多模型路由的开发者，攒着慢慢用，比到处找免费额度靠谱多了。",
+      "cta": "去看看 →",
+      "url": "https://aiping.cn/#?invitation_code=UVVBBQ5EDR",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "aiping.cn",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837160244-0.jpg"
+    },
+    {
+      "id": "rebate-trae-cn-ebc1ca63",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "🤖 国产 AI IDE 免费领 3500 积分！写代码、改 Bug、跑任务全搞定",
+      "desc": "一个人做项目，雇不起初级工程师？Trae 就是你的 AI 结对编程搭档 💻 需求拆解 → 文件改动 → 终端执行一条龙，免费层日常开发完全够用。现在通过邀请链接注册，直接送你 500 通用积分，累计可拿 3500 积分（邀满 7 人），写业务代码、改 Bug、跑脚本全靠它。独立开发者 / 外包接单 / 一人公司必备，不花一分钱多一个\"AI 员工\"。",
+      "cta": "去看看 →",
+      "url": "https://www.trae.cn/events/code-fission/GMNA4GWL3SFR?utm_source=copy_link&utm_medium=code_fission",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "trae.cn",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837160417-0.jpg"
+    },
+    {
+      "id": "rebate-s-step-fun-a48a3081",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "📖 长文本推理神器！邀请好友各加 15 天体验，最高叠 120 天",
+      "desc": "Step 系列模型在长文本和推理上表现突出，适合读合同、读研报、跑复杂 Agent 🚀 通过邀请链接注册，每邀 1 位好友双方各加 15 天体验时长，最多叠加到 120 天！写方案、做竞调、处理长文档，不用自己慢慢翻。相当于白嫖 4 个月高级 AI 助手，做内容、做咨询、做分析的都该试试。",
+      "cta": "去看看 →",
+      "url": "https://s.step.fun/17zn8V?s=1",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "s.step.fun",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837200109-0.jpg"
+    },
+    {
+      "id": "rebate-ibiling-cn-d4898329",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "笔灵 AI · 论文查重与降重辅助",
+      "desc": "论文查重与 AI 率检测辅助工具，提供降重参考建议。",
+      "cta": "去看看 →",
+      "url": "https://ibiling.cn/paper-pass/activity?i=1RS2HG",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "ibiling.cn",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791878459832-0.jpg"
+    },
+    {
+      "id": "rebate-yuque-com-053da56a",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "语雀",
+      "desc": "邀请你加入语雀，注册后在会员信息页填写邀请码 VNEZVQ 即可领取 30 天语雀会员。前往注册：https://www.yuque.com/about",
+      "cta": "去看看 →",
+      "url": "https://www.yuque.com/about",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "yuque.com",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837216940-0.jpg"
+    },
+    {
+      "id": "rebate-curl-qcloud-com-016273e0",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "腾讯云-游戏服专属特惠",
+      "desc": "【腾讯云】热卖套餐配置低至32元/月起，助您一键开服，即刻畅玩，立享优惠！",
+      "cta": "去看看 →",
+      "url": "https://curl.qcloud.com/YLLaTx7H",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "curl.qcloud.com",
+      "image": "https://antucao.oss-cn-beijing.aliyuncs.com/ai-article/1791837214347-0.jpg"
+    },
+    {
+      "id": "rebate-curl-qcloud-com-2d539568",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "腾讯云-推广大使特惠产品合集页",
+      "desc": "【腾讯云】云服务器、云数据库、COS、CDN、短信等云产品特惠热卖中",
+      "cta": "去看看 →",
+      "url": "https://curl.qcloud.com/6WggvRHV",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "curl.qcloud.com",
+      "image": "https://dscache.tencent-cloud.cn/upload//345_200-013e419e2b86ff48a531fabce2694bd3bb27f844.png"
+    },
+    {
+      "id": "rebate-cloud-tencent-com-9bda8d9c",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "腾讯云-智能体开发平台ADP",
+      "desc": "【腾讯云】智能体开发平台ADP，新客首月专属价，最高直降 880 元，构建、分发、治理企业级 Agent，一站式开启智能体生产力。",
+      "cta": "去看看 →",
+      "url": "https://cloud.tencent.com/act/cps/redirect?redirect=6880&cps_key=4bde4d256d6c8915301d19837feff259&from=console",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "cloud.tencent.com",
+      "image": "https://dscache.tencent-cloud.cn/upload/nodir/ADP-b28829be615d46eda1ee087da347fd10039f0b9b.png"
+    },
+    {
+      "id": "rebate-cloud-tencent-com-96aeb4f8",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "腾讯云-WorkBuddy",
+      "desc": "【腾讯云】WorkBuddy 全场景 AI 办公工作台，团队旗舰版低至198元/月",
+      "cta": "去看看 →",
+      "url": "https://cloud.tencent.com/act/cps/redirect?redirect=6871&cps_key=4bde4d256d6c8915301d19837feff259&from=console",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "cloud.tencent.com",
+      "image": "https://dscache.tencent-cloud.cn/upload/nodir/01-e662c34e7f996071360fec3e9f5a1f0c2c3bea5d.jpg"
+    },
+    {
+      "id": "rebate-cloud-tencent-com-93e3d854",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "【腾讯云】2核2G4M 服务器新客99元/年起",
+      "desc": "【腾讯云】2核2G4M 服务器新客99元/年起",
+      "cta": "去看看 →",
+      "url": "https://cloud.tencent.com/act/cps/redirect?redirect=6544&cps_key=4bde4d256d6c8915301d19837feff259&from=console",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "cloud.tencent.com",
+      "image": "https://dscache.tencent-cloud.cn/upload/nodir/rhino-design-1280x720-a2b2bf290617427729a04f4014e0a5e6f9329335.png"
+    },
+    {
+      "id": "rebate-cloud-tencent-com-fd77ea00",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "【腾讯云】语音识别",
+      "desc": "【腾讯云】语音识别准确率高，支持多语种，多场景，限时特惠，最低14.9元起",
+      "cta": "去看看 →",
+      "url": "https://cloud.tencent.com/act/cps/redirect?redirect=6351&cps_key=4bde4d256d6c8915301d19837feff259&from=console",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "cloud.tencent.com",
+      "image": "https://dscache.tencent-cloud.cn/upload//rhino-design-345x200x2-b167040753362b367bc281157ee5853543c8278c.png"
+    },
+    {
+      "id": "rebate-cloud-tencent-com-d55694fb",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "【腾讯云】热卖套餐",
+      "desc": "【腾讯云】热卖套餐配置低至32元/月起，助您一键开服，即刻畅玩，立享优惠！",
+      "cta": "去看看 →",
+      "url": "https://cloud.tencent.com/act/cps/redirect?redirect=5878&cps_key=4bde4d256d6c8915301d19837feff259&from=console",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "cloud.tencent.com",
+      "image": "https://dscache.tencent-cloud.cn/upload//rhino-design-345x200-e3bd5ba672366b1cfdd7d0688e28e6494f7b5202.png"
+    },
+    {
+      "id": "rebate-cloud-tencent-com-d1dbb2eb",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "【腾讯云】Lighthouse",
+      "desc": "【腾讯云】Lighthouse助力跨境电商业务扬帆出海",
+      "cta": "去看看 →",
+      "url": "https://cloud.tencent.com/act/cps/redirect?redirect=5333&cps_key=4bde4d256d6c8915301d19837feff259&from=console",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "cloud.tencent.com",
+      "image": "https://dscache.tencent-cloud.cn/upload//rhino-design-345x200-4c873fb0a9753759ae4932e2e1e212715fa7f06b.png"
+    },
+    {
+      "id": "rebate-cloud-tencent-com-1555df00",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "【腾讯云】音视频",
+      "desc": "【腾讯云】音视频低代码 UI 组件开发方案 3步集成，最快1天上线应用",
+      "cta": "去看看 →",
+      "url": "https://cloud.tencent.com/act/cps/redirect?redirect=5440&cps_key=4bde4d256d6c8915301d19837feff259&from=console",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "cloud.tencent.com",
+      "image": "https://dscache.tencent-cloud.cn/upload//345_200-6aa1ed23e531d94cca65ca5224a4196a2e763c07.png"
+    },
+    {
+      "id": "rebate-cloud-tencent-com-44fd891c",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "【腾讯云】即时通信IM接入AI服务，高效构建智能聊天能力",
+      "desc": "【腾讯云】即时通信IM接入AI服务，高效构建智能聊天能力",
+      "cta": "去看看 →",
+      "url": "https://cloud.tencent.com/act/cps/redirect?redirect=4972&cps_key=4bde4d256d6c8915301d19837feff259&from=console",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "cloud.tencent.com",
+      "image": "https://dscache.tencent-cloud.cn/upload//IM%20%E8%81%8A%E5%A4%A9%E6%9C%BA%E5%99%A8%E4%BA%BA%20345_200-21ff97440b851f1df26d4f8866ac4dfa3ecf3933.png"
+    },
+    {
+      "id": "rebate-cloud-tencent-com-33961dc1",
+      "type": "affiliate",
+      "cardType": "rebate",
+      "enabled": true,
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "pages": [
+        "*"
+      ],
+      "eyebrow": "合作推广",
+      "title": "【腾讯云】视频通信",
+      "desc": "【腾讯云】视频通信爆款 9.9 元起， 提供电商、教育、社交娱乐等多行业多场景的一站式解决方案，最快 1 天布局火爆赛道",
+      "cta": "去看看 →",
+      "url": "https://cloud.tencent.com/act/cps/redirect?redirect=1051&cps_key=4bde4d256d6c8915301d19837feff259&from=console",
+      "rel": "sponsored noopener",
+      "weight": 1,
+      "platform": "other",
+      "platformName": "其他",
+      "badge": "广告",
+      "shortText": "cloud.tencent.com",
+      "image": "https://upload-dianshi-1255598498.file.myqcloud.com/345_200-51cc0ac5a1b375c4269c679987e3bc7c62a2c592.png"
+    },
+    {
+      "enabled": true,
+      "pages": [
+        "*"
+      ],
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "weight": 1,
+      "id": "self-notes",
+      "type": "self",
+      "eyebrow": "同站推荐 · 实测手记",
+      "title": "实测手记 · 585.ink",
+      "desc": "建站与工具的实测记录、踩坑与工程笔记，用真实数据说话。",
+      "cta": "看实测 →",
+      "url": "https://585.ink/",
+      "rel": "noopener"
+    },
+    {
+      "enabled": true,
+      "pages": [
+        "*"
+      ],
+      "placements": [
+        "footer",
+        "inline"
+      ],
+      "weight": 1,
+      "id": "self-history",
+      "type": "self",
+      "eyebrow": "同站推荐 · 历史知识库",
+      "title": "历史知识库 · 20101115.com",
+      "desc": "中外历史年表、事件检索与时间线，一屏看尽古今。",
+      "cta": "查历史 →",
+      "url": "https://20101115.com/",
+      "rel": "noopener"
     }
   ]
 }
