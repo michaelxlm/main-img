@@ -133,6 +133,10 @@ function renderHead(o) {
     + '  <meta name="description" content="' + escAttr(o.desc) + '">\n'
     + (o.keywords ? '  <meta name="keywords" content="' + escAttr(o.keywords) + '">\n' : '')
     + '  <meta name="robots" content="index,follow">\n'
+    + '  <link rel="dns-prefetch" href="//api.xuyiheng.com">\n'
+    + '  <link rel="preconnect" href="https://api.xuyiheng.com" crossorigin>\n'
+    + '  <link rel="dns-prefetch" href="//antucao.oss-cn-beijing.aliyuncs.com">\n'
+    + '  <link rel="preconnect" href="https://antucao.oss-cn-beijing.aliyuncs.com" crossorigin>\n'
     + '  <link rel="icon" href="/assets/img/favicon.svg">\n'
     + '  <link rel="canonical" href="' + escAttr(canonical) + '">\n'
     + '  <meta property="og:type" content="' + (o.ogType || 'website') + '">\n'
