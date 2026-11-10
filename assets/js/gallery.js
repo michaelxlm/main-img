@@ -177,12 +177,25 @@
     sort: '',
     type: '',
     size: '',
+    aspect: '',        // 宽高比客户端过滤：'' | landscape | portrait | square（后端无 ratio 参数，前端按已加载 width/height 过滤）
     keyword: '',
     loading: false,
     hasMore: true,
     items: [],
     controller: null,
   };
+
+  // 宽高比档（基于 item.width / item.height 本地判定；后端 rank/search 无 ratio 参数，
+  // 故作为「已加载批次内」的客户端过滤层，不重新请求 API，属渐进增强）。
+  var ASPECT_BUCKETS = {
+    landscape: function (it) { var w = +it.width || 0, h = +it.height || 0; return w && h && (w / h) > 1.1; },
+    portrait: function (it) { var w = +it.width || 0, h = +it.height || 0; return w && h && (w / h) < 0.9; },
+    square: function (it) { var w = +it.width || 0, h = +it.height || 0; return w && h && (w / h) >= 0.9 && (w / h) <= 1.1; },
+  };
+  function applyAspectFilter(list) {
+    if (!state.aspect || !ASPECT_BUCKETS[state.aspect]) return list;
+    return list.filter(function (it) { return ASPECT_BUCKETS[state.aspect](it); });
+  }
 
   /* 计数展示工具：大数缩写入局（1.2万） */
   function fmtCount(n) {
@@ -246,8 +259,8 @@
       '</div>' +
       (avifSrc
         ? '<picture><source srcset="' + escAttr(avifSrc) + '" type="image/avif">'
-          + '<img src="' + escAttr(src) + '" alt="' + escAttr(item.title || '壁纸') + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '"></picture>'
-        : '<img src="' + escAttr(src) + '" alt="' + escAttr(item.title || '壁纸') + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '">') +
+          + '<img src="' + escAttr(src) + '" alt="' + escAttr(item.title || '壁纸') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '"></picture>'
+        : '<img src="' + escAttr(src) + '" alt="' + escAttr(item.title || '壁纸') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '">') +
       '<div class="gm-overlay">' +
         '<div class="gm-overlay-title">' + escHtml(item.title || '未命名壁纸') + '</div>' +
         '<div class="gm-overlay-meta">' +
@@ -291,10 +304,10 @@
       });
     }
 
-    // 点击卡片打开灯箱
+    // 点击卡片打开灯箱（按 _id 定位，支持 aspect 客户端过滤后渲染索引与 state.items 错位）
     card.addEventListener('click', function (e) {
       if (e.target.closest('.gm-actions')) return;
-      openLightbox(index);
+      openLightboxById(item._id);
     });
 
     // 收藏按钮
@@ -421,6 +434,13 @@
       var dx = t.clientX - touchX, dy = t.clientY - touchY;
       if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) navLightbox(dx < 0 ? 1 : -1);
     }, { passive: true });
+  }
+
+  function openLightboxById(id) {
+    if (!id) return;
+    var idx = state.items.findIndex(function (it) { return it._id === id; });
+    if (idx < 0) return;
+    openLightbox(idx);
   }
 
   function openLightbox(index) {
@@ -584,7 +604,7 @@
           return;
         }
         state.items = append ? state.items.concat(list) : list;
-        renderItems(grid, list, append);
+        renderItems(grid, applyAspectFilter(list), append);
         state.page++;
         if (moreBtn && state.hasMore) moreBtn.hidden = false;
         hideState(stateEl);
@@ -649,7 +669,7 @@
       var moreBtn = $('#gmMore');
       if (grid) loadImages(grid, stateEl, moreBtn, false);
       if (global.Tracker) global.Tracker.track('search', { keyword: kw });
-      syncBrowseUrl();
+      syncBrowseUrl(true);
     }
 
     formEl.addEventListener('submit', function (e) {
@@ -720,6 +740,29 @@
     });
   }
 
+  /* 宽高比 chip（前端本地过滤，与分类/分辨率/排序正交叠加；后端无 ratio 参数故不进 API 请求） */
+  function initAspect(container, onPick) {
+    if (!container) return;
+    $$('[data-aspect]', container).forEach(function (chip) {
+      chip.addEventListener('click', function (e) {
+        e.preventDefault();
+        var a = chip.getAttribute('data-aspect') || '';
+        // 再次点当前非「不限」档 => 取消（回到不限）
+        if (a && a === state.aspect) a = '';
+        $$('[data-aspect]', container).forEach(function (c) {
+          c.classList.toggle('is-active', (c.getAttribute('data-aspect') || '') === a);
+        });
+        if (onPick) onPick(a);
+      });
+    });
+  }
+  function activateAspect(container, a) {
+    if (!container) return;
+    $$('[data-aspect]', container).forEach(function (c) {
+      c.classList.toggle('is-active', (c.getAttribute('data-aspect') || '') === (a || ''));
+    });
+  }
+
   /* ------------------------------ 排序 ------------------------------ */
   function initSort(selectEl, onChange) {
     if (!selectEl) return;
@@ -728,18 +771,26 @@
     });
   }
 
-  /* 筛选状态回写 URL（home / browse 页）：分类/大小/搜索/排序可分享、可前进后退 */
-  function syncBrowseUrl() {
+  /* 筛选状态回写 URL（home / browse 页）：分类/大小/宽高比/搜索/排序可分享、可前进后退。
+     首次落地清洗用 replaceState，后续交互用 pushState（浏览器前进/后退可逐档恢复筛选态）。 */
+  var urlFirstSynced = false;
+  var popstateBound = false;
+  function syncBrowseUrl(push) {
     var page = doc.body && doc.body.getAttribute('data-page');
     if (page !== 'browse' && page !== 'home') return;
     var p = new URLSearchParams();
     if (state.type) p.set('type', state.type);
     if (state.size) p.set('size', state.size);
+    if (state.aspect) p.set('aspect', state.aspect);
     if (state.mode === 'search' && state.keyword) p.set('s', state.keyword);
     // 排序仅对 rank 生效；search 接口不支持交互排序，搜索态不写入 sort，避免 URL 死参数（与请求不一致）
     if (state.sort && state.sort !== '_add_time' && state.mode !== 'search') p.set('sort', state.sort);
     var q = p.toString();
-    try { history.replaceState(null, '', location.pathname + (q ? '?' + q : '')); } catch (e) {}
+    var url = location.pathname + (q ? '?' + q : '');
+    try {
+      if (push && urlFirstSynced) history.pushState(null, '', url);
+      else { history.replaceState(null, '', url); urlFirstSynced = true; }
+    } catch (e) {}
   }
 
   /* ------------------------------ 工具函数 ------------------------------ */
@@ -811,6 +862,7 @@
     var hotEl = $('#gmHotWords');
     var catContainer = $('#gmCats');
     var sizeContainer = $('#gmSizes');
+    var aspectContainer = $('#gmAspect');
     var sortEl = $('#gmSort');
 
     if (!grid) return;
@@ -825,7 +877,7 @@
       if (state.mode !== 'search') state.mode = type ? 'category' : (state.size ? 'browse' : 'home');
       loadImages(grid, stateEl, moreBtn, false);
       if (global.Tracker) global.Tracker.track('category_pick', { type: type || 'all' });
-      syncBrowseUrl();
+      syncBrowseUrl(true);
     });
 
     // 大小/画质 chip（与分类叠加）
@@ -834,7 +886,15 @@
       if (state.mode !== 'search') state.mode = size || state.type ? (state.type ? 'category' : 'browse') : 'home';
       loadImages(grid, stateEl, moreBtn, false);
       if (global.Tracker) global.Tracker.track('size_pick', { size: size || 'any' });
-      syncBrowseUrl();
+      syncBrowseUrl(true);
+    });
+
+    // 宽高比 chip（前端本地过滤，与分类/分辨率/排序正交叠加）
+    initAspect(aspectContainer, function (a) {
+      state.aspect = a;
+      loadImages(grid, stateEl, moreBtn, false);
+      if (global.Tracker) global.Tracker.track('aspect_pick', { aspect: a || 'any' });
+      syncBrowseUrl(true);
     });
 
     // 排序
@@ -843,7 +903,7 @@
       if (state.mode === 'search') { if (sortEl) sortEl.value = state.sort || '_add_time'; return; }
       state.sort = val || '_add_time';
       loadImages(grid, stateEl, moreBtn, false);
-      syncBrowseUrl();
+      syncBrowseUrl(true);
     });
 
     // 加载更多 + 滚到底部自动加载
@@ -889,7 +949,9 @@
     var urlSearch = params.get('s') || params.get('keyword');
     var urlSort = params.get('sort');
     var urlSize = params.get('size');
+    var urlAspect = params.get('aspect');
     if (urlSize && SIZE_BUCKETS[urlSize]) state.size = urlSize;
+    if (urlAspect && ASPECT_BUCKETS[urlAspect]) state.aspect = urlAspect;
     // 关键词与分类正交：此前 type 处理挂在 urlSearch 的 else 分支，?s=&type= 同现时 type 被整体丢弃
     // （结果集放大、URL 残留死参数、高亮与请求不一致）。改为独立解析 state.type，交由下方统一 chip 激活。
     if (urlType) state.type = urlType;
@@ -904,6 +966,8 @@
     else if (sortEl) { sortEl.value = state.sort || '_add_time'; }
     // 统一激活分类 chip（覆盖 ?type= 与 ?s=&type= 两种入口，与 state.type 严格一致，消除双高亮/死参数）
     activateCats(catContainer, state.type);
+    // 宽高比 chip 初始激活（按 URL 回显）
+    activateAspect(aspectContainer, state.aspect);
 
     loadImages(grid, stateEl, moreBtn, false);
 
@@ -914,21 +978,52 @@
       resetBtn.addEventListener('click', function () {
         state.type = '';
         state.size = '';
+        state.aspect = '';
         state.sort = '_add_time';
         state.keyword = '';
         state.mode = doc.body.getAttribute('data-page') === 'browse' ? 'browse' : 'home';
         if (catContainer) $$('.gm-cat-chip', catContainer).forEach(function (c) { c.classList.toggle('is-active', (c.getAttribute('data-type') || '') === ''); });
         activateSize(sizeContainer, '');
+        activateAspect(aspectContainer, '');
         if (sortEl) sortEl.value = '_add_time';
         if (searchInput) searchInput.value = '';
         loadImages(grid, stateEl, moreBtn, false);
-        syncBrowseUrl();
+        syncBrowseUrl(true);
       });
     }
 
     // 落地即清洗 URL：搜索深链携带的 sort 是 rank 专用死参数（search 不支持交互排序），
     // 据当前 state 规范化一次，使地址栏与请求/高亮即时一致，无需等用户首次交互才清除。
     syncBrowseUrl();
+
+    // 浏览器前进/后退：恢复筛选态（分类/分辨率/宽高比/搜索/排序）并重渲染。
+    // 仅在 home / browse 注册一次，避免其他页（rank/category/favorites/detail）误响应。
+    if (!popstateBound && (page === 'home' || page === 'browse')) {
+      popstateBound = true;
+      global.addEventListener('popstate', function () {
+        var q = new URLSearchParams(global.location.search);
+        var uType = q.get('type');
+        var uSearch = q.get('s') || q.get('keyword');
+        var uSort = q.get('sort');
+        var uSize = q.get('size');
+        var uAspect = q.get('aspect');
+        state.size = (uSize && SIZE_BUCKETS[uSize]) ? uSize : '';
+        state.aspect = (uAspect && ASPECT_BUCKETS[uAspect]) ? uAspect : '';
+        state.type = uType || '';
+        if (uSearch) {
+          state.mode = 'search'; state.keyword = uSearch; if (searchInput) searchInput.value = uSearch;
+        } else if (state.mode === 'search') {
+          state.mode = page === 'browse' ? 'browse' : 'home'; state.keyword = ''; if (searchInput) searchInput.value = '';
+        }
+        if (uSort && state.mode !== 'search') { if (sortEl) sortEl.value = uSort; state.sort = uSort; }
+        else if (sortEl) { sortEl.value = state.sort || '_add_time'; }
+        activateCats(catContainer, state.type);
+        activateSize(sizeContainer, state.size);
+        activateAspect(aspectContainer, state.aspect);
+        loadImages(grid, stateEl, moreBtn, false);
+        syncBrowseUrl();
+      });
+    }
   }
 
   /* ------------------------------ 启动 ------------------------------ */

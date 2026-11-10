@@ -151,6 +151,8 @@ function legacyPromoHosts(legacy) {
 function renderFooter(site, cfg, legacy, lang) {
   const nav = legacyNav(legacy, site, lang);
   const icp = ((legacy || '').match(/[\u4e00-\u9fa5]{0,2}ICP备\d+号-\d+/) || [])[0] || site.icp;
+  // WO-194 公安备案号（跨站预留钩子）：与 ICP 同源——从中文页（legacy）正则提取「京公网安备\d+号」，缺省不显示
+  const gongan = ((legacy || '').match(/京公网安备\d+号/) || [])[0] || '';
   const promo = legacyPromoHosts(legacy);
   const related = cfg.related.map(s =>
     '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' +
@@ -190,6 +192,7 @@ function renderFooter(site, cfg, legacy, lang) {
     '<a href="' + esc(site.sitemap) + '">' + esc(i18n(lang, '站点地图', 'Sitemap')) + '</a>' +
     '<a href="' + R.HUB_PATH + '">' + esc(i18n(lang, '全部站点', 'All sites')) + '</a>' +
     '<a href="' + R.ICP_URL + '" target="_blank" rel="noopener">' + esc(icp) + '</a>' +
+    (gongan ? '<a href="' + R.GONGAN_URL + gongan.replace(/\D/g, '') + '" target="_blank" rel="noopener noreferrer">' + esc(gongan) + '</a>' : '') +
     '<a href="#top" data-site-shell-top="1">' + esc(i18n(lang, '回到顶部 ↑', 'Back to top ↑')) + '</a>' +
     '</nav>\n' +
     '    </div>\n' +

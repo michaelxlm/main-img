@@ -101,6 +101,8 @@ const SITES = [
 
 const CONTACT_EMAIL = 'xlm8826@gmail.com';
 const ICP_URL = 'https://beian.miit.gov.cn/';
+// WO-194 公安备案号链接前缀（拼 recordcode 数字部分）；未申请到号码时页脚不输出链接
+const GONGAN_URL = 'https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=';
 const HUB_PATH = '/sites.html';
 const HUB_CANONICAL = 'https://xuliming.com/sites.html';
 
@@ -156,6 +158,6 @@ function configFor(key) {
 
 module.exports = {
   SHELL_VERSION, SITES, SITE_KEYS, SISTER_SITES,
-  CONTACT_EMAIL, ICP_URL, HUB_PATH, HUB_CANONICAL,
+  CONTACT_EMAIL, ICP_URL, GONGAN_URL, HUB_PATH, HUB_CANONICAL,
   get, sisterFor, relatedFor, quotaFor, configFor,
 };

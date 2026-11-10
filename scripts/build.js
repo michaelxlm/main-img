@@ -24,10 +24,22 @@ const MAIN_URL = 'img.fangkelianmeng.com'; // sourceGuard 放行凭证，须与 
 const BUILD_VERSION = new Date().toISOString().slice(0, 10).replace(/-/g, '.');
 
 // P3-2 精选集规模上限（控制仓库体积与构建时长；全站图片不预渲染）
-const PER_CATEGORY_FETCH = 50;   // 每类拉取用于选品与同类推荐
+const PER_CATEGORY_FETCH = 80;   // 每类拉取用于选品与同类推荐（WO-187 放大候选池，保证精选集达标）
 const CATEGORY_ABOVE = 20;       // 分类落地页预渲染的首屏图数
-const DETAIL_LIMIT = 200;        // 详情页精选集上限
+const DETAIL_LIMIT = 200;        // 详情页精选集硬上限
+const DETAIL_TARGET = 121;       // WO-187：与 README 收录观测台账（5+21+121=147）一致的精选集目标规模
+const RANK_PAGES = 3;            // WO-187：rank 每类追加拉取的页数（API 单页上限约 50，扩大候选池）
 const SITE_NAME = '小满美图';
+
+// WO-194 公安备案号（跨站预留钩子）：与 ICP 同源——从中文页正则提取「京公网安备\d+号」，缺省不显示
+const GONGAN = (function () {
+  var counts = {};
+  fs.readdirSync(ROOT).filter(function (f) { return /\.html$/.test(f); }).forEach(function (f) {
+    var m = fs.readFileSync(path.join(ROOT, f), 'utf8').match(/京公网安备\d+号/);
+    if (m) counts[m[0]] = (counts[m[0]] || 0) + 1;
+  });
+  return Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; })[0] || '';
+})();
 
 /* ------------------------------ HTTP 工具 ------------------------------ */
 function fetchJSON(url) {
@@ -211,7 +223,9 @@ function renderFooter() {
     + '          <li><a href="/">首页</a></li>\n          <li><a href="/browse.html">全部图片</a></li>\n          <li><a href="/rank.html">热门排行</a></li>\n          <li><a href="/category.html">分类浏览</a></li>\n          <li><a href="/favorites.html">我的收藏</a></li>\n          <li><a href="/about.html">关于与免责</a></li>\n        </ul></div>\n'
     + '        <div class="footer-col"><h4>更多站点</h4>\n<ul>\n' + more + '\n</ul></div>\n      </div>\n'
     + '      <div class="container"><div class="ad-slot" data-ad-slot="footer"></div></div>\n'
-    + '      <div class="footer-bottom"><span>© 2026 ' + SITE_NAME + '</span><div class="footer-links"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">京ICP备18062653号-23</a></div></div>\n    </div>\n  </footer>\n';
+    + '      <div class="footer-bottom"><span>© 2026 ' + SITE_NAME + '</span><div class="footer-links"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">京ICP备18062653号-23</a>'
+    + (GONGAN ? '<a href="https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=' + GONGAN.replace(/\D/g, '') + '" target="_blank" rel="noopener noreferrer">' + GONGAN + '</a>' : '')
+    + '</div></div>\n    </div>\n  </footer>\n';
 }
 
 function renderScripts() {
@@ -244,8 +258,8 @@ function staticCard(item, detailSet) {
   var tags = (item.tag || []).slice(0, 3).map(function (t) { return '<span class="gm-tag">' + esc(t) + '</span>'; }).join('');
   var avif = thumbUrlAvif(item);
   var imgHtml = avif
-    ? '<picture><source srcset="' + escAttr(avif) + '" type="image/avif"><img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.title || '壁纸') + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '"></picture>'
-    : '<img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.title || '壁纸') + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '">';
+    ? '<picture><source srcset="' + escAttr(avif) + '" type="image/avif"><img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.title || '壁纸') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '"></picture>'
+    : '<img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.title || '壁纸') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '">';
   return '<a class="gm-card" href="' + escAttr(href) + '">'
     + imgHtml
     + '<div class="gm-overlay"><div class="gm-overlay-title">' + esc(item.title || '未命名壁纸') + '</div>'
@@ -530,25 +544,35 @@ function syncObservation(relLocs) {
 }
 
 /* ------------------------------ 选品 ------------------------------ */
+// WO-187：精选集数量校正。旧实现「类内顺序 + 严格门槛（title + desc|tag）」去重后
+// 常只剩几十张（线上 72、仓库一度 49），与 README / sitemap / 台账声明的 121 不符。
+// 改为先汇总去重候选并按质量分级排序（高质量优先），再取满 DETAIL_TARGET；
+// 放宽到「有 title 即入选」，避免长尾分类被整体丢弃，仍受 DETAIL_LIMIT 硬上限约束。
 function pickDetailIds(itemsByCat) {
   var seen = {};
-  var picked = [];
-  // 全局热门优先（第一分类批次视为全站热门补充），再各类取头部，去重、质量门槛、封顶
-  function ok(it) {
-    return it && it._id && !seen[it._id] && (it.title && String(it.title).trim()) && (it.desc || (it.tag && it.tag.length));
+  var cands = [];
+  function quality(it) {
+    if (!it || !it._id || !(it.title && String(it.title).trim())) return 0;
+    var q = 1;                                  // 有标题即可入选
+    if (it.desc) q++;                           // 有描述 +1
+    if (it.tag && it.tag.length) q++;           // 有标签 +1
+    return q;
   }
-  // 先把全局下载榜（cat __global__）排前，再各类
+  // 先把全局下载榜（cat __global__）排前，再各类；i 记录原始顺序用于同分稳定排序
   var order = Object.keys(itemsByCat);
   order.sort(function (a, b) { return (a === '__global__' ? -1 : 1) - (b === '__global__' ? -1 : 1); });
   order.forEach(function (key) {
     (itemsByCat[key] || []).forEach(function (it) {
-      if (picked.length >= DETAIL_LIMIT) return;
-      if (!ok(it)) return;
+      if (!it || !it._id || seen[it._id]) return;
+      var q = quality(it);
+      if (!q) return;
       seen[it._id] = true;
-      picked.push(it);
+      cands.push({ it: it, q: q, i: cands.length });
     });
   });
-  return picked;
+  cands.sort(function (a, b) { return b.q - a.q || a.i - b.i; });
+  var limit = Math.min(DETAIL_LIMIT, DETAIL_TARGET);
+  return cands.slice(0, limit).map(function (c) { return c.it; });
 }
 
 /* ------------------------------ 主流程 ------------------------------ */
@@ -590,16 +614,26 @@ async function main() {
   var paginationByCat = {};
   var apiOk = false;
   var emptyConfirmed = {}; // rank 成功但空 → 确认无数据，可清退
+  // WO-187：rank 单页受 API 上限（约 50 张）约束，22 类首页去重后带标题的图不足 121，
+  // 故按 sort=download 追加拉取若干页扩大候选池；某页空即停，失败非致命。
   if (activeSlugs.length) {
     for (var i = 0; i < activeSlugs.length; i++) {
       var slug = activeSlugs[i];
       try {
-        var r = await fetchRank({ type: slug, sort: 'download', pageSize: PER_CATEGORY_FETCH });
-        itemsByCat[slug] = r.list;
-        paginationByCat[slug] = r.pagination;
-        if (r.list.length) apiOk = true;
+        var first = await fetchRank({ type: slug, sort: 'download', pageSize: PER_CATEGORY_FETCH, page: 1 });
+        var list = first.list.slice();
+        for (var pg = 2; pg <= RANK_PAGES; pg++) {
+          try {
+            var rp = await fetchRank({ type: slug, sort: 'download', pageSize: PER_CATEGORY_FETCH, page: pg });
+            if (!rp.list.length) break;
+            list = list.concat(rp.list);
+          } catch (e) { break; }
+        }
+        itemsByCat[slug] = list;
+        paginationByCat[slug] = first.pagination;
+        if (list.length) apiOk = true;
         else emptyConfirmed[slug] = true;
-        console.log('  rank[' + slug + '] → ' + r.list.length + ' 张');
+        console.log('  rank[' + slug + '] → ' + list.length + ' 张');
       } catch (e) {
         console.log('  rank[' + slug + '] 失败（非致命）:', e.message);
         itemsByCat[slug] = [];
@@ -607,10 +641,18 @@ async function main() {
     }
     // 全站热门（跨类补充）
     try {
-      var g = await fetchRank({ sort: 'download', pageSize: PER_CATEGORY_FETCH });
-      itemsByCat.__global__ = g.list;
-      if (g.list.length) apiOk = true;
-      console.log('  rank[全局] → ' + g.list.length + ' 张');
+      var g = await fetchRank({ sort: 'download', pageSize: PER_CATEGORY_FETCH, page: 1 });
+      var glist = g.list.slice();
+      for (var pg2 = 2; pg2 <= RANK_PAGES; pg2++) {
+        try {
+          var gp = await fetchRank({ sort: 'download', pageSize: PER_CATEGORY_FETCH, page: pg2 });
+          if (!gp.list.length) break;
+          glist = glist.concat(gp.list);
+        } catch (e) { break; }
+      }
+      itemsByCat.__global__ = glist;
+      if (glist.length) apiOk = true;
+      console.log('  rank[全局] → ' + glist.length + ' 张');
     } catch (e) { itemsByCat.__global__ = []; }
   }
 

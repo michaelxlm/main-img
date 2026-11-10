@@ -12,6 +12,27 @@
 }
 .gm-filter .gm-cats { margin: 0; }
 
+/* 高级筛选折叠面板（WO-187）：整合类别 / 分辨率 / 宽高比 / 主色调，默认可折叠 */
+.gm-adv {
+  border: 1px dashed var(--border); border-radius: var(--radius-sm);
+  padding: 4px 12px 8px; margin: 2px 0 0;
+  background: var(--surface-2);
+}
+.gm-adv > summary {
+  list-style: none; cursor: pointer; user-select: none;
+  display: flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 6px 2px;
+  font-size: 0.875rem; font-weight: 700; color: var(--text);
+}
+.gm-adv > summary::-webkit-details-marker { display: none; }
+.gm-adv > summary::before {
+  content: '▸'; display: inline-block; color: var(--accent-solid);
+  transition: transform var(--dur-fast) ease;
+}
+.gm-adv[open] > summary::before { transform: rotate(90deg); }
+.gm-adv[open] > summary { border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.gm-adv > .gm-facet:last-child { margin-bottom: 0; }
+
 /* ---------------------------------- 搜索栏 ---------------------------------- */
 .gm-search { display: flex; gap: 8px; }
 .gm-search input {
@@ -56,6 +77,13 @@
 }
 .gm-size-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .gm-size-chip.is-active { border-color: var(--accent-solid); color: #fff; background: var(--accent-solid); }
+/* 主色调占位（后端暂无 dominant color 字段/接口）：置灰不可点，避免误导 */
+.gm-size-chip:disabled, .gm-size-chip[disabled] {
+  opacity: .5; cursor: not-allowed; border-style: dashed; color: var(--text-muted);
+}
+.gm-size-chip:disabled:hover, .gm-size-chip[disabled]:hover {
+  border-color: var(--border-strong); color: var(--text-muted); background: var(--surface);
+}
 .gm-reset { padding: 8px 14px; min-height: 36px; font-size: 0.875rem; }
 
 /* ---------------------------------- 工具栏 ---------------------------------- */

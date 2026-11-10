@@ -17,7 +17,7 @@ tags: [main-img, 静态站]
 - **三层 CSS 架构**：`tokens.css`（设计令牌）→ `main.css`（站点基础）→ `gallery.css`（画廊专用）
 - **模块化 JS**：`tracker.js`（埋点 SDK）→ `app.js`（主题/菜单）→ `gallery.js`（画廊交互）
 - **API 数据源**：`/api/v1/front/antucao/image/` 系列接口（sample / rank / search / detail）
-- **缩略图提速**：列表缩略图/灯箱展示图走 OSS `x-oss-process` 裁剪（w_400/w_1920 + webp），下载仍用原图；失效时回退原图→外链→上报
+- **缩略图提速**：列表缩略图/灯箱展示图/详情页大图走 OSS `x-oss-process` 裁剪（w_400/w_1920，WebP 兜底 + AVIF `<picture>` 派生），下载仍用原图；卡片 `<img>` 带真实 `width`/`height` 属性防 CLS；失效时回退原图→外链→上报
 - **图片域名**：`img.fangkelianmeng.com`
 - **PWA**：Service Worker 离线兜底
 - **SEO**：结构化数据 JSON-LD、Open Graph、sitemap.xml
@@ -66,12 +66,12 @@ main-img/
 
 | 页面 | 文件 | 说明 |
 |------|------|------|
-| 首页 | `index.html` | Hero 搜索 + 21 分类 chip + 瀑布流精选壁纸（滚动自动加载） |
-| 全部图片 | `browse.html` | 分页浏览 + 多排序方式，展示总张数 |
+| 首页 | `index.html` | Hero 搜索 + 全部分类 chip + 高级筛选面板（分辨率/宽高比/主色调占位）+ 瀑布流精选壁纸（滚动自动加载） |
+| 全部图片 | `browse.html` | 高级筛选面板 + 分页浏览 + 多排序方式，展示总张数 |
 | 热门排行 | `rank.html` | 按下载/点赞/浏览排序，卡片带名次角标（前 3 名金银铜） |
-| 分类 | `category.html` | 21 大分类卡片入口（链向落地页） |
+| 分类 | `category.html` | 22 大分类卡片入口（链向落地页） |
 | 分类落地页 | `category/{slug}.html` | 构建期预渲染（每类首屏 20 张静态卡 + SEO 文案），`build.js` 生成、勿手改 |
-| 详情精选页 | `p/{id}.html` | 构建期预渲染（大图/元信息/下载/同类推荐/ImageObject，上限 200），`build.js` 生成、勿手改 |
+| 详情精选页 | `p/{id}.html` | 构建期预渲染（大图/元信息/下载/同类推荐/ImageObject，目标 121 / 硬上限 200），`build.js` 生成、勿手改 |
 | 我的收藏 | `favorites.html` | 浏览本地收藏，支持取消/清空（noindex，不进 sitemap） |
 | 关于 | `about.html` | 数据来源、版权声明、FAQ |
 | 404 | `404.html` | 页面走丢了 |
@@ -84,7 +84,7 @@ main-img/
 node scripts/build.js
 ```
 
-拉取中台 sample/rank 接口 → 枚举真实分类码（`data/type-registry.json` 累计登记防抽样抖动）→ 生成 `category/*.html` 与 `p/*.html`（仅预渲染精选集，全量 33 万图仍运行时取数）→ 重写 `sitemap.xml`（主页面 + 全部生成页）→ 同步收录台账 → CSS/JS 盖 `?v=` 令牌（`detail-set.js` 故意不盖、保持常新）。API 不可达则降级为只重写主页面 sitemap、保留既有生成页。生成页为产物，需随仓库 commit（deploy 工作流无构建步骤）。
+拉取中台 sample/rank 接口（**WO-187**：每类按 `sort=download` 追加拉取 3 页，扩大候选池以凑满 121 张精选）→ 枚举真实分类码（`data/type-registry.json` 累计登记防抽样抖动）→ 按质量分级（有 title 优先，desc/tag 加分）去重选品，取满 `DETAIL_TARGET=121`（受 `DETAIL_LIMIT=200` 硬上限约束）→ 生成 `category/*.html` 与 `p/*.html`（仅预渲染精选集，全量 33 万图仍运行时取数）→ 重写 `sitemap.xml`（主页面 + 全部生成页）与 `image-sitemap.xml` → 同步收录台账 → CSS/JS 盖 `?v=` 令牌（`detail-set.js` 故意不盖、保持常新）。API 不可达则降级为只重写主页面 sitemap、保留既有生成页。生成页为产物，需随仓库 commit（deploy 工作流无构建步骤）。
 
 ## API 接口
 
@@ -96,6 +96,22 @@ node scripts/build.js
 | `/api/v1/front/antucao/image/detail` | GET | 详情（`id`） |
 | `/api/v1/front/antucao/image/operation` | POST | 互动计数（`img_id`, `type`, `inc`） |
 | `/api/v1/front/antucao/image/error` | POST | 失效上报（`img_id`） |
+
+## 筛选与 URL 参数（WO-187）
+
+首页 / 全部图片页的筛选态写进 URL，可分享、可用浏览器前进后退逐档恢复：
+
+| 参数 | 含义 | 生效范围 |
+|------|------|----------|
+| `type` | 分类码（如 `anime` / `4K`） | 服务端 `rank` / `search` |
+| `size` | 分辨率档 `uhd` / `hd` / `sd`（换算 `minSize` / `maxSize`） | 服务端 |
+| `aspect` | 宽高比 `landscape` / `portrait` / `square` | **客户端**（后端无 ratio 参数，按已加载图的 `width` / `height` 本地过滤） |
+| `s` | 搜索关键词 | 服务端 `search` |
+| `sort` | 排序（`download` / `like` / `view` …；搜索态不写，避免死参数） | 服务端 `rank` |
+
+- 首次落地用 `replaceState` 规范化 URL，后续交互用 `pushState`；`popstate` 监听恢复全部筛选维度并重渲染。
+- 「高级筛选」折叠面板整合分类 / 分辨率 / 宽高比 / 排序；**主色调**为 UI 占位（置灰不可点）——中台 image 接口暂无 dominant color 字段与查询参数，接入后再启用。
+- 搜索态不支持交互排序（`search` 接口无 sort），下拉复位为默认，URL 也不写 `sort`。
 
 ## 本地开发
 
@@ -118,9 +134,10 @@ php -S localhost:8080
 
 ## 收录观测
 
-- 台账：`data/index-observation.json`，与 `sitemap.xml` 一一对应（现 147 条：5 主页面 + 21 分类落地页 + 121 详情精选页）；`http_status / checked_at` 由脚本回写，`indexed` 不人工回填。
+- 台账：`data/index-observation.json`，与 `sitemap.xml` 一一对应（WO-187 2026-11-10 重建后 148 条：5 主页面 + 22 分类落地页 + 121 详情精选页）；`http_status / checked_at` 由脚本回写，`indexed` 不人工回填。
 - 核对：`node scripts/index-observation.js`（`--no-write` 只看不写）逐条查 HTTP / canonical / robots / sitemap，并校验 http→https，回写 `http_status / checked_at`，报告写到 `reports/index-observation-YYYY-MM-DD.md`（含百度 / GSC 核对入口）。
 - 2026-10-23 生产实测（精选集预渲染上线）：147 条全部 `200`、canonical 与 URL 一致、robots 放行、均在 sitemap；页内 /p/ 与 /category/ 内链断链 0；`detail-set.js` 121 条与 sitemap 详情页 1:1 零孤儿；`sitemap.xml` 已提交百度 / GSC，按 D-index-backfill 收录状态不再人工回填（`indexed` 保持 `unknown`）。
+- 2026-11-10（WO-187）：选品逻辑校正后重建，`p/` 121 页、`detail-set.js` 121 条、`sitemap.xml` 148 条三者 1:1 一致（此前线上仅 72 / 仓库 49，与 README 声明的 121 不符）。
 
 ## 编码规范
 
