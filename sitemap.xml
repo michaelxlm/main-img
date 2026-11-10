@@ -385,4 +385,7 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+<!-- SITE-SHELL:SITEMAP:START -->
+<url><loc>https://img.fangkelianmeng.com/sites.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+<!-- SITE-SHELL:SITEMAP:END -->
 </urlset>

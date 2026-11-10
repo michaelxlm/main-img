@@ -138,27 +138,67 @@ footer.ss-footer {
 .ss-bottom nav { display: flex; flex-wrap: wrap; gap: 6px 16px; }
 .ss-bottom a { font-size: 12px; color: var(--ss-muted) !important; }
 
-/* ---------------------------- 关于页信息卡 ---------------------------- */
+/* ---------------------------- 关于页信息卡（S3 · v2） ---------------------------- */
 .ss-about {
-  max-width: var(--ss-read);
-  margin: 40px auto 0;
-  padding: 24px 26px;
+  max-width: 860px;
+  margin: 44px auto 0;
+  padding: 28px 30px 26px;
   border: 1px solid var(--ss-line);
   border-radius: var(--ss-radius);
   background: var(--ss-surface);
   color: var(--ss-fg);
+  box-shadow: var(--ss-shadow);
   font-size: 15px;
-  line-height: 1.75;
+  line-height: 1.7;
 }
-.ss-about h2 { margin: 0 0 16px !important; font-size: 20px !important; color: var(--ss-fg) !important; }
-.ss-about dl { margin: 0 !important; }
-.ss-about-row { display: grid; grid-template-columns: 132px 1fr; gap: 12px; padding: 10px 0; border-top: 1px solid var(--ss-line); }
-.ss-about-row:first-child { border-top: 0; }
-.ss-about dt { margin: 0 !important; font-weight: 600; color: var(--ss-fg) !important; }
-.ss-about dd { margin: 0 !important; color: var(--ss-muted) !important; }
+.ss-about-head {
+  display: flex; align-items: center; gap: 14px;
+  padding-bottom: 18px; margin-bottom: 18px;
+  border-bottom: 1px solid var(--ss-line);
+}
+.ss-about-badge {
+  flex: 0 0 auto;
+  display: grid; place-items: center;
+  width: 42px; height: 42px; border-radius: 12px;
+  background: color-mix(in srgb, var(--ss-brand) 14%, transparent);
+  color: var(--ss-brand);
+  font-style: italic; font-weight: 800; font-size: 19px;
+}
+.ss-about-titles h2 { margin: 0 !important; font-size: 21px !important; color: var(--ss-fg) !important; }
+.ss-about-sub { margin: 4px 0 0 !important; font-size: 13.5px; color: var(--ss-muted) !important; }
+.ss-about-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px; margin: 0 !important;
+}
+.ss-about-row {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--ss-line);
+  border-radius: calc(var(--ss-radius) - 2px);
+  background: var(--ss-bg);
+}
+.ss-about-row dt {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 !important; font-weight: 600; color: var(--ss-fg) !important; font-size: 14.5px;
+}
+.ss-about-ico { font-size: 15px; line-height: 1; }
+.ss-about-row dd { margin: 0 !important; color: var(--ss-muted) !important; font-size: 13.5px; line-height: 1.6; }
 .ss-about a { color: var(--ss-brand) !important; }
-.ss-about-links { margin: 18px 0 0 !important; font-size: 13px; }
-.ss-about-links a { margin-right: 6px; }
+.ss-about-contact {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  margin-top: 18px; padding: 14px 16px;
+  border-radius: calc(var(--ss-radius) - 2px);
+  background: color-mix(in srgb, var(--ss-brand) 10%, var(--ss-surface));
+  border: 1px solid color-mix(in srgb, var(--ss-brand) 24%, transparent);
+}
+.ss-about-contact-text { color: var(--ss-fg) !important; font-size: 14px; }
+.ss-about-mail {
+  font-weight: 600; color: var(--ss-brand) !important;
+  padding: 6px 14px; border: 1px solid color-mix(in srgb, var(--ss-brand) 34%, transparent);
+  border-radius: 999px; white-space: nowrap;
+}
+.ss-about-links { margin: 16px 0 0 !important; font-size: 13px; text-align: center; color: var(--ss-muted) !important; }
+.ss-about-links a { margin: 0 4px; }
 
 /* ------------------------------ 回到顶部 ------------------------------ */
 #site-shell-top {
@@ -201,8 +241,9 @@ footer.ss-footer {
   .ss-grid { grid-template-columns: 1fr; gap: 20px; }
   .ss-col ul.ss-sister { grid-template-columns: 1fr; }
   .ss-bottom { flex-direction: column; align-items: flex-start; }
-  .ss-about { margin: 28px 12px 0; padding: 18px; }
-  .ss-about-row { grid-template-columns: 1fr; gap: 2px; }
+  .ss-about { margin: 28px 12px 0; padding: 20px; }
+  .ss-about-grid { grid-template-columns: 1fr; }
+  .ss-about-head { gap: 12px; }
 }
 @media (max-width: 420px) {
   .ss-related li a { padding: 12px; }

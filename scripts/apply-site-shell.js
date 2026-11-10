@@ -198,29 +198,54 @@ function renderFooter(site, cfg, legacy, lang) {
   return block('footer', html);
 }
 
+/**
+ * 关于页「站点信息」卡（S3 · 六段式信息卡 v2）
+ * 六字段固定：站点定位 / 内容与更新 / 数据来源 / 隐私与 Cookie / 免责声明 / 联系方式。
+ * v2 改为「标题区 + 图标双栏网格 + 联系 CTA」的现代卡片布局，替代原纯定义列表，
+ * 提升可读性与视觉层次；中英文结构一致，仅文案语言不同。卡片内容取自注册表单源。
+ */
 function renderAbout(site, lang) {
+  const isEn = lang === 'en';
   const rows = [
-    [i18n(lang, '站点定位', 'About'), site.tagline],
-    [i18n(lang, '内容与更新', 'Content & updates'), site.update],
-    [i18n(lang, '数据来源', 'Data sources'), site.source],
-    [i18n(lang, '隐私与 Cookie', 'Privacy & cookies'),
-      i18n(lang, '本站不要求注册、不收集账号信息；仅使用本地存储保存主题与收藏偏好，统计用于了解访问量。', 'No account required. Only local storage is used for theme and favourites; anonymous analytics measure traffic.')],
-    [i18n(lang, '免责声明', 'Disclaimer'),
-      i18n(lang, '内容仅供参考，第三方信息与价格以对方页面为准；因使用本站内容产生的决策请自行判断。', 'Content is for reference only. Third-party data and prices are subject to the source page.')],
-    [i18n(lang, '联系方式', 'Contact'), R.CONTACT_EMAIL],
+    { ico: '🎯', zh: '站点定位', en: 'What this site is', val: site.tagline },
+    { ico: '🔄', zh: '内容与更新', en: 'Content & updates', val: site.update },
+    { ico: '📚', zh: '数据来源', en: 'Data sources', val: site.source },
+    { ico: '🍪', zh: '隐私与 Cookie', en: 'Privacy & cookies',
+      val: isEn
+        ? 'No account required. Only local storage is used for theme and favourites; anonymous analytics measure traffic.'
+        : '本站不要求注册、不收集账号信息；仅使用本地存储保存主题与收藏偏好，统计用于了解访问量。' },
+    { ico: '⚠️', zh: '免责声明', en: 'Disclaimer',
+      val: isEn
+        ? 'Content is for reference only. Third-party data and prices are subject to the source page.'
+        : '内容仅供参考，第三方信息与价格以对方页面为准；因使用本站内容产生的决策请自行判断。' },
+    { ico: '✉️', zh: '联系方式', en: 'Contact', val: R.CONTACT_EMAIL, isMail: true },
   ];
-  const items = rows.map((r, i) =>
-    '<div class="ss-about-row"><dt>' + esc(r[0]) + '</dt><dd>' +
-    (i === 5 ? '<a href="mailto:' + R.CONTACT_EMAIL + '">' + R.CONTACT_EMAIL + '</a>' : esc(r[1])) +
-    '</dd></div>').join('\n        ');
+  const items = rows.map(r =>
+    '<div class="ss-about-row">' +
+      '<dt><span class="ss-about-ico" aria-hidden="true">' + r.ico + '</span>' +
+      esc(isEn ? r.en : r.zh) + '</dt>' +
+      '<dd>' + (r.isMail
+        ? '<a href="mailto:' + R.CONTACT_EMAIL + '">' + R.CONTACT_EMAIL + '</a>'
+        : esc(r.val)) + '</dd>' +
+    '</div>').join('\n        ');
   const html =
     '<section class="ss-about" id="site-shell-about" data-site-shell-about="1">\n' +
-    '  <h2>' + esc(i18n(lang, '站点信息', 'Site information')) + '</h2>\n' +
-    '  <dl>\n        ' + items + '\n      </dl>\n' +
+    '  <header class="ss-about-head">\n' +
+    '    <span class="ss-about-badge" aria-hidden="true">i</span>\n' +
+    '    <div class="ss-about-titles">\n' +
+    '      <h2>' + esc(isEn ? 'About this site' : '关于本站') + '</h2>\n' +
+    '      <p class="ss-about-sub">' + esc(site.name) + ' · ' + esc(site.tagline) + '</p>\n' +
+    '    </div>\n' +
+    '  </header>\n' +
+    '  <dl class="ss-about-grid">\n        ' + items + '\n      </dl>\n' +
+    '  <div class="ss-about-contact">\n' +
+    '    <span class="ss-about-contact-text">' + esc(isEn ? 'Feedback or partnership?' : '有合作或反馈？') + '</span>\n' +
+    '    <a class="ss-about-mail" href="mailto:' + R.CONTACT_EMAIL + '">' + R.CONTACT_EMAIL + '</a>\n' +
+    '  </div>\n' +
     '  <p class="ss-about-links">' +
-    '<a href="' + esc(site.privacy) + '">' + esc(i18n(lang, '隐私', 'Privacy')) + '</a> · ' +
-    '<a href="' + esc(site.sitemap) + '">' + esc(i18n(lang, '站点地图', 'Sitemap')) + '</a> · ' +
-    '<a href="' + R.HUB_PATH + '">' + esc(i18n(lang, '全部站点', 'All sites')) + '</a></p>\n' +
+    '<a href="' + esc(site.privacy) + '">' + esc(isEn ? 'Privacy' : '隐私') + '</a> · ' +
+    '<a href="' + esc(site.sitemap) + '">' + esc(isEn ? 'Sitemap' : '站点地图') + '</a> · ' +
+    '<a href="' + R.HUB_PATH + '">' + esc(isEn ? 'All sites' : '全部站点') + '</a></p>\n' +
     '</section>';
   return block('about', html);
 }
