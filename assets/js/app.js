@@ -74,13 +74,16 @@
     doc.documentElement.setAttribute('data-theme', actual);
     var btn = $('#themeToggle');
     if (btn) {
-      // 图标反映「模式」而非解析后的主题：三态循环每点一次图标必变，消除 auto→当前主题 的视觉死步（对齐 color-tool 显示模式名）
+      // WO-197 契约：图标反映「模式」而非解析后的主题，三态循环每点一次图标必变（🌗 / ☀ / 🌙）
       var m = THEME_MODES.indexOf(mode) >= 0 ? mode : 'auto';
       var next = THEME_MODES[(THEME_MODES.indexOf(m) + 1) % THEME_MODES.length];
       btn.textContent = THEME_ICON[m];
       btn.setAttribute('data-theme-mode', m);
-      btn.setAttribute('aria-label', '当前主题：' + THEME_LABEL[m] + '，点击切换为' + THEME_LABEL[next]);
-      btn.setAttribute('title', '当前主题：' + THEME_LABEL[m] + '（点击切换为' + THEME_LABEL[next] + '）');
+      btn.setAttribute('data-theme-next', next);
+      // 读屏与悬浮提示同一串文案（七站统一：「当前主题：X（点击切换为Y）」），不留两套口径
+      var tip = '当前主题：' + THEME_LABEL[m] + '（点击切换为' + THEME_LABEL[next] + '）';
+      btn.setAttribute('aria-label', tip);
+      btn.setAttribute('title', tip);
     }
   }
 
