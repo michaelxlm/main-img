@@ -10,6 +10,9 @@
   /* 白字专用深阶：凡 background:accent + 白字 的载体一律用它，保 WCAG AA ≥4.5:1（审计 T4） */
   --accent-solid: #4f46e5;
   --accent-solid-hover: #4338ca;
+  /* 审计 T4：通用反色字门禁读 --primary / --primary-strong，取已校对的深阶同值别名。 */
+  --primary: #4f46e5;
+  --primary-strong: #4338ca;
 
   --bg: #ffffff;
   --bg-soft: #f8f9fc;

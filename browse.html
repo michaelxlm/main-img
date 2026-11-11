@@ -133,11 +133,20 @@
             <a class="gm-cat-chip" href="/browse.html?type=mcj" data-type="mcj">MCJ</a>
           </div>
           <div class="gm-facet" id="gmSizes" role="group" aria-label="分辨率筛选">
-            <span class="gm-facet-label">分辨率</span>
-            <button class="gm-size-chip is-active" type="button" data-size="">不限</button>
-            <button class="gm-size-chip" type="button" data-size="uhd">超清 ≥ 1MB</button>
-            <button class="gm-size-chip" type="button" data-size="hd">高清 300KB–1MB</button>
-            <button class="gm-size-chip" type="button" data-size="sd">精选 &lt; 300KB</button>
+            <span class="gm-facet-label">分辨率（设备尺寸）</span>
+            <div class="gm-facet-row">
+              <button class="gm-size-chip is-active" type="button" data-size="">不限</button>
+              <button class="gm-size-chip" type="button" data-size="phone" title="至少 1080×1920（手机竖屏）">手机 1080×1920</button>
+              <button class="gm-size-chip" type="button" data-size="desktop" title="至少 1920×1080（桌面横屏）">桌面 1920×1080</button>
+              <button class="gm-size-chip" type="button" data-size="2k" title="至少 2560×1440">2K 2560×1440</button>
+              <button class="gm-size-chip" type="button" data-size="4k" title="至少 3840×2160">4K 3840×2160</button>
+            </div>
+            <div class="gm-facet-row">
+              <span class="gm-facet-sub">画质 / 体积</span>
+              <button class="gm-size-chip" type="button" data-size="uhd">超清 ≥ 1MB</button>
+              <button class="gm-size-chip" type="button" data-size="hd">高清 300KB–1MB</button>
+              <button class="gm-size-chip" type="button" data-size="sd">精选 &lt; 300KB</button>
+            </div>
           </div>
           <div class="gm-facet" id="gmAspect" role="group" aria-label="宽高比筛选">
             <span class="gm-facet-label">宽高比</span>
@@ -146,15 +155,19 @@
             <button class="gm-size-chip" type="button" data-aspect="portrait">竖图</button>
             <button class="gm-size-chip" type="button" data-aspect="square">方图</button>
           </div>
-          <div class="gm-facet" id="gmColor" role="group" aria-label="主色调筛选">
+          <div class="gm-facet" id="gmColor" role="group" aria-label="主色调筛选" data-color-enabled="0">
             <span class="gm-facet-label">主色调</span>
-            <button class="gm-size-chip" type="button" disabled title="敬请期待：需服务端主色调分析支持">红</button>
-            <button class="gm-size-chip" type="button" disabled title="敬请期待：需服务端主色调分析支持">橙</button>
-            <button class="gm-size-chip" type="button" disabled title="敬请期待：需服务端主色调分析支持">黄</button>
-            <button class="gm-size-chip" type="button" disabled title="敬请期待：需服务端主色调分析支持">绿</button>
-            <button class="gm-size-chip" type="button" disabled title="敬请期待：需服务端主色调分析支持">蓝</button>
-            <button class="gm-size-chip" type="button" disabled title="敬请期待：需服务端主色调分析支持">紫</button>
-            <button class="gm-size-chip" type="button" disabled title="敬请期待：需服务端主色调分析支持">黑白</button>
+            <button class="gm-size-chip" type="button" data-color="red" disabled title="图源暂无主色调数据">红</button>
+            <button class="gm-size-chip" type="button" data-color="orange" disabled title="图源暂无主色调数据">橙</button>
+            <button class="gm-size-chip" type="button" data-color="yellow" disabled title="图源暂无主色调数据">黄</button>
+            <button class="gm-size-chip" type="button" data-color="green" disabled title="图源暂无主色调数据">绿</button>
+            <button class="gm-size-chip" type="button" data-color="blue" disabled title="图源暂无主色调数据">蓝</button>
+            <button class="gm-size-chip" type="button" data-color="purple" disabled title="图源暂无主色调数据">紫</button>
+            <button class="gm-size-chip" type="button" data-color="mono" disabled title="图源暂无主色调数据">黑白</button>
+            <span class="gm-color-note" role="note">图源暂无主色调数据</span>
+          </div>
+          <div class="gm-adv-actions">
+            <button id="gmAdvReset" class="btn btn-ghost gm-reset" type="button" data-gm-reset>重置筛选</button>
           </div>
           </details>
         </div>
@@ -171,6 +184,7 @@
               <option value="collect">收藏最多</option>
             </select>
           </label>
+          <button id="gmRandom" class="btn btn-ghost gm-random" type="button" title="从当前结果里随机挑一张">随机一张</button>
           <button id="gmReset" class="btn btn-ghost gm-reset" type="button">清除筛选</button>
         </div>
 

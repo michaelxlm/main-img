@@ -58,7 +58,10 @@
     }
   }
 
-  /** 单个图片值提取为 URL 字符串（兼容 { url/path/src } 对象） */
+  /**
+   * 单个图片值提取为 URL 字符串（兼容 { url/path/src } 对象）
+   * @param value
+   */
   function pickImage(value) {
     if (!value) return '';
     if (typeof value === 'string') return value.trim();
@@ -69,6 +72,7 @@
   /**
    * 图片字段归一化为 URL 数组
    * 兼容：数组、JSON 数组/对象字符串（管理端 crudPage 落库格式）、逗号拼接、单个 URL/对象
+   * @param value
    */
   function imageList(value) {
     if (!value) return [];
@@ -102,7 +106,10 @@
     return [ s ];
   }
 
-  /** 取字段的首个图片 URL（无则空串） */
+  /**
+   * 取字段的首个图片 URL（无则空串）
+   * @param value
+   */
   function firstImage(value) {
     var list = imageList(value);
     return list.length ? list[0] : '';

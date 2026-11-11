@@ -4,6 +4,13 @@
    统一管理：间距节奏 / 圆角 / 阴影层级 / 容器宽度 / 字体。
    品牌差异（--accent / --bg / --surface / --border / --text 等）仍由各站定义。
    下游站（visitor / aiWeb / color-tool）词汇不同，接入时按其命名对齐到本文件即可。
+
+   WO-193 权威方向（已拍板「CSS 权威」）：本文件同时是小程序栈
+   main-tool/common/css/design-tokens.scss 重叠维度（间距 / 圆角 / 阴影 / 断点 / z / 字阶）
+   的唯一对齐点；SCSS 里 $shared-* 别名块由 main-api/scripts/sync-design-tokens.js
+   从本文件派生，改动本文件后须跑 `node scripts/sync-design-tokens.js --apply`，
+   CI 以 `--check` 锁漂移。SCSS 既有 $spacing-* / $radius-* / $shadow-* 为本栈
+   rpx 专有尺度，保留兼容但新代码不得再用它们表达共享维度。
    ========================================================================== */
 
 :root {

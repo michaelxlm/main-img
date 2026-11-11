@@ -15,10 +15,18 @@
   var FAV_EMPTY_MSG = '还没有收藏，去首页或热门排行挑选喜欢的壁纸吧';
   // 画质/体积档（size 字段为字节数）：前端只传档位，档位→min/max 在此映射为后端 rank 的
   // minSize/maxSize（走 (status,size) 索引）；min=1 天然排除 size=0 的未落库项。
+  // WO-187 设备尺寸预设：沿用同一个 size 维度（?size=phone|desktop|2k|4k），按图片真实
+  // width/height 做客户端「至少达到该分辨率」过滤；后端仍只带 minSize=1（沿用既有映射
+  // 链路排除未落库项），不用文件体积去臆测像素分辨率。与 uhd/hd/sd 共用 state.size，
+  // 故同一时刻只激活一档，URL 参数语义不变。
   var SIZE_BUCKETS = {
     uhd: { label: '超清', min: 1048576, max: 0 },        // ≥1MB
     hd: { label: '高清', min: 307200, max: 1048576 },     // 300KB–1MB
     sd: { label: '精选', min: 1, max: 307200 },           // <300KB
+    phone:   { label: '手机 1080×1920',  min: 1, max: 0, res: { w: 1080, h: 1920 } },
+    desktop: { label: '桌面 1920×1080', min: 1, max: 0, res: { w: 1920, h: 1080 } },
+    '2k':    { label: '2K 2560×1440',   min: 1, max: 0, res: { w: 2560, h: 1440 } },
+    '4k':    { label: '4K 3840×2160',   min: 1, max: 0, res: { w: 3840, h: 2160 } },
   };
 
   var doc = global.document;
@@ -178,6 +186,7 @@
     type: '',
     size: '',
     aspect: '',        // 宽高比客户端过滤：'' | landscape | portrait | square（后端无 ratio 参数，前端按已加载 width/height 过滤）
+    color: '',         // 主色调：数据门控，仅当图源确有可用主色调字段时启用（见 COLOR_FIELD_CANDIDATES）
     keyword: '',
     loading: false,
     hasMore: true,
@@ -195,6 +204,86 @@
   function applyAspectFilter(list) {
     if (!state.aspect || !ASPECT_BUCKETS[state.aspect]) return list;
     return list.filter(function (it) { return ASPECT_BUCKETS[state.aspect](it); });
+  }
+
+  /* 设备尺寸预设（WO-187）：SIZE_BUCKETS 中带 res 的档位，按图片真实 width/height 判定
+     「至少达到」目标设备分辨率。后端无像素尺寸参数，与 aspect 同属已加载批次内的客户端
+     过滤层；档位的 min:1 仍走既有 minSize 映射（只排除 size=0 未落库项）。 */
+  function applyResolutionFilter(list) {
+    var sb = SIZE_BUCKETS[state.size];
+    var res = sb && sb.res;
+    if (!res) return list;
+    return list.filter(function (it) {
+      var w = +it.width || 0, h = +it.height || 0;
+      return w && h && w >= res.w && h >= res.h;
+    });
+  }
+
+  /* 主色调（WO-187，数据门控）：只消费图源明确提供的主色调字段，绝不从 title/tag/URL/
+     文件名臆测颜色。图源无字段时 colorDataAvailable() 为假 → 不过滤、不写 URL、控件禁用，
+     面板显式说明「图源暂无主色调数据」，避免伪造颜色与 URL 死参数。 */
+  var COLOR_FIELD_CANDIDATES = [
+    'dominantColor', 'dominant_color', 'mainColor', 'main_color',
+    'colorHex', 'color_hex', 'dominant', 'palette'
+  ];
+  var COLOR_BUCKETS = {
+    red: '红', orange: '橙', yellow: '黄', green: '绿',
+    blue: '蓝', purple: '紫', mono: '黑白'
+  };
+  function itemColorRaw(it) {
+    if (!it) return '';
+    for (var i = 0; i < COLOR_FIELD_CANDIDATES.length; i++) {
+      var v = it[COLOR_FIELD_CANDIDATES[i]];
+      if (Array.isArray(v)) v = v[0];          // palette 可能是数组，取主色
+      if (v == null) continue;
+      if (typeof v === 'string' && v.trim()) return v.trim();
+      if (typeof v === 'object') {
+        var s = String(v.hex || v.name || v.color || '').trim();
+        if (s) return s;
+      }
+    }
+    return '';
+  }
+  function normalizeColorBucket(raw) {
+    if (!raw) return '';
+    var s = String(raw).toLowerCase().trim();
+    var named = {
+      red: 'red', '红': 'red', orange: 'orange', '橙': 'orange', yellow: 'yellow', '黄': 'yellow',
+      green: 'green', '绿': 'green', blue: 'blue', '蓝': 'blue', purple: 'purple', violet: 'purple', '紫': 'purple',
+      mono: 'mono', black: 'mono', white: 'mono', gray: 'mono', grey: 'mono',
+      '黑白': 'mono', '黑': 'mono', '白': 'mono', '灰': 'mono'
+    };
+    if (named[s]) return named[s];
+    var m = s.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/);
+    if (!m) return '';
+    var hex = m[1].length === 3 ? m[1].split('').map(function (c) { return c + c; }).join('') : m[1];
+    var r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
+    var max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    if (max < 40 || d < 25) return 'mono';                  // 近黑 / 低饱和 → 黑白
+    var hue;
+    if (max === r) hue = ((g - b) / d) % 6;
+    else if (max === g) hue = (b - r) / d + 2;
+    else hue = (r - g) / d + 4;
+    hue = (hue * 60 + 360) % 360;
+    if (hue < 15 || hue >= 345) return 'red';
+    if (hue < 45) return 'orange';
+    if (hue < 70) return 'yellow';
+    if (hue < 165) return 'green';
+    if (hue < 255) return 'blue';
+    return 'purple';
+  }
+  // 最近一批已加载数据是否带可用主色调字段（持久标志）：避免 loadImages 重置 state.items
+  // 的瞬间 syncBrowseUrl 误判为「无数据」而漏写 color 参数。
+  var colorEnabled = false;
+  function colorDataAvailable() {
+    return state.items.some(function (it) { return !!normalizeColorBucket(itemColorRaw(it)); });
+  }
+  function applyColorFilter(list) {
+    if (!state.color || !COLOR_BUCKETS[state.color] || !colorEnabled) return list;
+    return list.filter(function (it) { return normalizeColorBucket(itemColorRaw(it)) === state.color; });
+  }
+  function applyClientFilters(list) {
+    return applyColorFilter(applyResolutionFilter(applyAspectFilter(list)));
   }
 
   /* 计数展示工具：大数缩写入局（1.2万） */
@@ -604,7 +693,9 @@
           return;
         }
         state.items = append ? state.items.concat(list) : list;
-        renderItems(grid, applyAspectFilter(list), append);
+        // 主色调维度数据门控：本批数据到位后复查是否确有可用主色调字段
+        applyColorAvailability($('#gmColor'));
+        renderItems(grid, applyClientFilters(list), append);
         state.page++;
         if (moreBtn && state.hasMore) moreBtn.hidden = false;
         hideState(stateEl);
@@ -763,6 +854,73 @@
     });
   }
 
+  /* 主色调 chip（WO-187，数据门控）：图源无主色调字段时按钮 disabled + 显示说明，
+     不写 URL、不过滤；仅当运行时数据确实带可用主色调字段时才启用。 */
+  function initColor(container, onPick) {
+    if (!container) return;
+    $$('[data-color]', container).forEach(function (chip) {
+      chip.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (chip.disabled) return;
+        var c = chip.getAttribute('data-color') || '';
+        // 再次点当前档 => 取消（回到不限）
+        if (c && c === state.color) c = '';
+        $$('[data-color]', container).forEach(function (x) {
+          x.classList.toggle('is-active', (x.getAttribute('data-color') || '') === c);
+        });
+        if (onPick) onPick(c);
+      });
+    });
+  }
+  function activateColor(container, c) {
+    if (!container) return;
+    $$('[data-color]', container).forEach(function (x) {
+      x.classList.toggle('is-active', (x.getAttribute('data-color') || '') === (c || ''));
+    });
+  }
+  function applyColorAvailability(container) {
+    if (!container) return false;
+    // items 为空（落地/加载中）时沿用上次结论，避免 URL 在 loadImages 重置 items 的瞬间被误清洗
+    if (state.items.length) colorEnabled = colorDataAvailable();
+    var ok = colorEnabled;
+    var note = $('.gm-color-note', container);
+    $$('[data-color]', container).forEach(function (chip) {
+      chip.disabled = !ok;
+      chip.title = ok ? '按主色调筛选' : '图源暂无主色调数据';
+    });
+    if (note) {
+      note.textContent = ok ? '' : '图源暂无主色调数据';
+      note.hidden = ok;
+    }
+    if (!ok && state.color) { state.color = ''; activateColor(container, ''); }
+    container.setAttribute('data-color-enabled', ok ? '1' : '0');
+    return ok;
+  }
+
+  /* 随机一张（WO-187）：从「当前可见结果集」里挑一张打开灯箱；取 DOM 卡片而非 state.items
+     全量，保证遵循 aspect / 设备尺寸 / 主色调等客户端过滤后的真实结果。无结果给空态提示，
+     不跳死链；首屏 SSG 静态卡（无 data-id）场景回退到有效详情链接。 */
+  function randomOne(grid, stateEl) {
+    var ids = $$('.gm-card[data-id]', grid)
+      .map(function (c) { return c.getAttribute('data-id'); })
+      .filter(function (id) {
+        return id && state.items.some(function (it) { return it._id === id; });
+      });
+    if (ids.length) {
+      var pick = ids[Math.floor(Math.random() * ids.length)];
+      openLightboxById(pick);
+      if (global.Tracker) global.Tracker.track('random_one', { id: pick });
+      return;
+    }
+    var staticLinks = $$('.gm-card[href^="/p/"]', grid).map(function (a) { return a.getAttribute('href'); });
+    if (staticLinks.length) {
+      global.location.href = staticLinks[Math.floor(Math.random() * staticLinks.length)];
+      return;
+    }
+    showState(stateEl, '当前筛选条件下暂无图片，试试「重置筛选」或放宽条件');
+    toast('当前没有可随机的图片');
+  }
+
   /* ------------------------------ 排序 ------------------------------ */
   function initSort(selectEl, onChange) {
     if (!selectEl) return;
@@ -782,6 +940,8 @@
     if (state.type) p.set('type', state.type);
     if (state.size) p.set('size', state.size);
     if (state.aspect) p.set('aspect', state.aspect);
+    // 主色调仅在图源确有可用主色调字段时写入，避免无数据时的 URL 死参数
+    if (state.color && COLOR_BUCKETS[state.color] && colorEnabled) p.set('color', state.color);
     if (state.mode === 'search' && state.keyword) p.set('s', state.keyword);
     // 排序仅对 rank 生效；search 接口不支持交互排序，搜索态不写入 sort，避免 URL 死参数（与请求不一致）
     if (state.sort && state.sort !== '_add_time' && state.mode !== 'search') p.set('sort', state.sort);
@@ -863,6 +1023,7 @@
     var catContainer = $('#gmCats');
     var sizeContainer = $('#gmSizes');
     var aspectContainer = $('#gmAspect');
+    var colorContainer = $('#gmColor');
     var sortEl = $('#gmSort');
 
     if (!grid) return;
@@ -880,7 +1041,7 @@
       syncBrowseUrl(true);
     });
 
-    // 大小/画质 chip（与分类叠加）
+    // 大小/画质 chip（与分类叠加；含设备尺寸预设，共用 state.size）
     initSizes(sizeContainer, function (size) {
       state.size = size;
       if (state.mode !== 'search') state.mode = size || state.type ? (state.type ? 'category' : 'browse') : 'home';
@@ -894,6 +1055,14 @@
       state.aspect = a;
       loadImages(grid, stateEl, moreBtn, false);
       if (global.Tracker) global.Tracker.track('aspect_pick', { aspect: a || 'any' });
+      syncBrowseUrl(true);
+    });
+
+    // 主色调 chip（数据门控：图源无主色调字段时控件禁用，点击不触发）
+    initColor(colorContainer, function (c) {
+      state.color = c;
+      loadImages(grid, stateEl, moreBtn, false);
+      if (global.Tracker) global.Tracker.track('color_pick', { color: c || 'any' });
       syncBrowseUrl(true);
     });
 
@@ -950,8 +1119,10 @@
     var urlSort = params.get('sort');
     var urlSize = params.get('size');
     var urlAspect = params.get('aspect');
+    var urlColor = params.get('color');
     if (urlSize && SIZE_BUCKETS[urlSize]) state.size = urlSize;
     if (urlAspect && ASPECT_BUCKETS[urlAspect]) state.aspect = urlAspect;
+    if (urlColor && COLOR_BUCKETS[urlColor]) state.color = urlColor;
     // 关键词与分类正交：此前 type 处理挂在 urlSearch 的 else 分支，?s=&type= 同现时 type 被整体丢弃
     // （结果集放大、URL 残留死参数、高亮与请求不一致）。改为独立解析 state.type，交由下方统一 chip 激活。
     if (urlType) state.type = urlType;
@@ -966,31 +1137,40 @@
     else if (sortEl) { sortEl.value = state.sort || '_add_time'; }
     // 统一激活分类 chip（覆盖 ?type= 与 ?s=&type= 两种入口，与 state.type 严格一致，消除双高亮/死参数）
     activateCats(catContainer, state.type);
-    // 宽高比 chip 初始激活（按 URL 回显）
+    // 宽高比 / 主色调 chip 初始激活（按 URL 回显）+ 主色调数据门控
     activateAspect(aspectContainer, state.aspect);
+    activateColor(colorContainer, state.color);
+    applyColorAvailability(colorContainer);
 
     loadImages(grid, stateEl, moreBtn, false);
 
-    // 尺寸 chip 初始激活（按 URL 回显）+ 重置按钮
+    // 尺寸 chip 初始激活（按 URL 回显）+ 重置 / 随机一张按钮
     activateSize(sizeContainer, state.size);
-    var resetBtn = $('#gmReset');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', function () {
-        state.type = '';
-        state.size = '';
-        state.aspect = '';
-        state.sort = '_add_time';
-        state.keyword = '';
-        state.mode = doc.body.getAttribute('data-page') === 'browse' ? 'browse' : 'home';
-        if (catContainer) $$('.gm-cat-chip', catContainer).forEach(function (c) { c.classList.toggle('is-active', (c.getAttribute('data-type') || '') === ''); });
-        activateSize(sizeContainer, '');
-        activateAspect(aspectContainer, '');
-        if (sortEl) sortEl.value = '_add_time';
-        if (searchInput) searchInput.value = '';
-        loadImages(grid, stateEl, moreBtn, false);
-        syncBrowseUrl(true);
-      });
+    function resetAllFilters() {
+      state.type = '';
+      state.size = '';
+      state.aspect = '';
+      state.color = '';
+      state.sort = '_add_time';
+      state.keyword = '';
+      state.mode = doc.body.getAttribute('data-page') === 'browse' ? 'browse' : 'home';
+      activateCats(catContainer, '');
+      activateSize(sizeContainer, '');
+      activateAspect(aspectContainer, '');
+      activateColor(colorContainer, '');
+      if (sortEl) sortEl.value = '_add_time';
+      if (searchInput) searchInput.value = '';
+      loadImages(grid, stateEl, moreBtn, false);
+      syncBrowseUrl(true);
     }
+    $$('#gmReset, [data-gm-reset]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        resetAllFilters();
+        if (global.Tracker) global.Tracker.track('reset_filters', {});
+      });
+    });
+    var randomBtn = $('#gmRandom');
+    if (randomBtn) randomBtn.addEventListener('click', function () { randomOne(grid, stateEl); });
 
     // 落地即清洗 URL：搜索深链携带的 sort 是 rank 专用死参数（search 不支持交互排序），
     // 据当前 state 规范化一次，使地址栏与请求/高亮即时一致，无需等用户首次交互才清除。
@@ -1007,8 +1187,10 @@
         var uSort = q.get('sort');
         var uSize = q.get('size');
         var uAspect = q.get('aspect');
+        var uColor = q.get('color');
         state.size = (uSize && SIZE_BUCKETS[uSize]) ? uSize : '';
         state.aspect = (uAspect && ASPECT_BUCKETS[uAspect]) ? uAspect : '';
+        state.color = (uColor && COLOR_BUCKETS[uColor] && colorEnabled) ? uColor : '';
         state.type = uType || '';
         if (uSearch) {
           state.mode = 'search'; state.keyword = uSearch; if (searchInput) searchInput.value = uSearch;
@@ -1020,6 +1202,7 @@
         activateCats(catContainer, state.type);
         activateSize(sizeContainer, state.size);
         activateAspect(aspectContainer, state.aspect);
+        activateColor(colorContainer, state.color);
         loadImages(grid, stateEl, moreBtn, false);
         syncBrowseUrl();
       });

@@ -148,11 +148,31 @@ function legacyPromoHosts(legacy) {
   return (legacy || '').match(re) || [];
 }
 
+/** WO-194：从中文页 legacy 取「多数决」公安备案号，避免某个旧页面残留旧号被误当成权威值。 */
+function majorityGongan(legacy) {
+  const hits = String(legacy || '').match(/[\u4e00-\u9fa5]{0,2}公网安备\s*\d+\s*号/g) || [];
+  const counts = new Map();
+  hits.forEach((h) => {
+    const norm = h.replace(/\s+/g, '');
+    counts.set(norm, (counts.get(norm) || 0) + 1);
+  });
+  return Array.from(counts.entries()).sort((a, b) => b[1] - a[1])[0] || ['', 0];
+}
+
+/** 配置源优先（一处启用全站生效），legacy 多数决为兼容旧页面的兜底；格式非法则零输出。 */
+function resolveGongan(site, legacy) {
+  // 配置源存在时它是唯一权威：空 record = 未启用，不得再从已注入过号码的旧页脚回潮。
+  const candidate = R.hasGonganConfig()
+    ? String(R.gonganFor(SITE_KEY)).replace(/\s+/g, '')
+    : (String((site && site.gongan) || '').replace(/\s+/g, '') || majorityGongan(legacy)[0]);
+  return /^[\u4e00-\u9fa5]{0,2}公网安备\d+号$/.test(candidate) ? candidate : '';
+}
+
 function renderFooter(site, cfg, legacy, lang) {
   const nav = legacyNav(legacy, site, lang);
   const icp = ((legacy || '').match(/[\u4e00-\u9fa5]{0,2}ICP备\d+号-\d+/) || [])[0] || site.icp;
-  // WO-194 公安备案号（跨站预留钩子）：与 ICP 同源——从中文页（legacy）正则提取「京公网安备\d+号」，缺省不显示
-  const gongan = ((legacy || '').match(/京公网安备\d+号/) || [])[0] || '';
+  // WO-194 公安备案号：缺省（尚未申请到号码）不输出任何链接，不得写占位号
+  const gongan = resolveGongan(site, legacy);
   const promo = legacyPromoHosts(legacy);
   const related = cfg.related.map(s =>
     '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' +
@@ -286,6 +306,20 @@ function replaceOrInsert(html, kind, body, anchorRe) {
   return html.replace(anchorRe, m => body + '\n' + m);
 }
 
+/** WO-194：版本一致时只做公安备案链接的定点增删，避免整块重渲染导致二次解析叠加链接。 */
+function patchGonganLink(html, shellBlock, gongan) {
+  const linkRe = /<a\s+href="[^"]*beian\.gov\.cn[^"]*"[^>]*>[\s\S]*?<\/a>/gi;
+  let out = shellBlock.replace(linkRe, '');
+  if (gongan) {
+    const anchor = '<a href="' + R.GONGAN_URL + gongan.replace(/\D/g, '') +
+      '" target="_blank" rel="noopener noreferrer">' + esc(gongan) + '</a>';
+    const icpRe = /(<a\s+href="[^"]*beian\.miit\.gov\.cn[^"]*"[^>]*>[\s\S]*?<\/a>)/i;
+    if (icpRe.test(out)) out = out.replace(icpRe, (m) => m + anchor);
+    else out = out.replace(/<a href="#top"/i, anchor + '<a href="#top"');
+  }
+  return html.replace(shellBlock, () => out);
+}
+
 function injectFooter(html, site, cfg, lang) {
   const chromeRe = /<!--\s*CHROME:FOOTER:START\s*-->[\s\S]*?<!--\s*CHROME:FOOTER:END\s*-->/i;
   if (chromeRe.test(html)) {
@@ -296,7 +330,13 @@ function injectFooter(html, site, cfg, lang) {
   if (shellRe.test(html)) {
     const legacy = html.match(shellRe)[0];
     // 已注入且版本一致 → 原样保留，保证重复执行逐字节幂等（否则二次解析会把新链接再叠加一遍）
-    if (legacy.indexOf('data-shell-version="' + R.SHELL_VERSION + '"') !== -1) return html;
+    if (legacy.indexOf('data-shell-version="' + R.SHELL_VERSION + '"') !== -1) {
+      const gongan = resolveGongan(site, legacy);
+      const expected = gongan ? R.GONGAN_URL + gongan.replace(/\D/g, '') : '';
+      const actual = (legacy.match(/href="([^"]*beian\.gov\.cn[^"]*)"/i) || [])[1] || '';
+      if (expected === actual) return html;
+      return patchGonganLink(html, legacy, gongan);
+    }
     return html.replace(shellRe, () => renderFooter(site, cfg, legacy, lang));
   }
   const footerRe = /<footer\b[^>]*>[\s\S]*?<\/footer>/gi;

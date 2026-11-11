@@ -1,4 +1,6 @@
 'use strict';
+const fs = require('fs');
+const path = require('path');
 /* ==========================================================================
    site-shell-registry.js · 十站展示层唯一注册表（Site Shell Spec v1.0）
    --------------------------------------------------------------------------
@@ -103,6 +105,32 @@ const CONTACT_EMAIL = 'xlm8826@gmail.com';
 const ICP_URL = 'https://beian.miit.gov.cn/';
 // WO-194 公安备案号链接前缀（拼 recordcode 数字部分）；未申请到号码时页脚不输出链接
 const GONGAN_URL = 'https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=';
+// 单一配置源：本文件在单源目录（src/）与十站副本（<site>/scripts/）都会被执行，
+// 两种位置都能解析到 packages/static-build-kit/gongan.json。
+function loadGonganConfig() {
+  const candidates = [
+    path.join(__dirname, '..', 'gongan.json'),
+    path.join(__dirname, '..', '..', 'packages', 'static-build-kit', 'gongan.json'),
+    path.join(__dirname, 'gongan.json'),
+  ];
+  for (const p of candidates) {
+    if (!fs.existsSync(p)) continue;
+    try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return { record: '', overrides: {} }; }
+  }
+  return { record: '', overrides: {} }; // 配置缺失 = 未申请，页脚零输出
+}
+const GONGAN_CONFIG = loadGonganConfig();
+// 配置文件存在即视为「配置驱动」：此时空 record 明确表示未启用，页脚必须零输出；
+// 只有配置文件缺失时才退回从旧中文页 legacy 提取（兼容尚未接入配置源的站点）。
+const GONGAN_CONFIG_EXISTS = fs.existsSync(path.join(__dirname, '..', 'gongan.json')) ||
+  fs.existsSync(path.join(__dirname, '..', '..', 'packages', 'static-build-kit', 'gongan.json')) ||
+  fs.existsSync(path.join(__dirname, 'gongan.json'));
+function hasGonganConfig() { return GONGAN_CONFIG_EXISTS; }
+/** 按站点 key 取公安备案号；per-site overrides 优先，缺省用全局 record，空则不展示。 */
+function gonganFor(key) {
+  const o = GONGAN_CONFIG.overrides || {};
+  return Object.prototype.hasOwnProperty.call(o, key) ? o[key] : (GONGAN_CONFIG.record || '');
+}
 const HUB_PATH = '/sites.html';
 const HUB_CANONICAL = 'https://xuliming.com/sites.html';
 
@@ -158,6 +186,6 @@ function configFor(key) {
 
 module.exports = {
   SHELL_VERSION, SITES, SITE_KEYS, SISTER_SITES,
-  CONTACT_EMAIL, ICP_URL, GONGAN_URL, HUB_PATH, HUB_CANONICAL,
-  get, sisterFor, relatedFor, quotaFor, configFor,
+  CONTACT_EMAIL, ICP_URL, GONGAN_URL, GONGAN_CONFIG, HUB_PATH, HUB_CANONICAL,
+  get, sisterFor, relatedFor, quotaFor, configFor, gonganFor, hasGonganConfig,
 };
