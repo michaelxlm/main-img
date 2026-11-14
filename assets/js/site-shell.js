@@ -115,6 +115,14 @@
 
   function backToTop() {
     if (doc.getElementById('site-shell-top')) return;
+    // 站群统一「回到顶部」：历史站点各自带 .back-to-top / #backToTop 等控件，
+    // 与统一按钮并存时会出现两个重叠的悬浮箭头（实测 7/10 站如此）。
+    // 先隐藏站点自带控件，仅保留统一实现（顶部不显示、滚动 600px 后淡入），避免重复与样式漂移。
+    var legacy = doc.querySelectorAll('.back-to-top, #backToTop, #back-to-top, [data-back-to-top]');
+    for (var li = 0; li < legacy.length; li++) {
+      legacy[li].setAttribute('data-shell-hidden', '1');
+      legacy[li].style.display = 'none';
+    }
     var btn = doc.createElement('button');
     btn.id = 'site-shell-top';
     btn.type = 'button';
@@ -125,6 +133,21 @@
       catch (e) { global.scrollTo(0, 0); }
     };
     doc.body.appendChild(btn);
+    // 右下角可能已有 AI 助手气泡(.aiw-b) / 分享按钮(.fab-share)：二者 z-index 更高且占同一角，
+    // 会直接把「回到顶部」盖住（实测 aiw-b z-index 9998 > 本按钮）。检测到冲突就上移按钮，
+    // 避免多个悬浮角标堆叠。气泡多由外部脚本异步注入，故延时复检两次。
+    function place() {
+      var hit = false;
+      var els = doc.querySelectorAll('.aiw-b, .fab-share');
+      for (var i = 0; i < els.length; i++) {
+        if (els[i].getClientRects && els[i].getClientRects().length) { hit = true; break; }
+      }
+      if (hit) btn.classList.add('has-corner-float');
+      else btn.classList.remove('has-corner-float');
+    }
+    place();
+    global.setTimeout(place, 1200);
+    global.setTimeout(place, 2600);
     var ticking = false;
     try {
       global.addEventListener('scroll', function () {
