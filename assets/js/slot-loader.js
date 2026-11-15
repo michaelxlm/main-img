@@ -1788,7 +1788,11 @@
       var thumb = doc.createElement('div');
       thumb.className = 'isl-thumb';
       var im = doc.createElement('img');
-      im.alt = img.title || '高清壁纸';
+      // WO-219 消费腿：alt 优先取后端生成的 altText（接口已附 { alt, altSource }），
+      //   title 仅作兜底（生成腿现网覆盖率 5/338,305，直接砍掉兜底会把 99.99% 图变成空 alt，
+      //   对图搜与读屏都是倒退）；末尾的 '高清壁纸' 通用词去掉——同一句 alt 刷满全部图卡
+      //   等于无信息量，两者都缺时才留空（空 alt = 装饰图，读屏会跳过邻近已有的图名文本）。
+      im.alt = img.alt || img.title || '';
       im.setAttribute('loading', 'lazy');
       im.setAttribute('decoding', 'async');
       im.setAttribute('referrerpolicy', 'no-referrer');

@@ -257,9 +257,11 @@ function staticCard(item, detailSet) {
   var ratio = w / h; if (ratio < 0.3) ratio = 0.3; if (ratio > 4) ratio = 4;
   var tags = (item.tag || []).slice(0, 3).map(function (t) { return '<span class="gm-tag">' + esc(t) + '</span>'; }).join('');
   var avif = thumbUrlAvif(item);
+  // WO-219 消费腿（预渲染与 gallery.js 运行时同口径）：alt 优先取 API 附上的生成值（rank/sample 都走
+  //   service 的 _attachAlt），title 只作兜底，去掉通用 '壁纸' 占位词；JSON-LD 的 name 与面包屑仍用 title。
   var imgHtml = avif
-    ? '<picture><source srcset="' + escAttr(avif) + '" type="image/avif"><img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.title || '壁纸') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '"></picture>'
-    : '<img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.title || '壁纸') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '">';
+    ? '<picture><source srcset="' + escAttr(avif) + '" type="image/avif"><img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.alt || item.title || '') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '"></picture>'
+    : '<img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.alt || item.title || '') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '">';
   return '<a class="gm-card" href="' + escAttr(href) + '">'
     + imgHtml
     + '<div class="gm-overlay"><div class="gm-overlay-title">' + esc(item.title || '未命名壁纸') + '</div>'
@@ -432,8 +434,8 @@ function genDetailPage(item, detailSet, siblings) {
     + '        <p class="muted" style="margin:6px 0">' + metaHtml + '</p>\n'
     + (tagsHtml ? '        <div class="gm-tags" style="opacity:1;margin:6px 0 16px">' + tagsHtml + '</div>\n' : '')
     + '        <figure style="margin:0 0 16px">' + (bigAvif
-        ? '<picture><source srcset="' + escAttr(bigAvif) + '" type="image/avif"><img src="' + escAttr(big) + '" alt="' + escAttr(item.title || '壁纸') + '"' + (item.width && item.height ? ' width="' + esc(item.width) + '" height="' + esc(item.height) + '"' : '') + ' decoding="async" referrerpolicy="no-referrer" style="width:100%;height:auto;border-radius:12px;display:block"></picture>'
-        : '<img src="' + escAttr(big) + '" alt="' + escAttr(item.title || '壁纸') + '"' + (item.width && item.height ? ' width="' + esc(item.width) + '" height="' + esc(item.height) + '"' : '') + ' decoding="async" referrerpolicy="no-referrer" style="width:100%;height:auto;border-radius:12px;display:block">') + '</figure>\n'
+        ? '<picture><source srcset="' + escAttr(bigAvif) + '" type="image/avif"><img src="' + escAttr(big) + '" alt="' + escAttr(item.alt || item.title || '') + '"' + (item.width && item.height ? ' width="' + esc(item.width) + '" height="' + esc(item.height) + '"' : '') + ' decoding="async" referrerpolicy="no-referrer" style="width:100%;height:auto;border-radius:12px;display:block"></picture>'
+        : '<img src="' + escAttr(big) + '" alt="' + escAttr(item.alt || item.title || '') + '"' + (item.width && item.height ? ' width="' + esc(item.width) + '" height="' + esc(item.height) + '"' : '') + ' decoding="async" referrerpolicy="no-referrer" style="width:100%;height:auto;border-radius:12px;display:block">') + '</figure>\n'
     + '        <div class="btn-row">\n'
     + '          <a class="btn btn-primary" href="' + escAttr(imgUrl(item)) + '" target="_blank" rel="noopener" download onclick=\'try{fetch("' + opUrl + '",{method:"POST",mode:"cors",keepalive:true,headers:{"Content-Type":"application/json"},body:JSON.stringify({img_id:"' + id.replace(/[^0-9a-fA-F]/g, "") + '",type:"download",inc:1})})}catch(e){}\'>⤓ 下载原图</a>\n'
     + (catSlug ? '          <a class="btn btn-ghost" href="/category/' + esc(catSlug) + '.html">更多' + esc(catName) + '壁纸 →</a>\n' : '')

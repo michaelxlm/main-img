@@ -346,10 +346,13 @@
         '<button class="gm-action-btn gm-fav' + favOn + '" data-fav="1" aria-label="收藏" title="收藏">♥</button>' +
         '<a class="gm-action-btn" href="' + escAttr(imgUrl(item)) + '" target="_blank" rel="noopener" aria-label="查看原图" title="查看原图" download>⤓</a>' +
       '</div>' +
+      // WO-219 消费腿（卡片与灯箱同口径）：alt 优先用后端生成的 altText（接口附 { alt, altSource }），
+      //   title 只作兜底（生成腿现网 5/338,305，只认 alt 会把几乎全部图卡渲染成空 alt）；
+      //   去掉通用的 '壁纸' 占位词：每张都同一个词对图搜与读屏都是噪声，两者都缺才留空。
       (avifSrc
         ? '<picture><source srcset="' + escAttr(avifSrc) + '" type="image/avif">'
-          + '<img src="' + escAttr(src) + '" alt="' + escAttr(item.title || '壁纸') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '"></picture>'
-        : '<img src="' + escAttr(src) + '" alt="' + escAttr(item.title || '壁纸') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '">') +
+          + '<img src="' + escAttr(src) + '" alt="' + escAttr(item.alt || item.title || '') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '"></picture>'
+        : '<img src="' + escAttr(src) + '" alt="' + escAttr(item.alt || item.title || '') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '">') +
       '<div class="gm-overlay">' +
         '<div class="gm-overlay-title">' + escHtml(item.title || '未命名壁纸') + '</div>' +
         '<div class="gm-overlay-meta">' +
@@ -575,7 +578,7 @@
     var avifUrl = lightboxImgUrlAvif(item);
     img.src = lightboxImgUrl(item);
     if (avifSource && avifUrl) avifSource.srcset = avifUrl;
-    img.alt = item.title || '壁纸';
+    img.alt = item.alt || item.title || '';
     title.textContent = item.title || '未命名壁纸';
     var parts = [];
     if (item.width && item.height) parts.push(item.width + '×' + item.height);
