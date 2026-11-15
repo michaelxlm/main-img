@@ -188,7 +188,7 @@ function renderFooter(site, cfg, legacy, lang) {
     '  <div class="ss-wrap">\n' +
     '    <section class="ss-related" aria-label="' + esc(i18n(lang, '相关站点', 'Related sites')) + '">\n' +
     '      <div class="ss-related-head"><h2>' + esc(i18n(lang, '换个站点继续逛', 'More from this network')) + '</h2>' +
-    '<a class="ss-all" href="' + R.HUB_PATH + '">' + esc(i18n(lang, '全部 ' + cfg.siteCount + ' 个站点 →', 'All ' + cfg.siteCount + ' sites →')) + '</a></div>\n' +
+    '<a class="ss-all" href="' + R.HUB_PATH + '">' + esc(i18n(lang, '全部 ' + R.SITES.length + ' 个站点 →', 'All ' + R.SITES.length + ' sites →')) + '</a></div>\n' +
     '      <ul>\n        ' + related + '\n      </ul>\n' +
     '    </section>\n' +
     '    <div class="ss-grid">\n' +

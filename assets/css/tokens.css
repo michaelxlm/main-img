@@ -116,3 +116,65 @@ html {
   --scrollbar-thumb: rgba(148, 163, 184, 0.35);
   --scrollbar-thumb-hover: rgba(148, 163, 184, 0.6);
 }
+
+/* === DARK-DETAIL-NORMALIZE (auto) === */
+/* 暗色细节归一（仅暗色态 · 取值用各站自身令牌 · 不压平代码高亮）
+   修复组件在暗色下仍硬编码亮色的问题：引用块 / 表格 / kbd / mark / hr /
+   details / 表单 / 代码块底色与边框。 */
+[data-theme="dark"] { color-scheme: dark; }
+
+[data-theme="dark"] blockquote {
+  background: var(--surface-2, var(--surface)) !important;
+  border-color: var(--border) !important;
+  border-left-color: var(--accent) !important;
+  color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] table,
+[data-theme="dark"] th,
+[data-theme="dark"] td {
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+[data-theme="dark"] table { background: var(--surface) !important; }
+[data-theme="dark"] th { background: var(--surface-2, var(--surface)) !important; }
+[data-theme="dark"] tbody tr:nth-child(even) { background: var(--surface-2, transparent) !important; }
+
+[data-theme="dark"] kbd {
+  background: var(--surface-2, var(--surface)) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+[data-theme="dark"] mark {
+  background: var(--accent-soft, var(--accent)) !important;
+  color: var(--text) !important;
+}
+
+[data-theme="dark"] hr { border-color: var(--border) !important; }
+
+[data-theme="dark"] details,
+[data-theme="dark"] summary { color: var(--text) !important; border-color: var(--border) !important; }
+
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+/* 代码块：pre 仅重置底色/边框；prism/hljs 等代码高亮自带配色，故不强行改色 */
+[data-theme="dark"] pre {
+  background: var(--surface-2, var(--surface)) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+/* 仅「非高亮」代码块继承可读文字色，避免压平语法高亮 */
+[data-theme="dark"] pre code:not(.hljs):not(.token) { color: var(--text) !important; }
+/* 行内 code 成胶囊 chip */
+[data-theme="dark"] :not(pre) > code {
+  background: var(--surface-2, var(--surface)) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
