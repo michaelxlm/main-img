@@ -135,6 +135,14 @@ php -S localhost:8080
 
 参考 `deploy/nginx.conf`，将全部文件上传至服务器 `/www/wwwroot/img.fangkelianmeng.com`（push `main` 由 self-hosted runner 自动同步），域名 `img.fangkelianmeng.com` 指向该目录即可。
 
+### 内容路由回退壳与远端收尾腿（WO-258）
+
+- `/p/<id>` 详情页下线后，同 URL **仍返回 200**（回退到 `p/_shell.html`），不产生 404 坏链：仓内参考档 `deploy/nginx-p-fallback.conf`，线上落位 `/www/server/panel/vhost/nginx/extension/img.fangkelianmeng.com/p-fallback.conf`。
+- CI 的 `tar` 同步是增量覆盖（只增不删），构建期 `build.js` 清退掉的旧详情页仍会残留在服务器上返回 200 ⇒ `deploy.yml` 在 sync 之后接两步收尾腿：① 幂等确保回退壳在位（线上已有则完全不动；缺失才备份落位 → `nginx -t` → reload → 复验 → 失败回滚）；② 以**线上 `sitemap.xml`** 为权威清单做差集，删除「磁盘有、清单无」且文件名命中 `^[0-9a-f]{32}[.]html$` 的页（删后抽样旧链须 200 + 壳标记，复跑差集为 0）。
+- 脚本事实源在 packages 单源：`packages/static-build-kit/src/remote-ensure-fallback.sh` + `remote-prune.sh`；回归用例 `packages/static-build-kit/test/remote-prune.test.sh`。
+- 诊断报告落站点根目录之外（`<站点根同级>/.prune-diag/`），成功即删、异常才保留，不经 HTTP 对外暴露。
+- 2026-11-17 生产实清理：删 259 个过期详情页，磁盘 122 = 清单 121 + 壳，二次差集 0，旧链抽样全 200 + 壳标记。
+
 ## 收录观测
 
 - 台账：`data/index-observation.json`，与 `sitemap.xml` 一一对应（WO-187 2026-11-10 重建后 148 条：5 主页面 + 22 分类落地页 + 121 详情精选页）；`http_status / checked_at` 由脚本回写，`indexed` 不人工回填。
