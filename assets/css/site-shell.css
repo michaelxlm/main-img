@@ -54,6 +54,16 @@
   padding: 0 !important;
   margin: 0 !important;
 }
+/* CLS 预留：正文内的动态位由 defer JS 填充，首帧 0 高会在填充瞬间推开后续内容。
+   仅给必定出现的 inline/strip 位预留最终高度；carousel/footer 仍按上方 display:none 关闭。 */
+[data-coupon-slot]:empty,
+[data-img-slot]:empty,
+[data-ad-slot="inline"]:empty,
+[data-mp-slot="inline"]:empty {
+  min-height: 190px !important;
+  padding: 12px 14px !important;
+  margin: 22px 0 !important;
+}
 
 /* ------------------------------ 统一页脚 ------------------------------ */
 .ss-footer,

@@ -435,8 +435,8 @@
   function createSkeleton() {
     var el = doc.createElement('div');
     el.className = 'gm-skeleton';
-    var h = 160 + Math.round(Math.random() * 140);
-    el.innerHTML = '<div class="gm-sk-img" style="height:' + h + 'px"></div><div class="gm-sk-line"></div><div class="gm-sk-line is-short"></div>';
+    // CLS：随机高度骨架会让多列瀑布流在骨架→真卡两次重排；固定为 SSG 首屏卡的 4:3 高度。
+    el.innerHTML = '<div class="gm-sk-img" style="height:300px"></div><div class="gm-sk-line"></div><div class="gm-sk-line is-short"></div>';
     return el;
   }
 
@@ -616,7 +616,10 @@
     if (moreBtn) moreBtn.hidden = true;
 
     if (!append) {
-      renderSkeletons(grid, 15);
+      // CLS：首屏已有 SSG 静态卡（带 width/height/aspect-ratio）时不要再清空换成骨架，
+      // 否则「12 张 4:3 卡 → 15 张骨架 → 真卡」两次重排直接把本页 CLS 顶到 0.79。
+      // 保留静态卡直到真实数据到位，由 renderItems 一次性替换；仅在网格本就为空时才显示骨架。
+      if (!grid.querySelector('.gm-card')) renderSkeletons(grid, 12);
       state.items = [];
       state.page = 1;
       state.hasMore = true;
