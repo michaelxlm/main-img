@@ -19,6 +19,13 @@ jobs:
           mkdir -p /root/.ssh && chmod 700 /root/.ssh
           ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> /root/.ssh/known_hosts 2>/dev/null
       - uses: actions/checkout@v4
+      - name: Fetch packages single-source (remote prune scripts)
+        shell: bash
+        run: |
+          # 远端收尾腿脚本的事实源在 packages/static-build-kit/src/（本站无 npm 依赖，只浅克隆取脚本）
+          TOP="$(dirname "$GITHUB_WORKSPACE")"
+          rm -rf "$TOP/packages"
+          git clone --depth 1 git@github.com:michaelxlm/packages.git "$TOP/packages"
       - name: Encoding gate (UTF-8 only)
         shell: bash
         run: |
@@ -46,3 +53,26 @@ jobs:
         shell: bash
         run: |
           tar cf - --exclude=.git --exclude=.github --exclude=.user.ini --exclude=.workbuddy --exclude=deploy . | ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=accept-new root@60.205.214.88 "mkdir -p /www/wwwroot/img.fangkelianmeng.com ; cd /www/wwwroot/img.fangkelianmeng.com ; tar xmf -"
+      - name: Ensure /p/ 200 fallback (nginx, idempotent)
+        shell: bash
+        run: |
+          # 硬约束：删远端过期页之前，nginx 生效配置里必须有 location ^~ /p/ { try_files $uri /p/_shell.html; }
+          # 线上已有则完全不动；缺失才备份落位 → nginx -t → reload → 复验（不存在键须 200 + 壳标记）→ 失败即回滚
+          TOP="$(dirname "$GITHUB_WORKSPACE")"
+          SRC="$TOP/packages/static-build-kit/src"
+          HOST=root@60.205.214.88
+          KEY="-i /root/.ssh/id_rsa -o StrictHostKeyChecking=accept-new"
+          scp $KEY "$SRC/remote-ensure-fallback.sh" "$HOST:/tmp/remote-ensure-fallback.sh"
+          scp $KEY deploy/nginx-p-fallback.conf "$HOST:/tmp/p-fallback.conf"
+          ssh $KEY "$HOST" 'FALLBACK_DIRS=p FALLBACK_CONF=/tmp/p-fallback.conf FALLBACK_EXT_DIR=/www/server/panel/vhost/nginx/extension/img.fangkelianmeng.com FALLBACK_HOST=img.fangkelianmeng.com bash /tmp/remote-ensure-fallback.sh'
+      - name: Remote prune (authoritative sitemap diff)
+        shell: bash
+        run: |
+          # 收尾腿：CI 的 tar 同步是增量覆盖（只增不删），构建期清退掉的旧详情页仍残留在服务器上返回 200。
+          # 以线上 sitemap.xml 为权威清单做差集，只删「磁盘有、清单无」且文件名命中正则的页（幂等，差集为 0 时无事发生）。
+          TOP="$(dirname "$GITHUB_WORKSPACE")"
+          SRC="$TOP/packages/static-build-kit/src"
+          HOST=root@60.205.214.88
+          KEY="-i /root/.ssh/id_rsa -o StrictHostKeyChecking=accept-new"
+          scp $KEY "$SRC/remote-prune.sh" "$HOST:/tmp/remote-prune.sh"
+          ssh $KEY "$HOST" 'PRUNE_ROOT=/www/wwwroot/img.fangkelianmeng.com PRUNE_DIRS=p PRUNE_PATTERN="^[0-9a-f]{32}[.]html$" PRUNE_HOST=img.fangkelianmeng.com bash /tmp/remote-prune.sh'
