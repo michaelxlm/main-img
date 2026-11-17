@@ -16,6 +16,7 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const crypto = require('crypto');
 
 const ROOT = path.resolve(__dirname, '..');
 const API_BASE = 'https://api.xuyiheng.com/api/v1/front/antucao/image';
@@ -449,6 +450,20 @@ function genDetailPage(item, detailSet, siblings) {
 }
 
 /* ------------------------------ 缓存令牌 ------------------------------ */
+// WO-244：slot 资源版本令牌升级为「内容哈希」。
+// 日期戳 BUILD_VERSION 只按天变化，同一天内改一字节 slot 源码，回访用户仍命中 1y immutable
+// 旧缓存（nginx.conf L20-23）。改为对 assets/js 下 slot 源文件取 sha256 前 10 位作令牌，
+// 与两 manifest 站的 fingerprint manifest token 同算法：源码一变令牌即变，回访下次可见。
+// 集合与 packages/site-sdk/sync.js 的 WEB_SDKS + slot-loader 合并加载器对齐。
+var SLOT_SDK = /^\/assets\/js\/(ad-slots|coupon-slot|img-slot|slot-loader|mp-slot|tracker)\.js$/;
+function slotContentHash(rel) {
+  var abs = path.join(ROOT, rel.replace(/^\//, ''));
+  try {
+    return crypto.createHash('sha256').update(fs.readFileSync(abs)).digest('hex').slice(0, 10);
+  } catch (e) {
+    return null; // 源文件缺失时回落到日期戳，不制造 404
+  }
+}
 function stampAssets(htmlFile) {
   var html = fs.readFileSync(htmlFile, 'utf8');
   html = html.replace(/href="(\/assets\/css\/[^"?]+)(\?[^"]*)?"/g, 'href="$1?v=' + BUILD_VERSION + '"');
@@ -456,6 +471,11 @@ function stampAssets(htmlFile) {
   // 若随日级版本缓存会把灯箱「查看详情」链到已清退的旧详情页（304 最长一天）
   html = html.replace(/src="(\/assets\/js\/[^"?]+)(\?[^"]*)?"/g, function (m, p1, p2) {
     if (/\/detail-set\.js$/.test(p1)) return 'src="' + p1 + '"';
+    // slot SDK 用内容哈希（源在则哈希、源缺则回落日期戳）；其余 JS 维持日期戳
+    if (SLOT_SDK.test(p1)) {
+      var h = slotContentHash(p1);
+      return 'src="' + p1 + '?v=' + (h || BUILD_VERSION) + '"';
+    }
     return 'src="' + p1 + '?v=' + BUILD_VERSION + '"';
   });
   html = html.replace(/data-build="[^"]*"/g, 'data-build="' + BUILD_VERSION + '"');
