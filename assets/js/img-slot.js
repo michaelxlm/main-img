@@ -16,6 +16,8 @@
    图片 URL：otherUrls[0] 缩略图优先，失效/缺失回退 ali_url / url（OSS 原图）；
         http:// 一律升级为 https://（避免 https 页面 Mixed Content）；相对路径拼 OSS 基址；
         <img> 固定 referrerpolicy="no-referrer"（OSS 防盗链）。
+   WO-219 消费腿：接口附 webpUrl（由 webpPath 派生）时，若缩略图本就要回退 OSS 原图且浏览器
+        支持 webp，则改取预生成的 webp 派生对象（省流量）；加载失败仍回退原图，不破坏既有降级链。
    静默失败：接口异常 / 无数据 / 无容器，都不报错、不占位。
 
    可选配置（引入本脚本前声明）：
@@ -91,6 +93,36 @@
       if (u) return u;
     }
     return main;
+  }
+
+  /* ------------------------- WO-219 webp 协商 -------------------------
+     压缩腿写的是 OSS key（webpPath），后台接口归一成 webpUrl 透出。这里做两道协商：
+       ① 浏览器支持：canvas.toDataURL('image/webp') 一次性探测，结果缓存；
+       ② 图源合适：only 缩略图本就要回退 OSS 原图时才换——otherUrls[0] 是第三方小图，
+          拿同一张图的全尺寸 webp 替换属于换图，且体积可能反而更大，不能换。
+     不支持/未压缩/不合适一律走原图；webp 加载失败由 img.onerror 回退原图，链路不变。 */
+  var webpSupport = null;
+  function supportsWebp() {
+    if (webpSupport !== null) return webpSupport;
+    try {
+      var c = global.document && global.document.createElement('canvas');
+      webpSupport = !!(c && c.toDataURL && c.toDataURL('image/webp').indexOf('data:image/webp') === 0);
+    } catch (e) { webpSupport = false; }
+    return webpSupport;
+  }
+
+  function webpUrl(item) {
+    if (!item) return '';
+    // webpUrl 由后台从 webpPath 派生；webpPath 兜底兼容旧版接口/直连场景
+    return absUrl(item.webpUrl || item.webpPath || '');
+  }
+
+  function cardThumbUrl(item) {
+    var thumb = thumbUrl(item);
+    var main = imgUrl(item);
+    var webp = webpUrl(item);
+    if (webp && main && thumb === main && supportsWebp()) return webp;
+    return thumb;
   }
 
   /* ------------------------- 宿主明暗判定 -------------------------
@@ -280,7 +312,7 @@
     bindTrack(a, 'img_slot_click', {
       img_id: img._id || '', title: img.title || '', type: code, page: currentPage(),
     });
-    var imgSrc = thumbUrl(img);
+    var imgSrc = cardThumbUrl(img);
     var mainSrc = imgUrl(img);
     if (imgSrc) {
       var thumb = doc.createElement('div');
