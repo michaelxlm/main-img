@@ -258,7 +258,7 @@
       '&mainUrl=' + encodeURIComponent(mainUrl);
     try {
       if (!global.fetch) return done(null);
-      global.fetch(url, { cache: 'no-cache' }).then(function (res) {
+      global.fetch(url, { cache: 'default' }).then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
       }).then(function (json) {
@@ -276,7 +276,7 @@
       '&mainUrl=' + encodeURIComponent(mainUrl);
     try {
       if (!global.fetch) return done(null);
-      global.fetch(url, { cache: 'no-cache' }).then(function (res) {
+      global.fetch(url, { cache: 'default' }).then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
       }).then(function (json) {
@@ -336,7 +336,12 @@
     if (imgSrc) {
       var img = doc.createElement('img');
       img.alt = coupon.title || '';
-      img.setAttribute('loading', 'lazy');
+      // LCP/CLS：券卡图是小尺寸首屏图，不能 lazy（否则 LCP 被推迟到图片实际加载完成）；
+      // 同时写死与 CSS 一致的 46×46，避免图片到位时二次布局。
+      img.width = 46;
+      img.height = 46;
+      img.setAttribute('loading', 'eager');
+      img.setAttribute('fetchpriority', 'high');
       img.setAttribute('referrerpolicy', 'no-referrer');
       imgFallback(doc, img);
       img.src = imgSrc;
