@@ -707,7 +707,9 @@ async function main() {
       picked.forEach(function (it) { keep[it._id + '.html'] = true; });
       var removed = 0;
       fs.readdirSync(path.join(ROOT, 'p')).forEach(function (f) {
-        if (/\.html$/.test(f) && !keep[f]) { fs.unlinkSync(path.join(ROOT, 'p', f)); removed++; }
+        // _shell.html 是内容路由回退壳（nginx `location ^~ /p/ { try_files $uri /p/_shell.html; }` 的目标）：
+        // 它不在精选集里但永不可删——删了以后旧 /p/<id> 链会由 200 壳变 404 坏链。以 _ 开头的文件一律保留。
+        if (/\.html$/.test(f) && f.charAt(0) !== '_' && !keep[f]) { fs.unlinkSync(path.join(ROOT, 'p', f)); removed++; }
       });
       if (removed) console.log('  清退过期详情页 ' + removed + ' 个');
     }
