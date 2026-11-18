@@ -678,6 +678,20 @@ async function main() {
     } catch (e) { itemsByCat.__global__ = []; }
   }
 
+  // WO-245：--dump-ids=<file> 导出候选池 _id 并集（预渲染消费面的超集：分类首屏 + 详情精选 + 同类推荐
+  //   都从 itemsByCat 里选），供 main-api scripts/img-alt-batch.js --ids-file 定向生成 alt。
+  //   只写指定文件，不影响构建产物本身；API 不可达（apiOk=false）时不导出空清单冒充覆盖。
+  var dumpIdsArg = process.argv.find(function (a) { return a.indexOf('--dump-ids=') === 0; });
+  if (dumpIdsArg && apiOk) {
+    var idSet = {};
+    Object.keys(itemsByCat).forEach(function (k) {
+      (itemsByCat[k] || []).forEach(function (it) { if (it && it._id) idSet[it._id] = 1; });
+    });
+    var dumpPath = path.resolve(dumpIdsArg.slice('--dump-ids='.length));
+    fs.writeFileSync(dumpPath, JSON.stringify(Object.keys(idSet)) + '\n', 'utf8');
+    console.log('  [dump-ids] 候选池并集 ' + Object.keys(idSet).length + ' 个 id → ' + dumpPath);
+  }
+
   var extraPages = [];
   var detailSet = {};
 
