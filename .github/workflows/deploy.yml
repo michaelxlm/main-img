@@ -48,8 +48,9 @@ jobs:
           NODE=/www/server/nodejs/v20.18.3/bin/node
           [ -x "$NODE" ] || NODE=node
           echo "[info] node: $NODE ($($NODE -v))"
-          # 预渲染分类/详情落地页 + 扩量 sitemap；API 不可达时降级为仅重写主页面（不阻断部署）
-          $NODE scripts/build.js || echo "[warn] build.js 降级：API 不可达，保留仓库原页面"
+          # WO-155：预渲染列表页/分类页/详情页 + 产物门禁。API 失败时沿用上次产物，
+          # 但门禁失败（首屏空、死链、类目页缺失）必须阻断部署。
+          $NODE scripts/build.js
       - name: Apply unified site shell (footer / about / ads / cross-links)
         shell: bash
         run: |

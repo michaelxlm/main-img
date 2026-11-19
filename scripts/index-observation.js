@@ -24,7 +24,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
-const SITE = argValue('site') || 'https://fangkelianmeng.com';
+const SITE = argValue('site') || 'https://img.fangkelianmeng.com';
 const DATA_DIR = path.join(ROOT, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'index-observation.json');
 const REPORT_DIR = path.join(ROOT, 'reports');
@@ -307,11 +307,11 @@ async function main() {
   lines.push('title: 收录观测报告 · ' + date);
   lines.push('owner: Michaelxlm');
   lines.push('updated: ' + date);
-  lines.push('scope: visitor · reports');
+  lines.push('scope: main-img · reports');
   lines.push('status: 有效（自动生成）');
   lines.push('layer: L3-生成产物');
-  lines.push('note: 由 visitor/scripts/index-observation.js 按日期生成；仅保留最近 1 份');
-  lines.push('tags: [visitor, reports]');
+  lines.push('note: 由 main-img/scripts/index-observation.js 按日期生成；仅保留最近 1 份');
+  lines.push('tags: [main-img, reports]');
   lines.push('---');
   lines.push('');
   lines.push('# 收录观测报告 · ' + date);

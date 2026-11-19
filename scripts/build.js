@@ -37,7 +37,9 @@ function readSeoEnhanceLd() {
 }
 const SEO_ENHANCE_LD_HTML = readSeoEnhanceLd();
 
-const API_BASE = 'https://api.xuyiheng.com/api/v1/front/antucao/image';
+// 可用 MAIN_IMG_API_BASE / MAIN_IMG_API_ATTEMPTS 离线复演 API 降级路径（默认不变）
+const API_BASE = process.env.MAIN_IMG_API_BASE || 'https://api.xuyiheng.com/api/v1/front/antucao/image';
+const API_ATTEMPTS = Math.max(1, Number(process.env.MAIN_IMG_API_ATTEMPTS || 3) || 3);
 const SITE_URL = 'https://img.fangkelianmeng.com';
 const MAIN_URL = 'img.fangkelianmeng.com'; // sourceGuard 放行凭证，须与 projects.url 一致
 const BUILD_VERSION = new Date().toISOString().slice(0, 10).replace(/-/g, '.');
@@ -61,15 +63,28 @@ const GONGAN = (function () {
 })();
 
 /* ------------------------------ HTTP 工具 ------------------------------ */
-function fetchJSON(url) {
+// attempts：有限重试（CI 实测批量请求会被网关短暂挡回 HTML 错误页，重试 + 退避可恢复）
+function fetchJSON(url, attempts) {
+  var max = attempts || 1;
   return new Promise(function (resolve, reject) {
-    https.get(url, { headers: { 'User-Agent': 'main-img-build/1.0' } }, function (res) {
-      var data = '';
-      res.on('data', function (chunk) { data += chunk; });
-      res.on('end', function () {
-        try { resolve(JSON.parse(data)); } catch (e) { reject(e); }
-      });
-    }).on('error', reject);
+    function attempt(tried) {
+      https.get(url, { headers: { 'User-Agent': 'main-img-build/1.0' } }, function (res) {
+        if (res.statusCode >= 400) {
+          res.resume();
+          return retry(new Error('HTTP ' + res.statusCode));
+        }
+        var data = '';
+        res.on('data', function (chunk) { data += chunk; });
+        res.on('end', function () {
+          try { resolve(JSON.parse(data)); } catch (e) { retry(e); }
+        });
+      }).on('error', retry);
+      function retry(e) {
+        if (tried < max) setTimeout(function () { attempt(tried + 1); }, 800 * tried * tried);
+        else reject(e);
+      }
+    }
+    attempt(1);
   });
 }
 
@@ -81,7 +96,7 @@ function fetchRank(params) {
       qs.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k]));
     }
   }
-  return fetchJSON(API_BASE + '/rank?' + qs.join('&')).then(function (j) {
+  return fetchJSON(API_BASE + '/rank?' + qs.join('&'), API_ATTEMPTS).then(function (j) {
     var d = (j && j.data) || j || {};
     return { list: d.list || [], pagination: d.pagination || {} };
   });
@@ -90,11 +105,27 @@ function fetchRank(params) {
 // 随机取样（用于枚举库内真实存在的分类码：type 以中台字典 imageType 为准，
 // 本地 categories.json 的 slug 可能与库内码不一致，命中与否以 API 实据为凭）
 function fetchSample(pageSize) {
-  return fetchJSON(API_BASE + '/sample?mainUrl=' + encodeURIComponent(MAIN_URL) + '&pageSize=' + (pageSize || 100))
+  return fetchJSON(API_BASE + '/sample?mainUrl=' + encodeURIComponent(MAIN_URL) + '&pageSize=' + (pageSize || 100), Math.min(2, API_ATTEMPTS))
     .then(function (j) {
       var d = (j && j.data) || j || {};
       return d.list || [];
     });
+}
+
+// WO-155：上次构建产物的 URL 清单（仓库即 last-known-good）。API 部分失败时沿用，
+// 不再因一次网关抖动把已生成的类目/详情页从 sitemap 与观测台账里抹掉。
+function readPrevManifest() {
+  var out = {};
+  try {
+    var xml = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
+    var re = /<url>\s*<loc>([^<]+)<\/loc>\s*<changefreq>([^<]+)<\/changefreq>\s*<priority>([^<]+)<\/priority>\s*<\/url>/g;
+    var m;
+    while ((m = re.exec(xml))) {
+      var loc = m[1].replace(SITE_URL, '');
+      out[loc] = { loc: loc, changefreq: m[2], priority: m[3] };
+    }
+  } catch (e) { /* 首次构建无 sitemap */ }
+  return out;
 }
 
 /* ------------------------------ 图片 URL 工具 ------------------------------ */
@@ -513,13 +544,18 @@ function stampDir(dir, filter) {
 
 /* ------------------------------ Sitemap ------------------------------ */
 function refreshSitemap(extraPages) {
+  var seen = {};
   var pages = [
     { loc: '/', changefreq: 'daily', priority: '1.0' },
     { loc: '/browse.html', changefreq: 'daily', priority: '0.9' },
     { loc: '/rank.html', changefreq: 'daily', priority: '0.9' },
     { loc: '/category.html', changefreq: 'weekly', priority: '0.8' },
     { loc: '/about.html', changefreq: 'monthly', priority: '0.4' },
-  ].concat(extraPages || []);
+  ].concat(extraPages || []).filter(function (p) {
+    if (!p || !p.loc || seen[p.loc]) return false;
+    seen[p.loc] = true;
+    return true;
+  });
 
   var xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
@@ -584,6 +620,54 @@ function syncObservation(relLocs) {
   return kept.length;
 }
 
+// API 部分失败时，image sitemap 也要保留未被本轮重选覆盖的旧详情页图片条目。
+function mergeImageSitemap(items, oldXml) {
+  var keepIds = {};
+  (items || []).forEach(function (it) { keepIds[it._id] = true; });
+  var file = path.join(ROOT, 'image-sitemap.xml');
+  var old = oldXml || '';
+  var blocks = old.match(/  <url>[\s\S]*?<\/url>/g) || [];
+  var add = blocks.filter(function (b) {
+    var m = /<loc>https:\/\/img\.fangkelianmeng\.com\/p\/([0-9a-f]{32})\.html<\/loc>/.exec(b);
+    return m && !keepIds[m[1]];
+  });
+  if (!add.length) return 0;
+  fs.writeFileSync(file, old.replace('</urlset>', add.join('\n') + '\n</urlset>'), 'utf8');
+  return add.length;
+}
+
+// WO-155 产物门禁：列表页首屏必须有静态卡且全部指向在册详情页，类目页产物非空。
+// 失败即中断构建，避免「空 body / 死链」被 CI 同步上线；与 API 降级路径共用。
+function checkSsgArtifacts() {
+  var stats = { list: {}, category: 0, detailLinks: 0 };
+  [ 'index.html', 'browse.html', 'rank.html' ].forEach(function (f) {
+    var html = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    var m = /<!--SSG:GRID-START-->([\s\S]*?)<!--SSG:GRID-END-->/.exec(html);
+    if (!m) throw new Error(f + ' 缺 SSG:GRID 标记');
+    var ids = [];
+    var re = /<a class="gm-card" href="\/p\/([0-9a-f]{32})\.html"/g;
+    var hit;
+    while ((hit = re.exec(m[1]))) ids.push(hit[1]);
+    if (ids.length < LIST_PRERENDER) throw new Error(f + ' 首屏静态卡不足 ' + LIST_PRERENDER + '（实得 ' + ids.length + '）');
+    ids.forEach(function (id) {
+      if (!fs.existsSync(path.join(ROOT, 'p', id + '.html'))) throw new Error(f + ' 静态卡指向不存在的详情页 /p/' + id + '.html');
+    });
+    stats.list[f] = ids.length;
+    stats.detailLinks += ids.length;
+  });
+  var sm = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
+  var locs = (sm.match(/<loc>([^<]+)<\/loc>/g) || []).map(function (s) { return s.replace(/<\/?loc>/g, ''); });
+  locs.filter(function (u) { return /\/category\/[^/]+\.html$/.test(u); }).forEach(function (u) {
+    var rel = u.replace(SITE_URL, '');
+    var file = path.join(ROOT, rel);
+    if (!fs.existsSync(file)) throw new Error('sitemap 类目页无产物：' + rel);
+    var html = fs.readFileSync(file, 'utf8');
+    if (!/<a class="gm-card"/.test(html)) throw new Error('类目页首屏无静态卡：' + rel);
+    stats.category++;
+  });
+  return stats;
+}
+
 /* ------------------------------ 选品 ------------------------------ */
 // WO-187：精选集数量校正。旧实现「类内顺序 + 严格门槛（title + desc|tag）」去重后
 // 常只剩几十张（线上 72、仓库一度 49），与 README / sitemap / 台账声明的 121 不符。
@@ -631,6 +715,9 @@ async function main() {
   var regPath = path.join(ROOT, 'data', 'type-registry.json');
   try { Object.assign(realCodes, JSON.parse(fs.readFileSync(regPath, 'utf8')).codes || {}); }
   catch (e) { /* 首次构建无登记表 */ }
+  var prevManifest = readPrevManifest();   // 仓库内上次成功构建的 URL 清单
+  var failedSlugs = {};                    // API 拉取失败（非「确认空」）的分类
+  var degraded = false;                    // 部分数据源失败 → 只增不删，沿用旧产物
   var sampleOk = false;
   try {
     for (var s = 0; s < 3; s++) {
@@ -676,7 +763,9 @@ async function main() {
         else emptyConfirmed[slug] = true;
         console.log('  rank[' + slug + '] → ' + list.length + ' 张');
       } catch (e) {
-        console.log('  rank[' + slug + '] 失败（非致命）:', e.message);
+        console.log('  rank[' + slug + '] 失败（非致命，沿用上次产物）:', e.message);
+        failedSlugs[slug] = true;
+        degraded = true;
         itemsByCat[slug] = [];
       }
     }
@@ -694,7 +783,11 @@ async function main() {
       itemsByCat.__global__ = glist;
       if (glist.length) apiOk = true;
       console.log('  rank[全局] → ' + glist.length + ' 张');
-    } catch (e) { itemsByCat.__global__ = []; }
+    } catch (e) {
+      itemsByCat.__global__ = [];
+      degraded = true;
+      console.log('  rank[全局] 失败（非致命，沿用上次产物）:', e.message);
+    }
   }
 
   // WO-245：--dump-ids=<file> 导出候选池 _id 并集（预渲染消费面的超集：分类首屏 + 详情精选 + 同类推荐
@@ -731,11 +824,21 @@ async function main() {
     });
 
     // 5b. image sitemap（图片型站点补全，提升图片索引；与详情页同口径取原图）
+    var prevImageXml = '';
+    try { prevImageXml = fs.readFileSync(path.join(ROOT, 'image-sitemap.xml'), 'utf8'); } catch (e) { /* 首次构建 */ }
     var imgSm = refreshImageSitemap(picked);
+    if (degraded) imgSm += mergeImageSitemap(picked, prevImageXml);
     console.log('  image-sitemap.xml refreshed (' + imgSm + ' images)');
 
-    // 清退：删除精选集之外的旧详情页（仅在本轮 apiOk 且有产出时执行，防 API 抖动清空仓库）
-    if (picked.length) {
+    // 清退：删除精选集之外的旧详情页（仅在全量数据成功时执行）。API 部分失败时
+    // 候选池不完整，旧详情仍有效：沿用上次 sitemap 条目且不清退，防抖动误删收录页。
+    if (degraded) {
+      var retained = 0;
+      Object.keys(prevManifest).forEach(function (loc) {
+        if (loc.indexOf('/p/') === 0) { extraPages.push(prevManifest[loc]); retained++; }
+      });
+      console.log('  API 部分失败：沿用 ' + retained + ' 条旧详情页，不清退');
+    } else if (picked.length) {
       var keep = {};
       picked.forEach(function (it) { keep[it._id + '.html'] = true; });
       var removed = 0;
@@ -752,7 +855,15 @@ async function main() {
     var generatedSlugs = {};
     activeSlugs.forEach(function (slug) {
       var list = (itemsByCat[slug] || []).slice(0, CATEGORY_ABOVE);
-      if (!list.length) return;
+      if (!list.length) {
+        // API 失败 ≠ 该类目无数据：保留已生成的落地页与 sitemap 条目，等下次成功再刷新
+        var keepLoc = '/category/' + slug + '.html';
+        if (failedSlugs[slug] && prevManifest[keepLoc]) {
+          extraPages.push(prevManifest[keepLoc]);
+          console.log('  category[' + slug + '] API 失败，沿用上次产物');
+        }
+        return;
+      }
       var cat = catDefs[slug] || { slug: slug, name: realCodes[slug] || slug, desc: (realCodes[slug] || slug) + '高清壁纸精选。' };
       cat._pagination = paginationByCat[slug] || {};
       generatedSlugs[slug + '.html'] = true;
@@ -761,8 +872,8 @@ async function main() {
       extraPages.push({ loc: page.rel, changefreq: page.changefreq, priority: page.priority });
     });
 
-    // 清退：仅删「本轮确认无数据」的旧落地页（抽样未命中不删，防抖动）
-    if (Object.keys(generatedSlugs).length || Object.keys(emptyConfirmed).length) {
+    // 清退：仅删「本轮确认无数据」的旧落地页（抽样未命中、API 失败都不删，防抖动）
+    if (!degraded && (Object.keys(generatedSlugs).length || Object.keys(emptyConfirmed).length)) {
       var removedCats = 0;
       fs.readdirSync(path.join(ROOT, 'category')).forEach(function (f) {
         var slug0 = f.replace(/\.html$/, '');
@@ -791,7 +902,12 @@ async function main() {
       });
     }
   } else {
-    console.log('\nAPI 不可达，跳过预渲染（仅重写主页面 sitemap，保留既有生成页）。');
+    console.log('\nAPI 不可达，沿用上次 sitemap / 生成页（不清空已收录 URL）。');
+    Object.keys(prevManifest).forEach(function (loc) {
+      if (['/', '/browse.html', '/rank.html', '/category.html', '/about.html'].indexOf(loc) === -1) {
+        extraPages.push(prevManifest[loc]);
+      }
+    });
   }
 
   // 5. sitemap（主页面 + 本轮生成页）+ 台账同步（台账与 sitemap 全量一一对应，含 5 主页面）
@@ -808,6 +924,10 @@ async function main() {
   var n2 = stampDir(path.join(ROOT, 'category'));
   var n3 = stampDir(path.join(ROOT, 'p'));
   console.log('  stamped ' + (n1 + n2 + n3) + ' html files');
+
+  var gate = checkSsgArtifacts();
+  console.log('\nSSG gate: 列表页 ' + Object.keys(gate.list).length + ' 个 / 静态卡 ' + gate.detailLinks +
+    ' 张 / 类目页 ' + gate.category + ' 个，全部有首屏内容');
 
   console.log('\nBuild complete!');
 }
