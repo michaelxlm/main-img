@@ -33,6 +33,15 @@ jobs:
           NODE=/www/server/nodejs/v20.18.3/bin/node
           [ -x "$NODE" ] || NODE=node
           $NODE scripts/check-encoding.js
+      - name: Fetch SEO enhance JSON (M4 / WO-227~230)
+        shell: bash
+        # 中台已采纳建议 → 构建期注入 JSON-LD（sites['main-img']）。fail-soft：失败保留上次产物，不阻断部署。
+        run: |
+          mkdir -p data
+          curl -fsSL --retry 3 -o data/seo-enhance.json.tmp \
+            https://antucao.oss-cn-beijing.aliyuncs.com/json/seoEnhance.json \
+            && mv data/seo-enhance.json.tmp data/seo-enhance.json \
+            || echo "[warn] SEO enhance 拉取失败，沿用本地 data/seo-enhance.json（或留空）"
       - name: Build (cache-bust ?v + prerender landing pages)
         shell: bash
         run: |

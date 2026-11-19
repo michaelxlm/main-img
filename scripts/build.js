@@ -19,6 +19,24 @@ const https = require('https');
 const crypto = require('crypto');
 
 const ROOT = path.resolve(__dirname, '..');
+// M4 方案A（WO-227~230）：构建期读取中台下发的已采纳 SEO 增强建议（sites['main-img']）。
+// fail-soft：文件缺失/坏 JSON 返回空串，不阻断构建（与本站 API 不可达降级同口径）。
+function readSeoEnhanceLd() {
+  try {
+    const full = path.join(ROOT, 'data', 'seo-enhance.json');
+    if (!fs.existsSync(full)) return '';
+    const json = JSON.parse(fs.readFileSync(full, 'utf8'));
+    const site = json && json.sites && json.sites['main-img'];
+    if (!site || !Array.isArray(site.ld)) return '';
+    return site.ld.map(function (o) {
+      return '<script type="application/ld+json">\n' + JSON.stringify(o).replace(/</g, '\\u003c') + '\n</script>';
+    }).filter(Boolean).join('\n');
+  } catch (e) {
+    return '';
+  }
+}
+const SEO_ENHANCE_LD_HTML = readSeoEnhanceLd();
+
 const API_BASE = 'https://api.xuyiheng.com/api/v1/front/antucao/image';
 const SITE_URL = 'https://img.fangkelianmeng.com';
 const MAIN_URL = 'img.fangkelianmeng.com'; // sourceGuard 放行凭证，须与 projects.url 一致
@@ -164,6 +182,7 @@ function renderHead(o) {
     + '  <meta name="twitter:description" content="' + escAttr(o.ogDesc || o.desc) + '">\n'
     + '  <meta name="twitter:image" content="' + escAttr(ogImage) + '">\n'
     + o.jsonld
+    + (SEO_ENHANCE_LD_HTML ? '\n' + SEO_ENHANCE_LD_HTML : '')
     + '  <link rel="stylesheet" href="/assets/css/tokens.css?v=5">\n'
     + '  <link rel="stylesheet" href="/assets/css/main.css?v=5" />\n'
     + '  <link rel="stylesheet" href="/assets/css/gallery.css?v=5" />\n'
