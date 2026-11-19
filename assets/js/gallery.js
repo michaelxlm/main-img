@@ -976,25 +976,38 @@
   // 观察“加载更多”按钮：进入视口即自动触发下一页；每批加载完成后再主动复查一次位置，
   // 补成 IO 只在相交「变化」时回调的盲区（短内容时哨兵常驻视口会停住不再续发）。
   // 按钮本身保留，兼容不支持 IntersectionObserver 或不希望自动加载的场景。
-  var autoMore = null; // { moreBtn, grid, stateEl }
+  var autoMore = null; // { moreBtn, grid, stateEl, io }
+  function loadMoreNow() {
+    if (!autoMore || !autoMore.moreBtn || autoMore.moreBtn.hidden || state.loading || !state.hasMore) return;
+    if (state.mode === 'favorites') return;
+    loadImages(autoMore.grid, autoMore.stateEl, autoMore.moreBtn, true);
+  }
   function tryAutoMore() {
-    if (!autoMore) return;
+    if (!autoMore || !autoMore.moreBtn) return;
     var moreBtn = autoMore.moreBtn;
     if (moreBtn.hidden || state.loading || !state.hasMore) return;
     if (state.mode === 'favorites') return;
-    var viewportH = global.innerHeight || doc.documentElement.clientHeight || 800;
-    var rect = moreBtn.getBoundingClientRect();
-    if (rect.top - viewportH > 700) return; // 还离得远，等 IO 再触发
-    loadImages(autoMore.grid, autoMore.stateEl, moreBtn, true);
+    if (!autoMore.io) {
+      // 无 IntersectionObserver 的老浏览器：退回同步测量，保持原有兜底
+      var viewportH = global.innerHeight || doc.documentElement.clientHeight || 800;
+      var rect = moreBtn.getBoundingClientRect();
+      if (rect.top - viewportH > 700) return;
+      loadMoreNow();
+      return;
+    }
+    // 重新 observe 触发异步相交回调：避免批量渲染后同步读布局造成强制回流
+    autoMore.io.unobserve(moreBtn);
+    autoMore.io.observe(moreBtn);
   }
   function initAutoMore(moreBtn, grid, stateEl) {
-    autoMore = { moreBtn: moreBtn, grid: grid, stateEl: stateEl };
+    autoMore = { moreBtn: moreBtn, grid: grid, stateEl: stateEl, io: null };
     if (!moreBtn || !global.IntersectionObserver) return;
     var io = new global.IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
-        if (en.isIntersecting) tryAutoMore();
+        if (en.isIntersecting) loadMoreNow();
       });
     }, { rootMargin: '700px 0px' });
+    autoMore.io = io;
     io.observe(moreBtn);
   }
 

@@ -167,7 +167,7 @@ function renderHead(o) {
     + '  <link rel="stylesheet" href="/assets/css/tokens.css?v=5">\n'
     + '  <link rel="stylesheet" href="/assets/css/main.css?v=5" />\n'
     + '  <link rel="stylesheet" href="/assets/css/gallery.css?v=5" />\n'
-    + '  <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*","and":[{"not":{"or":[{"href_matches":"/api/*"},{"href_matches":"/admin/*"},{"href_matches":"/login*"},{"href_matches":"*logout*"}]}}]},"eagerness":"moderate"}]}</script>\n'
+    + '  <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"or":[{"href_matches":"/api/*"},{"href_matches":"/admin/*"},{"href_matches":"/login*"},{"href_matches":"*logout*"}]}}]},"eagerness":"moderate"}]}</script>\n'
     + '  <style>@view-transition{navigation:auto}</style>\n'
     + '</head>\n';
 }
