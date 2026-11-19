@@ -705,6 +705,8 @@
         state.page++;
         if (moreBtn && state.hasMore) moreBtn.hidden = false;
         hideState(stateEl);
+        // WO-262：数据落地后刷新当前历史条目的瀑布流快照（含分页进度），供前进/后退回放
+        stampHistory();
       })
       .catch(function (err) {
         global.clearTimeout(timeout);
@@ -939,9 +941,17 @@
      首次落地清洗用 replaceState，后续交互用 pushState（浏览器前进/后退可逐档恢复筛选态）。 */
   var urlFirstSynced = false;
   var popstateBound = false;
-  function syncBrowseUrl(push) {
+
+  /* ---- WO-262：瀑布流前进/后退状态恢复 ----
+     每个历史条目随 URL 一起携带一份「瀑布流快照」：当前已加载的图片数组、分页进度、
+     hasMore、滚动位置与筛选态。前进/后退时直接回放快照（瞬时、不闪骨架、保留加载深度与
+     滚动位置），不再清空重拉第 1 页。无快照的旧历史条目 / 外部深链回退到下方「按 URL 恢复
+     筛选态 + 重新取数」逻辑，保证向后兼容。 */
+  var FLOW_HIST = 'gmFlow';
+  var FLOW_VER = 1;
+  function currentListUrl() {
     var page = doc.body && doc.body.getAttribute('data-page');
-    if (page !== 'browse' && page !== 'home') return;
+    if (page !== 'browse' && page !== 'home') return null;
     var p = new URLSearchParams();
     if (state.type) p.set('type', state.type);
     if (state.size) p.set('size', state.size);
@@ -952,10 +962,54 @@
     // 排序仅对 rank 生效；search 接口不支持交互排序，搜索态不写入 sort，避免 URL 死参数（与请求不一致）
     if (state.sort && state.sort !== '_add_time' && state.mode !== 'search') p.set('sort', state.sort);
     var q = p.toString();
-    var url = location.pathname + (q ? '?' + q : '');
+    return location.pathname + (q ? '?' + q : '');
+  }
+  function scrollPos() {
+    return Math.round(global.scrollY || doc.documentElement.scrollTop || doc.body.scrollTop || 0);
+  }
+  function flowSnapshot() {
+    return {
+      v: FLOW_VER,
+      items: state.items,
+      page: state.page,
+      hasMore: state.hasMore,
+      scrollY: scrollPos(),
+      filters: {
+        mode: state.mode, type: state.type, size: state.size, aspect: state.aspect,
+        color: state.color, sort: state.sort, keyword: state.keyword
+      }
+    };
+  }
+  function stateWithFlow() {
+    var o = {}; o[FLOW_HIST] = flowSnapshot(); return o;
+  }
+  // 每批数据落地后刷新当前条目的快照（此时 items/page/hasMore 已是最新）
+  function stampHistory() {
+    var url = currentListUrl();
+    if (url === null) return;
+    try { history.replaceState(stateWithFlow(), '', url); } catch (e) {}
+  }
+  // 滚动时节流更新当前条目的 scrollY，前进/后退才能回到原来的浏览位置
+  var scrollStampTimer = null;
+  function onScrollStamp() {
+    if (scrollStampTimer) return;
+    scrollStampTimer = global.setTimeout(function () {
+      scrollStampTimer = null;
+      try {
+        var cur = history.state && history.state[FLOW_HIST];
+        if (cur && cur.v === FLOW_VER) {
+          cur.scrollY = scrollPos();
+          history.replaceState(history.state, '', location.href);
+        }
+      } catch (e) {}
+    }, 200);
+  }
+  function syncBrowseUrl(push) {
+    var url = currentListUrl();
+    if (url === null) return;
     try {
-      if (push && urlFirstSynced) history.pushState(null, '', url);
-      else { history.replaceState(null, '', url); urlFirstSynced = true; }
+      if (push && urlFirstSynced) history.pushState(stateWithFlow(), '', url);
+      else { history.replaceState(stateWithFlow(), '', url); urlFirstSynced = true; }
     } catch (e) {}
   }
 
@@ -1195,11 +1249,45 @@
     // 据当前 state 规范化一次，使地址栏与请求/高亮即时一致，无需等用户首次交互才清除。
     syncBrowseUrl();
 
-    // 浏览器前进/后退：恢复筛选态（分类/分辨率/宽高比/搜索/排序）并重渲染。
+    // 浏览器前进/后退：优先回放瀑布流快照（数据/分页/滚动位置/筛选态），无快照则回退到按 URL 恢复。
     // 仅在 home / browse 注册一次，避免其他页（rank/category/favorites/detail）误响应。
     if (!popstateBound && (page === 'home' || page === 'browse')) {
       popstateBound = true;
-      global.addEventListener('popstate', function () {
+      global.addEventListener('scroll', onScrollStamp, { passive: true });
+      global.addEventListener('popstate', function (e) {
+        var snap = e && e.state && e.state[FLOW_HIST];
+        if (snap && snap.v === FLOW_VER && Array.isArray(snap.items)) {
+          // WO-262：直接回放已加载的瀑布流，保留加载深度与滚动位置，不重新取数、不闪骨架。
+          var f = snap.filters || {};
+          state.mode = f.mode || page;
+          state.type = f.type || '';
+          state.size = f.size || '';
+          state.aspect = f.aspect || '';
+          state.color = f.color || '';
+          state.sort = f.sort || '_add_time';
+          state.keyword = f.keyword || '';
+          state.items = snap.items;
+          state.page = snap.page || 1;
+          state.hasMore = !!snap.hasMore;
+          state.loading = false;
+          if (state.controller) { try { state.controller.abort(); } catch (er) {} state.controller = null; }
+          if (searchInput) searchInput.value = state.keyword || '';
+          activateCats(catContainer, state.type);
+          activateSize(sizeContainer, state.size);
+          activateAspect(aspectContainer, state.aspect);
+          activateColor(colorContainer, state.color);
+          applyColorAvailability(colorContainer);
+          if (sortEl) sortEl.value = state.sort || '_add_time';
+          hideState(stateEl);
+          if (moreBtn) moreBtn.hidden = !state.hasMore;
+          renderItems(grid, applyClientFilters(state.items), false);
+          if (snap.scrollY) {
+            global.requestAnimationFrame(function () { global.scrollTo(0, snap.scrollY); });
+          }
+          if (global.Tracker) global.Tracker.track('history_restore', { mode: state.mode, count: state.items.length });
+          return;
+        }
+        // 回退：无快照的历史条目 / 外部深链 —— 按 URL 参数恢复筛选态并重新取数（原逻辑）。
         var q = new URLSearchParams(global.location.search);
         var uType = q.get('type');
         var uSearch = q.get('s') || q.get('keyword');
