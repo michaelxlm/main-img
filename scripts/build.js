@@ -282,7 +282,7 @@ function renderFooter() {
 function renderScripts() {
   return '  <script src="/assets/js/tracker.js?v=5"></script>\n'
     + '  <script src="/assets/js/app.js?v=5"></script>\n'
-    + '  <script>window.AdSlotsConfig={site:"img-fangkelianmeng",fallbackSrc:\'data/ad-slots.json\'};</script>\n'
+    + '  <script>window.AdSlotsConfig={site:"img-fangkelianmeng",fallbackSrc:\'/data/ad-slots.json\'};</script>\n'
     + '  <script src="/assets/js/coupon-slot.js" defer></script>\n'
     + '  <script src="/assets/js/ad-slots.js" defer></script>\n';
 }
