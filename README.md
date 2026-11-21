@@ -147,7 +147,7 @@ php -S localhost:8080
 
 ## 收录观测
 
-- 台账：`data/index-observation.json`，与 `sitemap.xml` 一一对应（WO-155 2026-11-21 正常扩容重建后 328 条：5 主页面 + 23 分类落地页 + 300 详情精选页）；`http_status / checked_at` 由脚本回写，`indexed` 不人工回填。
+- 台账：`data/index-observation.json`，与构建产出的 `sitemap.xml` 一一对应（WO-155 2026-11-21 正常扩容重建后 328 条：5 主页面 + 23 分类落地页 + 300 详情精选页）；CI 的 site-shell 注入 `sites.html` 后线上为 329 条（6 主页面 + 23 + 300，2026-11-21 线上实测）。`http_status / checked_at` 由脚本回写，`indexed` 不人工回填。
 - 核对：`node scripts/index-observation.js`（`--no-write` 只看不写）逐条查 HTTP / canonical / robots / sitemap，并校验 http→https，回写 `http_status / checked_at`，报告写到 `reports/index-observation-YYYY-MM-DD.md`（含百度 / GSC 核对入口）。
 - 2026-10-23 生产实测（精选集预渲染上线）：147 条全部 `200`、canonical 与 URL 一致、robots 放行、均在 sitemap；页内 /p/ 与 /category/ 内链断链 0；`detail-set.js` 121 条与 sitemap 详情页 1:1 零孤儿；`sitemap.xml` 已提交百度 / GSC，按 D-index-backfill 收录状态不再人工回填（`indexed` 保持 `unknown`）。
 - 2026-11-10（WO-187）：选品逻辑校正后重建，`p/` 121 页、`detail-set.js` 121 条、`sitemap.xml` 148 条三者 1:1 一致（此前线上仅 72 / 仓库 49，与 README 声明的 121 不符）。
