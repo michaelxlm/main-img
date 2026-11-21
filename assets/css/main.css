@@ -93,7 +93,8 @@ h3 { font-size: 1.1875rem; }
 p { margin: 0 0 12px; }
 p:last-child { margin-bottom: 0; }
 
-.container { width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+/* W0: 全站统一容器宽度，与 site-shell 的 .ss-wrap(max-width:1140px) 对齐 */
+.container { width: 100%; max-width: var(--maxw, 1140px); margin: 0 auto; padding: 0 24px; }
 .section { padding: 20px 0; }
 .section-sm { padding: 16px 0; }
 .section-soft { background: var(--bg-soft); }
