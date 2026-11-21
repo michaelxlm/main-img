@@ -25,7 +25,7 @@
   'use strict';
 
   // SDK 版本：所有接入项目必须保持一致（由 scripts/check-tracker-consistency.js 守卫）
-  var SDK_VERSION = '2.4.0'; // 2.4.0 WO-138：渠道归因升级为一级字段 src（会话持久 + 全事件携带 + 白名单校验）
+  var SDK_VERSION = '2.5.0'; // 2.5.0 WO-xxx：JS 错误（同步 + Promise + 资源加载）上报 + 频率控制
 
   var CONFIG = {
     // 上报端点（中台统一埋点端点）
@@ -372,6 +372,75 @@
     }
   }
 
+  /* ------------------------------ JS Error 捕获（WO-xxx fe-error） ------------------------------ */
+  // 错误频率控制：同一错误指纹 5 分钟内最多上报 5 次，防噪声刷屏
+  var errorFingerprints = {};
+  var ERROR_WINDOW_MS = 5 * 60 * 1000;
+  var ERROR_MAX_PER_FINGERPRINT = 5;
+
+  function fingerprintError(type, msg) {
+    var raw = (type || '') + '|' + (msg || '');
+    // 取前 128 字符的 hash（djb2 简化版）
+    var h = 5381;
+    for (var i = 0; i < Math.min(raw.length, 128); i++) {
+      h = ((h << 5) + h + raw.charCodeAt(i)) | 0;
+    }
+    return (h >>> 0).toString(36);
+  }
+
+  function shouldReportError(fp) {
+    var now = Date.now();
+    var entry = errorFingerprints[fp];
+    if (!entry) { errorFingerprints[fp] = { count: 1, firstSeen: now }; return true; }
+    if (now - entry.firstSeen > ERROR_WINDOW_MS) { errorFingerprints[fp] = { count: 1, firstSeen: now }; return true; }
+    if (entry.count >= ERROR_MAX_PER_FINGERPRINT) return false;
+    entry.count++;
+    return true;
+  }
+
+  function initJsError() {
+    try {
+      // 1. 同步 JS 错误 + 资源加载错误（script/img/link）
+      global.onerror = function (message, source, lineno, colno, error) {
+        var type = 'script';
+        var isResource = typeof source === 'string' && (source.match(/\.js(\?|$)/i) || source.match(/\.css(\?|$)/i));
+        if (isResource) type = 'resource';
+        var msg = typeof message === 'string' ? message : (error && error.message) ? error.message : String(message);
+        var fp = fingerprintError(type, msg);
+        if (!shouldReportError(fp)) return true; // 频率限制内的放行，不阻断原 handler
+
+        var props = {
+          type: type,
+          message: String(msg).slice(0, 512),
+          source: (source || '').toString().slice(0, 256),
+          lineno: lineno || 0,
+          colno: colno || 0,
+        };
+        // 带 stack（截断到 8KB 防膨胀）
+        if (error && error.stack) {
+          props.stack = String(error.stack).slice(0, 8192);
+        }
+        track('fe-error', props, true); // 错误立即上报（用户可能瞬间离开）
+        return true; // 不阻断浏览器默认错误处理
+      };
+
+      // 2. Promise 未捕获拒绝
+      global.addEventListener('unhandledrejection', function (e) {
+        var reason = e && e.reason;
+        var msg = (reason && reason.message) || (typeof reason === 'string' ? reason : String(reason));
+        var fp = fingerprintError('promise', msg);
+        if (!shouldReportError(fp)) return;
+
+        var props = {
+          type: 'promise',
+          message: String(msg).slice(0, 512),
+        };
+        if (reason && reason.stack) props.stack = String(reason.stack).slice(0, 8192);
+        track('fe-error', props, true);
+      });
+    } catch (e) { /* 错误捕获器自身不能抛错 */ }
+  }
+
   /* ------------------------------ Core Web Vitals（WO-94 自有 RUM 源） ------------------------------ */
   // Google field 阈值：据此给单条样本打 good/ni/po 标签，与中台 webVitals 看板口径一致
   var CWV_THRESHOLD = {
@@ -479,6 +548,7 @@
     patchHistory();
     bindDataTrack();
     bindFlushOnLeave();
+    initJsError(); // WO-xxx：错误捕获最先注册（boot 自身的同步错误也能抓到）
     persistSrcFromUrl(); // 渠道归因先于首次 PV，保证落地页那一条就带上 src
     trackPv();
     if (CONFIG.webVitals) initWebVitals();
