@@ -69,9 +69,9 @@ main-img/
 | 首页 | `index.html` | Hero 搜索 + 全部分类 chip + 可折叠高级筛选面板（类别/设备尺寸分辨率/宽高比/主色调数据门控/重置）+ 随机一张 + 瀑布流精选壁纸（滚动自动加载）；WO-155 首屏 12 张静态卡在 `<!--SSG:GRID-->` 内 |
 | 全部图片 | `browse.html` | 可折叠高级筛选面板 + 随机一张 + 分页浏览 + 多排序方式，展示总张数；同 WO-155 首屏预渲染 |
 | 热门排行 | `rank.html` | 按下载/点赞/浏览排序，卡片带名次角标（前 3 名金银铜）；同 WO-155 首屏预渲染 |
-| 分类 | `category.html` | 22 大分类卡片入口（链向落地页） |
-| 分类落地页 | `category/{slug}.html` | 构建期预渲染（每类首屏 20 张静态卡 + SEO 文案），`build.js` 生成、勿手改 |
-| 详情精选页 | `p/{id}.html` | 构建期预渲染（大图/元信息/下载/同类推荐/ImageObject，目标 121 / 硬上限 200），`build.js` 生成、勿手改 |
+| 分类 | `category.html` | 分类卡片入口（链向落地页；`data/categories.json` 定义 chip，构建另覆盖 `type-registry.json` 历史分类码） |
+| 分类落地页 | `category/{slug}.html` | 构建期预渲染（每类首屏 40 张静态卡 + SEO 文案），`build.js` 生成、勿手改；WO-155 正常扩容后 23 页 |
+| 详情精选页 | `p/{id}.html` | 构建期预渲染（大图/元信息/下载/同类推荐/ImageObject，目标 300 / 硬上限 400），`build.js` 生成、勿手改 |
 | 我的收藏 | `favorites.html` | 浏览本地收藏，支持取消/清空（noindex，不进 sitemap） |
 | 关于 | `about.html` | 数据来源、版权声明、FAQ |
 | 404 | `404.html` | 页面走丢了 |
@@ -84,7 +84,7 @@ main-img/
 node scripts/build.js
 ```
 
-拉取中台 sample/rank 接口（**WO-187**：每类按 `sort=download` 追加拉取 3 页，扩大候选池以凑满 121 张精选）→ 枚举真实分类码（`data/type-registry.json` 累计登记防抽样抖动）→ 按质量分级（有 title 优先，desc/tag 加分）去重选品，取满 `DETAIL_TARGET=121`（受 `DETAIL_LIMIT=200` 硬上限约束）→ 生成 `category/*.html` 与 `p/*.html`（仅预渲染精选集，全量 33 万图仍运行时取数）→ **WO-155：从精选集取 12 张静态卡注入 `index.html`/`browse.html`/`rank.html` 的 `<!--SSG:GRID-->`（运行时 `gallery.js` 仍清空容器取数；无 JS 爬虫看到非空首屏）** → 重写 `sitemap.xml`（主页面 + 全部生成页）与 `image-sitemap.xml` → 同步收录台账 → CSS/JS 盖 `?v=` 令牌（`detail-set.js` 故意不盖、保持常新）→ **产物门禁：列表页静态卡 ≥12 且全部指向在册详情页、类目页首屏非空，不过即中断构建（CI 阻断部署）**。
+拉取中台 sample/rank 接口（**WO-155 正常扩容**：每类按 `sort=download` 追加拉取 6 页，候选池 `PER_CATEGORY_FETCH=200`）→ 枚举真实分类码（`data/type-registry.json` 累计登记防抽样抖动）→ 按质量分级（有 title 优先，desc/tag 加分）去重选品，取满 `DETAIL_TARGET=300`（受 `DETAIL_LIMIT=400` 硬上限约束）→ 生成 `category/*.html`（每类首屏 40 张）与 `p/*.html`（仅预渲染精选集，全量 22 万在库图仍运行时取数）→ **WO-155：从精选集取 12 张静态卡注入 `index.html`/`browse.html`/`rank.html` 的 `<!--SSG:GRID-->`（运行时 `gallery.js` 仍清空容器取数；无 JS 爬虫看到非空首屏）** → 重写 `sitemap.xml`（主页面 + 全部生成页）与 `image-sitemap.xml` → 同步收录台账 → CSS/JS 盖 `?v=` 令牌（`detail-set.js` 故意不盖、保持常新）→ **产物门禁：列表页静态卡 ≥12 且全部指向在册详情页、类目页首屏非空，不过即中断构建（CI 阻断部署）**。
 
 API 请求带有限重试 + 退避；网关抖动导致部分/整体失败时，沿用仓库上次的 sitemap 与已生成页、只增不删，不再把已收录 URL 抹掉。生成页为产物，需随仓库 commit（CI 部署前仍会重跑构建）。可抓性复核：`node scripts/index-observation.js`（默认站点 `https://img.fangkelianmeng.com`）。
 
@@ -147,7 +147,7 @@ php -S localhost:8080
 
 ## 收录观测
 
-- 台账：`data/index-observation.json`，与 `sitemap.xml` 一一对应（WO-187 2026-11-10 重建后 148 条：5 主页面 + 22 分类落地页 + 121 详情精选页）；`http_status / checked_at` 由脚本回写，`indexed` 不人工回填。
+- 台账：`data/index-observation.json`，与 `sitemap.xml` 一一对应（WO-155 2026-11-21 正常扩容重建后 328 条：5 主页面 + 23 分类落地页 + 300 详情精选页）；`http_status / checked_at` 由脚本回写，`indexed` 不人工回填。
 - 核对：`node scripts/index-observation.js`（`--no-write` 只看不写）逐条查 HTTP / canonical / robots / sitemap，并校验 http→https，回写 `http_status / checked_at`，报告写到 `reports/index-observation-YYYY-MM-DD.md`（含百度 / GSC 核对入口）。
 - 2026-10-23 生产实测（精选集预渲染上线）：147 条全部 `200`、canonical 与 URL 一致、robots 放行、均在 sitemap；页内 /p/ 与 /category/ 内链断链 0；`detail-set.js` 121 条与 sitemap 详情页 1:1 零孤儿；`sitemap.xml` 已提交百度 / GSC，按 D-index-backfill 收录状态不再人工回填（`indexed` 保持 `unknown`）。
 - 2026-11-10（WO-187）：选品逻辑校正后重建，`p/` 121 页、`detail-set.js` 121 条、`sitemap.xml` 148 条三者 1:1 一致（此前线上仅 72 / 仓库 49，与 README 声明的 121 不符）。

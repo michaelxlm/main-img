@@ -45,11 +45,14 @@ const MAIN_URL = 'img.fangkelianmeng.com'; // sourceGuard 放行凭证，须与 
 const BUILD_VERSION = new Date().toISOString().slice(0, 10).replace(/-/g, '.');
 
 // P3-2 精选集规模上限（控制仓库体积与构建时长；全站图片不预渲染）
-const PER_CATEGORY_FETCH = 80;   // 每类拉取用于选品与同类推荐（WO-187 放大候选池，保证精选集达标）
-const CATEGORY_ABOVE = 20;       // 分类落地页预渲染的首屏图数
-const DETAIL_LIMIT = 200;        // 详情页精选集硬上限
-const DETAIL_TARGET = 121;       // WO-187：与 README 收录观测台账（5+21+121=147）一致的精选集目标规模
-const RANK_PAGES = 3;            // WO-187：rank 每类追加拉取的页数（API 单页上限约 50，扩大候选池）
+// WO-155 / D-img-ssg-pilot：owner 2026-11-21 裁定「正常扩容」——图源盘点 224,098 条 main.images /
+// 391,275 个 OSS 正常图片，自有/AI 生成占 99.99%、淘宝买家秀类 UGC 前缀 0 条，按白名单口径温和放大：
+// 分类首屏 20→40、详情精选 121→300、候选池 80/3 页→200/6 页；仍不做全量预渲染。
+const PER_CATEGORY_FETCH = 200;  // 每类拉取用于选品与同类推荐（放大候选池，保证扩容后精选集达标）
+const CATEGORY_ABOVE = 40;       // 分类落地页预渲染的首屏图数
+const DETAIL_LIMIT = 400;        // 详情页精选集硬上限
+const DETAIL_TARGET = 300;       // 扩容后精选集目标规模（仍远小于 22 万在库图）
+const RANK_PAGES = 6;            // rank 每类追加拉取的页数（API 单页上限约 50，扩大候选池）
 const SITE_NAME = '小满美图';
 
 // WO-194 公安备案号（跨站预留钩子）：与 ICP 同源——从中文页正则提取「京公网安备\d+号」，缺省不显示
