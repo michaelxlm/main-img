@@ -22,7 +22,7 @@ const SITES = [
   {
     key: 'aiWeb', domain: 'xuliming.com', name: '明先生日常', label: '明先生日常',
     tagline: 'AI 建站教程与日常实操笔记', group: 'content', type: 'content',
-    brand: '#4f8cff', icp: '京ICP备18062653号-16', adQuota: 2,
+    brand: '#2563eb', icp: '京ICP备18062653号-16', adQuota: 2,
     about: '/about.html', privacy: '/about.html#privacy', sitemap: '/sitemap.xml',
     source: '内容由本站整理发布，教程与示例来自作者实操记录。',
     update: '按主题不定期更新，页面底部标注最近校验时间。',
@@ -30,7 +30,7 @@ const SITES = [
   {
     key: 'color-tool', domain: '2002cs.com', name: 'cs调色盘', label: 'cs调色盘',
     tagline: '免费在线配色、取色与色彩工具', group: 'tool', type: 'tool',
-    brand: '#2457d6', icp: '京ICP备18062653号-22', adQuota: 1,
+    brand: '#7c3aed', icp: '京ICP备18062653号-22', adQuota: 1,
     about: '/about.html', privacy: '/about.html#privacy', sitemap: '/sitemap.xml',
     source: '色值数据来自公开色彩标准与本站整理的传统色名表。',
     update: '色库与工具随使用反馈迭代，不保留历史版本。',
@@ -38,7 +38,7 @@ const SITES = [
   {
     key: 'visitor', domain: 'fangkelianmeng.com', name: '访客小站', label: '访客小站',
     tagline: '纯静态、免登录的在线小工具集合', group: 'tool', type: 'tool',
-    brand: '#2f6bff', icp: '京ICP备18062653号-23', adQuota: 1,
+    brand: '#6366f1', icp: '京ICP备18062653号-23', adQuota: 1,
     about: '/about.html', privacy: '/about.html#privacy', sitemap: '/sitemap.xml',
     source: '工具在浏览器本地运算，除统计外不上传输入内容。',
     update: '工具按需增补，修复后直接发布新版本。',
@@ -46,7 +46,7 @@ const SITES = [
   {
     key: 'main-img', domain: 'img.fangkelianmeng.com', name: '小满美图', label: '小满美图',
     tagline: '图片素材浏览与分类画廊', group: 'gallery', type: 'gallery',
-    brand: '#6366f1', icp: '京ICP备18062653号-23', adQuota: 1,
+    brand: '#db2777', icp: '京ICP备18062653号-23', adQuota: 1,
     about: '/about.html', privacy: '/about.html#privacy', sitemap: '/sitemap.xml',
     source: '图片索引来自本站内容接口，版权归原作者所有。',
     update: '分类与索引随上游内容同步刷新。',
@@ -54,7 +54,7 @@ const SITES = [
   {
     key: 'zangeng', domain: 'zangeng.com', name: '小满手记', label: '小满手记',
     tagline: '散文、读书摘录与日常短札', group: 'content', type: 'content',
-    brand: '#3b6cff', icp: '京ICP备18062653号-26', adQuota: 2,
+    brand: '#16a34a', icp: '京ICP备18062653号-26', adQuota: 2,
     about: '/about.html', privacy: '/about.html#privacy', sitemap: '/sitemap.xml',
     source: '全部文字为作者原创或注明出处的摘录。',
     update: '随写随发，不设固定更新周期。',
@@ -62,7 +62,7 @@ const SITES = [
   {
     key: 'notes', domain: '585.ink', name: '实测手记', label: '实测手记',
     tagline: '一个人把实测过程完整记下来', group: 'content', type: 'content',
-    brand: '#1f7a5c', icp: '京ICP备18062653号-25', adQuota: 2,
+    brand: '#0d9488', icp: '京ICP备18062653号-25', adQuota: 2,
     about: '/about.html', privacy: '/about.html#privacy', sitemap: '/sitemap.xml',
     source: '数据来自作者实机测试与公开资料，结论均标注测试环境。',
     update: '按实测项目推进，旧结论失效时会补注说明。',
@@ -70,7 +70,7 @@ const SITES = [
   {
     key: 'history', domain: '20101115.com', name: '年表拾遗', label: '年表拾遗',
     tagline: '只做年表，不做评论', group: 'content', type: 'content',
-    brand: '#8c5a3c', icp: '京ICP备18062653号-24', adQuota: 2,
+    brand: '#9a3412', icp: '京ICP备18062653号-24', adQuota: 2,
     about: '/about.html', privacy: '/about.html#privacy', sitemap: '/sitemap.xml',
     source: '年表以公开史料与中台结构化事件表为准。',
     update: '事件按考据结果增补，修订会在条目内标注。',
@@ -78,7 +78,7 @@ const SITES = [
   {
     key: 'coupon', domain: 'coupon.zangeng.com', name: '小满券仓', label: '小满券仓',
     tagline: '优惠券聚合、比价与领券指引', group: 'commerce', type: 'commerce',
-    brand: '#2b52d8', icp: '京ICP备18062653号-26', adQuota: 3,
+    brand: '#ea580c', icp: '京ICP备18062653号-26', adQuota: 3,
     about: '/about.html', privacy: '/about.html#privacy', sitemap: '/sitemap.xml',
     source: '券信息来自第三方联盟接口，价格与库存以商家页面为准。',
     update: '券数据按小时同步，过期券自动下架。',
@@ -86,7 +86,7 @@ const SITES = [
   {
     key: 'xuyiheng-tools', domain: 'xuyiheng.com', name: '一珩成长笔记', label: '一成长笔记',
     tagline: '生活计算、成长记录与实用工具', group: 'tool', type: 'tool',
-    brand: '#4f46e5', icp: '京ICP备18062653号-13', adQuota: 1,
+    brand: '#4338ca', icp: '京ICP备18062653号-13', adQuota: 1,
     about: '/about.html', privacy: '/privacy.html', sitemap: '/sitemap.xml',
     source: '工具算法与文案由本站整理，结果仅供日常参考。',
     update: '按使用反馈迭代，重大算法变更会在关于页说明。',
@@ -94,7 +94,7 @@ const SITES = [
   {
     key: 'store-web', domain: 'store.fangkelianmeng.com', name: '东北电动车汇', label: '东北电动车汇',
     tagline: '电动车选车看车与本地商家信息', group: 'commerce', type: 'commerce',
-    brand: '#4B5BF0', icp: '京ICP备18062653号-23', adQuota: 3,
+    brand: '#dc2626', icp: '京ICP备18062653号-23', adQuota: 3,
     about: '/about/wx.html', privacy: '/about/privacy.html', sitemap: '/sitemap.xml',
     source: '车型与商家信息来自中台内容库，购买前请以门店为准。',
     update: '车型与活动随中台内容同步更新。',
