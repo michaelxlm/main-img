@@ -2419,6 +2419,12 @@
     return out;
   }
 
+  // 找页脚内的定宽列：site-shell 统一页脚用 .ss-wrap，旧站用 .shell/.container。
+  // 没有定宽列时退到 footer 本身（老页面兼容），但绝不把物料位直接铺到全宽视口。
+  function footerColumn(footer) {
+    return footer.querySelector('.ss-wrap, .shell, .container') || null;
+  }
+
   // 无容器时在页脚链接区之上补一个：物料位与页面改造两段解耦，先发布 manifest 也能立刻见数
   function autoInsertFooterHost(doc) {
     if (CONFIG.autoFooter === false) return null;
@@ -2429,11 +2435,11 @@
     host.setAttribute('data-mp-slot', 'footer');
     host.setAttribute('data-mp-auto', '1');
     host.setAttribute('data-mp-scanned', '1');
-    // 插进 .shell 定宽容器、footer-grid 之前：随站内宽度对齐，且远离视口右下的固定悬浮按钮，不再遮挡二维码
-    var shell = footer.querySelector('.shell');
-    var grid = shell && shell.querySelector('.footer-grid');
-    if (shell && grid) shell.insertBefore(host, grid);
-    else if (shell) shell.insertBefore(host, shell.firstChild);
+    // 插进定宽列（.ss-wrap / .shell / .container）的链接区之前：随站内宽度对齐，且远离视口右下的固定悬浮按钮
+    var col = footerColumn(footer);
+    var grid = col && col.querySelector('.footer-grid, .ss-grid');
+    if (col && grid) col.insertBefore(host, grid);
+    else if (col) col.insertBefore(host, col.firstChild);
     else footer.insertBefore(host, footer.firstChild);
     return host;
   }
@@ -2449,25 +2455,25 @@
     host.setAttribute('data-mp-slot', 'topic');
     host.setAttribute('data-mp-auto', '1');
     host.setAttribute('data-mp-scanned', '1');
-    var shell = footer.querySelector('.shell');
-    var grid = shell && shell.querySelector('.footer-grid');
-    if (shell && grid) shell.insertBefore(host, grid);
-    else if (shell) shell.insertBefore(host, shell.firstChild);
+    var col = footerColumn(footer);
+    var grid = col && col.querySelector('.footer-grid, .ss-grid');
+    if (col && grid) col.insertBefore(host, grid);
+    else if (col) col.insertBefore(host, col.firstChild);
     else footer.insertBefore(host, footer.firstChild);
     return host;
   }
 
-  // 页脚位统一归位：构建期注入的显式容器（inject-mp-slot.js）可能落在 .shell 之外（版权栏下方、满屏铺宽），
-  // 这里把任意 footer 位容器搬进 .shell 内、.footer-grid 之前——随站内宽度对齐、远离视口右下的固定悬浮按钮。
+  // 页脚位统一归位：构建期注入的显式容器（inject-mp-slot.js）可能落在定宽列之外（版权栏下方、满屏铺宽），
+  // 这里把任意 footer 位容器搬进定宽列内、链接区之前——随站内宽度对齐、远离视口右下的固定悬浮按钮。
   function normalizeFooterHost(host, doc) {
     if (String(host.getAttribute('data-mp-slot') || '').trim() !== 'footer') return;
     var footer = doc.querySelector('.site-footer, footer.site-footer') || doc.querySelector('footer');
     if (!footer) return;
-    var shell = footer.querySelector('.shell');
-    if (!shell) return;
-    var grid = shell.querySelector('.footer-grid');
-    if (grid) shell.insertBefore(host, grid);
-    else shell.insertBefore(host, shell.firstChild);
+    var col = footerColumn(footer);
+    if (!col) return;
+    var grid = col.querySelector('.footer-grid, .ss-grid');
+    if (grid) col.insertBefore(host, grid);
+    else col.insertBefore(host, col.firstChild);
   }
 
   function boot() {

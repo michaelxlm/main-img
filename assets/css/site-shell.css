@@ -138,6 +138,15 @@ footer.ss-footer {
 
 /* 区块 3：推广位收纳（隐藏） */
 .ss-slots { display: none !important; }
+/* 旧版 mp-slot 自动补位可能落在 .ss-wrap 之外成为 footer 直子级，宽屏会满屏铺开；
+   CSS 兜底同样收进 1140 定宽列（与 .ss-wrap 内容列对齐），不依赖 JS 版本。 */
+.ss-footer > .mp-slot {
+  box-sizing: border-box;
+  width: calc(100% - 40px);
+  max-width: calc(var(--ss-maxw, 1140px) - 40px) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
 
 /* 区块 4：底栏 */
 .ss-bottom {
