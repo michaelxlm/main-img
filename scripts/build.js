@@ -305,17 +305,19 @@ function renderShell(o) {
 
 /* ------------------------------ 卡片渲染 ------------------------------ */
 // 运行时可跳转详情的卡片带 data-detail，静态卡片直接渲染为 <a href>
-function staticCard(item, detailSet) {
+function staticCard(item, detailSet, eager) {
   var href = detailSet[item._id] ? ('/p/' + item._id + '.html') : ('/browse.html?type=' + xenc(item.type && item.type[0] ? item.type[0] : ''));
   var w = parseInt(item.width, 10) || 400, h = parseInt(item.height, 10) || 300;
   var ratio = w / h; if (ratio < 0.3) ratio = 0.3; if (ratio > 4) ratio = 4;
   var tags = (item.tag || []).slice(0, 3).map(function (t) { return '<span class="gm-tag">' + esc(t) + '</span>'; }).join('');
   var avif = thumbUrlAvif(item);
+  // 首屏前 6 张立即加载，避免「筛选收起后卡片已进视口但还在懒加载」出现空白。
+  var loadingAttr = 'loading="' + (eager ? 'eager' : 'lazy') + '"' + (eager ? ' fetchpriority="high"' : '');
   // WO-219 消费腿（预渲染与 gallery.js 运行时同口径）：alt 优先取 API 附上的生成值（rank/sample 都走
   //   service 的 _attachAlt），title 只作兜底，去掉通用 '壁纸' 占位词；JSON-LD 的 name 与面包屑仍用 title。
   var imgHtml = avif
-    ? '<picture><source srcset="' + escAttr(avif) + '" type="image/avif"><img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.alt || item.title || '') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '"></picture>'
-    : '<img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.alt || item.title || '') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '">';
+    ? '<picture><source srcset="' + escAttr(avif) + '" type="image/avif"><img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.alt || item.title || '') + '" width="' + w + '" height="' + h + '" ' + loadingAttr + ' decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '"></picture>'
+    : '<img src="' + escAttr(thumbUrl(item)) + '" alt="' + escAttr(item.alt || item.title || '') + '" width="' + w + '" height="' + h + '" ' + loadingAttr + ' decoding="async" referrerpolicy="no-referrer" style="aspect-ratio:' + ratio.toFixed(4) + '">';
   return '<a class="gm-card" href="' + escAttr(href) + '">'
     + imgHtml
     + '<div class="gm-overlay"><div class="gm-overlay-title">' + esc(item.title || '未命名壁纸') + '</div>'
@@ -334,7 +336,7 @@ const LIST_PRERENDER = 12;
 function injectListGrid(file, items, detailSet, limit) {
   if (!fs.existsSync(file)) return 0;
   var html = fs.readFileSync(file, 'utf8');
-  var inner = items.slice(0, limit).map(function (it) { return staticCard(it, detailSet); }).join('\n          ');
+  var inner = items.slice(0, limit).map(function (it, i) { return staticCard(it, detailSet, i < 6); }).join('\n          ');
   var block = '<!--SSG:GRID-START-->\n          ' + inner + '\n        <!--SSG:GRID-END-->';
   if (/<!--SSG:GRID-START-->[\s\S]*?<!--SSG:GRID-END-->/.test(html)) {
     html = html.replace(/<!--SSG:GRID-START-->[\s\S]*?<!--SSG:GRID-END-->/, block);

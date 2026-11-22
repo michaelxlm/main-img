@@ -1,7 +1,7 @@
 {
   "_note": "收录观测台账（WO-98）：URL 与 main-img/sitemap.xml 保持一致；本台账只记技术可抓性。sitemap.xml 已提交，按知识库 D-index-backfill（2026-10-22）不人工回填 submitted_at / indexed。indexed 取值：unknown 未核对（默认）/ yes 已收录 / no 未收录 / dropped 收录后掉出。",
   "site": "https://img.fangkelianmeng.com",
-  "updated": "2026-11-21",
+  "updated": "2026-11-22",
   "platforms": [
     "baidu",
     "google"

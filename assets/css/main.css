@@ -400,6 +400,9 @@ section[id] { scroll-margin-top: calc(var(--header-h) + 20px); }
 .hero { padding-top: 48px; padding-bottom: 28px; }
 .hero h1 { letter-spacing: -0.8px; line-height: 1.16; }
 .section { padding-top: 44px; padding-bottom: 44px; }
+/* 首页首屏优先露出图片：压缩 hero 与精选区留白，高级筛选默认收起后再释放 ~400px */
+body[data-page="home"] .hero { padding-top: 26px; padding-bottom: 16px; }
+body[data-page="home"] .section { padding-top: 24px; padding-bottom: 24px; }
 .section-head h2 { letter-spacing: -0.4px; }
 .gm-card { transition: transform var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease), border-color var(--dur-base) var(--ease); }
 .gm-card:hover, .gm-card:focus-within { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--accent); }

@@ -339,6 +339,9 @@
       var topCls = index < 3 ? ' is-top' + (index + 1) : '';
       rankHtml = '<span class="gm-rank-badge' + topCls + '">' + (index + 1) + '</span>';
     }
+    // 首页筛选收起后前两行就在视口内，前 6 张立即加载，避免首屏只有骨架/空白。
+    var loadingAttr = 'loading="' + (index < 6 ? 'eager' : 'lazy') + '"'
+      + (index < 6 ? ' fetchpriority="high"' : '');
 
     card.innerHTML =
       rankHtml +
@@ -351,8 +354,8 @@
       //   去掉通用的 '壁纸' 占位词：每张都同一个词对图搜与读屏都是噪声，两者都缺才留空。
       (avifSrc
         ? '<picture><source srcset="' + escAttr(avifSrc) + '" type="image/avif">'
-          + '<img src="' + escAttr(src) + '" alt="' + escAttr(item.alt || item.title || '') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '"></picture>'
-        : '<img src="' + escAttr(src) + '" alt="' + escAttr(item.alt || item.title || '') + '" width="' + w + '" height="' + h + '" loading="lazy" decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '">') +
+          + '<img src="' + escAttr(src) + '" alt="' + escAttr(item.alt || item.title || '') + '" width="' + w + '" height="' + h + '" ' + loadingAttr + ' decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '"></picture>'
+        : '<img src="' + escAttr(src) + '" alt="' + escAttr(item.alt || item.title || '') + '" width="' + w + '" height="' + h + '" ' + loadingAttr + ' decoding="async" data-loaded="0" referrerpolicy="no-referrer" style="aspect-ratio:' + aspectRatio + '">') +
       '<div class="gm-overlay">' +
         '<div class="gm-overlay-title">' + escHtml(item.title || '未命名壁纸') + '</div>' +
         '<div class="gm-overlay-meta">' +
