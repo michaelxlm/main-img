@@ -84,7 +84,7 @@ const SITES = [
     update: '券数据按小时同步，过期券自动下架。',
   },
   {
-    key: 'xuyiheng-tools', domain: 'xuyiheng.com', name: '一珩成长笔记', label: '一成长笔记',
+    key: 'xuyiheng-tools', domain: 'xuyiheng.com', name: '一珩成长笔记', label: '一珩成长笔记',
     tagline: '生活计算、成长记录与实用工具', group: 'tool', type: 'tool',
     brand: '#4338ca', icp: '京ICP备18062653号-13', adQuota: 1,
     about: '/about.html', privacy: '/privacy.html', sitemap: '/sitemap.xml',
