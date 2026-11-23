@@ -147,7 +147,7 @@ function ossResize(u, w) {
   var sep = u.indexOf('?') >= 0 ? '&' : '?';
   var gif = /\.gif([?#]|$)/i.test(u);
   var proc = gif ? 'image/resize,w_' + w : 'image/resize,w_' + w + '/format,webp/quality,q_80';
-  return u + sep + xenc('x-oss-process=' + proc);
+  return u + sep + 'x-oss-process=' + proc;
 }
 function ossAvif(u, w) {
   if (!u || u.indexOf('x-oss-process') >= 0) return u;
@@ -155,7 +155,7 @@ function ossAvif(u, w) {
   var gif = /\.gif([?#]|$)/i.test(u);
   if (gif) return u;
   var proc = 'image/resize,w_' + w + '/format,avif/quality,q_80';
-  return u + sep + xenc('x-oss-process=' + proc);
+  return u + sep + 'x-oss-process=' + proc;
 }
 function xenc(s) { return encodeURIComponent(s); }
 function thumbUrl(item) { var raw = imgUrl(item); if (!raw) return ''; return isOssUrl(raw) ? ossResize(raw, 400) : raw; }
@@ -193,7 +193,7 @@ function renderHead(o) {
   var ogImage = o.ogImage || (SITE_URL + '/assets/img/og-cover.png');
   return '<!DOCTYPE html>\n<html lang="zh-CN" data-theme="light">\n<head>\n'
     + '  <meta charset="UTF-8" />\n'
-    + '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n'
+    + '  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />\n'
     + '  <title>' + esc(o.title) + '</title>\n'
     + '  <meta name="description" content="' + escAttr(o.desc) + '">\n'
     + (o.keywords ? '  <meta name="keywords" content="' + escAttr(o.keywords) + '">\n' : '')
