@@ -23,10 +23,10 @@ Language: zh-CN
 - [历史上的今天](https://api.xuyiheng.com/api/v1/front/automate/history/): history 数据集（入参：mdmm（可选，MMDD））；鉴权 x-api-key 请求头。
 - [周公解梦](https://api.xuyiheng.com/api/v1/front/automate/dream/): dream 数据集（入参：keyword）；鉴权 x-api-key 请求头。
 - [中国传统色彩](https://api.xuyiheng.com/api/v1/front/automate/color/): color 数据集；鉴权 x-api-key 请求头。
-- [文档解析数据集（AI 摘要 + 元信息）](https://api.xuyiheng.com/api/v1/front/documents/): documents 数据集；鉴权 x-api-key 请求头。
-- [MCP Server](https://api.xuyiheng.com/api/v1/mcp): JSON-RPC 2.0（Streamable HTTP），与 REST 共用同一把 x-api-key 与配额。工具：history_of_today / history_list / dream_search / color_list。
+- [公版内容文库（唐诗/宋词/名言等）](https://api.xuyiheng.com/api/v1/front/automate/content/): content 数据集（入参：collection,page,pageSize）；鉴权 x-api-key 请求头。
+- [MCP Server](https://api.xuyiheng.com/api/v1/mcp): JSON-RPC 2.0（Streamable HTTP），与 REST 共用同一把 x-api-key 与配额。工具：history_of_today / history_list / dream_search / color_list / content_search / history_timeline / color_palette。
 - 接入与 Key 申请：开发者门户 https://api.xuyiheng.com/public/developer.html
 
 ## Sitemap
 
-- [Full URL index](https://img.fangkelianmeng.com/sitemap.xml): 全部页面清单（约 147 条 URL）
+- [Full URL index](https://img.fangkelianmeng.com/sitemap.xml): 全部页面清单（约 329 条 URL）
