@@ -288,7 +288,7 @@ function renderHub(site, cfg, v) {
     '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
     '<title>全部站点 · 站群导航</title>\n' +
     '<meta name="description" content="十站站群导航：工具、内容、画廊与选车站点一览。">\n' +
-    '<link rel="canonical" href="' + R.HUB_CANONICAL + '">\n' +
+    '<link rel="canonical" href="https://' + site.domain + R.HUB_PATH + '">\n' +
     renderCss(v) + '\n' +
     '</head>\n<body class="ss-hub" data-site-shell-hub="1">\n' +
     '<main class="ss-hub-main">\n  <header class="ss-hub-head">' +
