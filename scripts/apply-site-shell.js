@@ -285,7 +285,7 @@ function renderHub(site, cfg, v) {
       (isSelf ? '<b>当前站点</b>' : '') + '</a></li>';
   }).join('\n');
   return '<!doctype html>\n<html lang="zh-CN">\n<head>\n' +
-    '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
     '<title>全部站点 · 站群导航</title>\n' +
     '<meta name="description" content="十站站群导航：工具、内容、画廊与选车站点一览。">\n' +
     '<link rel="canonical" href="https://' + site.domain + R.HUB_PATH + '">\n' +

@@ -1,7 +1,7 @@
 /* ==========================================================================
    site-shell.js · 十站展示层统一运行时（Site Shell Spec v1.0）
    单一事实源：packages/static-build-kit/shared/site-shell.js
-   职责：① 写入品牌色 ② 广告/券/图/码位硬配额（S4） ③ 短内容页标记（S5）
+   职责：① 写入品牌色 ② 广告/券/图位硬配额（S4） ③ 短内容页标记（S5）
         ④ 统一回到顶部。页脚/关于/互链由构建期注入，运行时不改动 DOM 结构。
    零依赖、ES5、可被 defer 加载；配置来自 #site-shell-config（构建期注入）。
    ========================================================================== */
@@ -18,7 +18,12 @@
   if (!cfg || !cfg.key) return;
 
   var Q = cfg.quota || { total: 2, aboveFold: 1, aux: 1, next: 1 };
-  var HOST_SEL = '[data-ad-slot],[data-coupon-slot],[data-img-slot],[data-mp-slot]';
+  // 小程序码位（data-mp-slot）是功能入口而非推广物料：扫码复验要求每站每页稳定可见，
+  // 不参与广告/券/图位的首屏硬配额。若把它留在 HOST_SEL 里，govern() 会按
+  // 「footer/carousel 位必静音 + aux 超额」给它打 data-shell-muted=promo，
+  // site-shell.css 的 [data-shell-muted]{display:none!important} 会把卡片整个藏掉
+  // （WO-140 重出码后十站均踩此坑：manifest 13/13 ok、卡片已渲染，用户却看不到二维码）。
+  var HOST_SEL = '[data-ad-slot],[data-coupon-slot],[data-img-slot]';
 
   try { doc.documentElement.style.setProperty('--ss-brand', cfg.brand || '#3b6cff'); } catch (e) {}
   doc.documentElement.setAttribute('data-site-shell', 'ready');
@@ -26,10 +31,10 @@
   function attr(el, name) { return el.getAttribute(name) || ''; }
   function placement(el) {
     return attr(el, 'data-ad-slot') || attr(el, 'data-coupon-slot') ||
-      attr(el, 'data-img-slot') || attr(el, 'data-mp-slot') || 'other';
+      attr(el, 'data-img-slot') || 'other';
   }
   function isAux(el) {
-    return el.hasAttribute('data-coupon-slot') || el.hasAttribute('data-img-slot') || el.hasAttribute('data-mp-slot');
+    return el.hasAttribute('data-coupon-slot') || el.hasAttribute('data-img-slot');
   }
   function isNext(el) { return attr(el, 'data-ad-slot') === 'next'; }
   function priority(el) {
@@ -38,7 +43,6 @@
     if (p === 'next') return 80;
     if (el.hasAttribute('data-coupon-slot')) return 60;
     if (el.hasAttribute('data-img-slot')) return 50;
-    if (el.hasAttribute('data-mp-slot')) return 40;
     if (p === 'carousel') return 10;
     if (p === 'footer') return 5;
     return 20;

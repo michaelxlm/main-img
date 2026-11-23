@@ -151,13 +151,20 @@
     var host = hostname();
     var sites = (manifest && manifest.sites) || {};
     var keys = Object.keys(sites);
+    // 取「最长域名」命中而非数组首个命中：manifest.sites 按配置顺序序列化，
+    // store.fangkelianmeng.com 会先命中更早的 visitor（fangkelianmeng.com）导致站点键错判、
+    // 渲染出 visitor 的码。子域必须优先于其父域。
+    var best = '', bestLen = -1;
     for (var i = 0; i < keys.length; i++) {
       var entry = sites[keys[i]] || {};
       var d = String(entry.domain || '').toLowerCase();
       var name = d.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-      if (name && (host === name || host.endsWith('.' + name))) return String(entry.key || keys[i]);
+      if (name && (host === name || host.endsWith('.' + name)) && name.length > bestLen) {
+        bestLen = name.length;
+        best = String(entry.key || keys[i]);
+      }
     }
-    return '';
+    return best;
   }
 
   function loadManifest(done) {
@@ -441,6 +448,26 @@
         return;
       }
       var site = resolveSite(manifest);
+      // WO-140 八站补码只落 footer 位，但部分站 HTML 只有 inline 容器：
+      // 旧逻辑「零容器才自动补页脚」会让这些站整位不渲染。按清单反查本站 footer 项，
+      // 缺容器时补一个（autoInsertFooterHost 自带 data-mp-scanned 去重，重复 scan 安全）。
+      var hasFooterItem = false;
+      var its = (manifest && manifest.items) || [];
+      for (var fi = 0; fi < its.length; fi++) {
+        var fit = its[fi];
+        if (fit && fit.url && fit.ok !== false && fit.site === site && fit.position === 'footer') {
+          hasFooterItem = true;
+          break;
+        }
+      }
+      var hasFooterHost = false;
+      for (var fh = 0; fh < hosts.length; fh++) {
+        if (String(hosts[fh].getAttribute('data-mp-slot') || '').trim() === 'footer') { hasFooterHost = true; break; }
+      }
+      if (hasFooterItem && !hasFooterHost) {
+        var added = autoInsertFooterHost(doc);
+        if (added) { normalizeFooterHost(added, doc); hosts.push(added); }
+      }
       for (var i = 0; i < hosts.length; i++) {
         var item = pickItem(manifest, site, hosts[i]);
         render(hosts[i], item, manifest);
