@@ -25,7 +25,7 @@
   'use strict';
 
   // SDK 版本：所有接入项目必须保持一致（由 scripts/check-tracker-consistency.js 守卫）
-  var SDK_VERSION = '2.5.0'; // 2.5.0 WO-xxx：JS 错误（同步 + Promise + 资源加载）上报 + 频率控制
+  var SDK_VERSION = '2.5.0'; // 2.5.0 WO-336：JS 错误（同步 + Promise + 资源加载）上报 + 频率控制
 
   var CONFIG = {
     // 上报端点（中台统一埋点端点）
@@ -372,20 +372,20 @@
     }
   }
 
-  /* ------------------------------ JS Error 捕获（WO-xxx fe-error） ------------------------------ */
+  /* ------------------------------ JS Error 捕获（WO-336 fe-error） ------------------------------ */
   // 错误频率控制：同一错误指纹 5 分钟内最多上报 5 次，防噪声刷屏
-  var errorFingerprints = {};
+  var errorFingerprints = Object.create(null);
   var ERROR_WINDOW_MS = 5 * 60 * 1000;
   var ERROR_MAX_PER_FINGERPRINT = 5;
 
   function fingerprintError(type, msg) {
     var raw = (type || '') + '|' + (msg || '');
-    // 取前 128 字符的 hash（djb2 简化版）
+    // 取前 128 字符的 hash（djb2；模 2^32，算术运算避免位运算副作用与 lint 限制）
     var h = 5381;
     for (var i = 0; i < Math.min(raw.length, 128); i++) {
-      h = ((h << 5) + h + raw.charCodeAt(i)) | 0;
+      h = (h * 33 + raw.charCodeAt(i)) % 4294967296;
     }
-    return (h >>> 0).toString(36);
+    return h.toString(36);
   }
 
   function shouldReportError(fp) {
@@ -398,45 +398,61 @@
     return true;
   }
 
+  function reportJsError(props) {
+    try {
+      track('fe-error', props, true); // 错误立即上报（用户可能瞬间离开）
+    } catch (e) { /* 错误捕获与上报失败均不能影响页面 */ }
+  }
+
   function initJsError() {
     try {
-      // 1. 同步 JS 错误 + 资源加载错误（script/img/link）
+      var previousOnError = global.onerror;
+      // 1. 同步 JS 错误 + 资源加载错误。资源 ErrorEvent 通常没有 error 对象，
+      //    据此避免把 app.js 内真实运行异常误判成资源加载失败。
       global.onerror = function (message, source, lineno, colno, error) {
-        var type = 'script';
-        var isResource = typeof source === 'string' && (source.match(/\.js(\?|$)/i) || source.match(/\.css(\?|$)/i));
-        if (isResource) type = 'resource';
-        var msg = typeof message === 'string' ? message : (error && error.message) ? error.message : String(message);
-        var fp = fingerprintError(type, msg);
-        if (!shouldReportError(fp)) return true; // 频率限制内的放行，不阻断原 handler
-
-        var props = {
-          type: type,
-          message: String(msg).slice(0, 512),
-          source: (source || '').toString().slice(0, 256),
-          lineno: lineno || 0,
-          colno: colno || 0,
-        };
-        // 带 stack（截断到 8KB 防膨胀）
-        if (error && error.stack) {
-          props.stack = String(error.stack).slice(0, 8192);
+        var delegated;
+        if (typeof previousOnError === 'function') {
+          try { delegated = previousOnError.apply(global, arguments); } catch (e) { /* 旧 handler 不影响本 SDK */ }
         }
-        track('fe-error', props, true); // 错误立即上报（用户可能瞬间离开）
-        return true; // 不阻断浏览器默认错误处理
+        var suppressDefault = delegated === true;
+        try {
+          var isResource = !error && typeof source === 'string'
+            && /\.(?:js|css|png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf|eot)(?:[?#]|$)/i.test(source);
+          var type = isResource ? 'resource' : 'script';
+          var msg = typeof message === 'string' ? message : (error && error.message) ? error.message : String(message);
+          var fp = fingerprintError(type, msg);
+          if (shouldReportError(fp)) {
+            var props = {
+              type: type,
+              message: String(msg).slice(0, 512),
+              source: (source || '').toString().slice(0, 256),
+              lineno: lineno || 0,
+              colno: colno || 0,
+            };
+            // 带 stack（截断到 8KB 防膨胀）
+            if (error && error.stack) props.stack = String(error.stack).slice(0, 8192);
+            reportJsError(props);
+          }
+        } catch (e) { /* 错误消息 / 来源 / stack 读取失败也不能影响页面 */ }
+        // 返回 undefined 保留浏览器默认控制台输出；仅旧 handler 明确返回 true 时抑制。
+        return suppressDefault ? true : undefined;
       };
 
       // 2. Promise 未捕获拒绝
       global.addEventListener('unhandledrejection', function (e) {
-        var reason = e && e.reason;
-        var msg = (reason && reason.message) || (typeof reason === 'string' ? reason : String(reason));
-        var fp = fingerprintError('promise', msg);
-        if (!shouldReportError(fp)) return;
+        try {
+          var reason = e && e.reason;
+          var msg = (reason && reason.message) || (typeof reason === 'string' ? reason : String(reason));
+          var fp = fingerprintError('promise', msg);
+          if (!shouldReportError(fp)) return;
 
-        var props = {
-          type: 'promise',
-          message: String(msg).slice(0, 512),
-        };
-        if (reason && reason.stack) props.stack = String(reason.stack).slice(0, 8192);
-        track('fe-error', props, true);
+          var props = {
+            type: 'promise',
+            message: String(msg).slice(0, 512),
+          };
+          if (reason && reason.stack) props.stack = String(reason.stack).slice(0, 8192);
+          reportJsError(props);
+        } catch (err) { /* 拒绝原因读取失败不能再次抛出 */ }
       });
     } catch (e) { /* 错误捕获器自身不能抛错 */ }
   }
@@ -545,10 +561,10 @@
       if (global.location && global.location.protocol === 'file:') return; // 本地双击打开不上报
     } catch (e) { return; }
 
+    initJsError(); // WO-336：错误捕获最先注册（boot 自身的同步错误也能抓到）
     patchHistory();
     bindDataTrack();
     bindFlushOnLeave();
-    initJsError(); // WO-xxx：错误捕获最先注册（boot 自身的同步错误也能抓到）
     persistSrcFromUrl(); // 渠道归因先于首次 PV，保证落地页那一条就带上 src
     trackPv();
     if (CONFIG.webVitals) initWebVitals();
