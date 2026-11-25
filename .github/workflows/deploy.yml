@@ -6,11 +6,25 @@ name: Deploy img.fangkelianmeng.com
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '.workbuddy/**'
+      - '.idea/**'
+      - '.gitignore'
+      - '.gitattributes'
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-img-fangkelianmeng-com
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    if: github.repository == 'michaelxlm/main-img'
     runs-on: [self-hosted, linux, x64, static-deploy]
+    timeout-minutes: 30
     steps:
       - name: Configure SSH for GitHub checkout
         shell: bash
@@ -19,6 +33,10 @@ jobs:
           mkdir -p /root/.ssh && chmod 700 /root/.ssh
           ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> /root/.ssh/known_hosts 2>/dev/null
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          clean: true
+          fetch-depth: 1
       - name: Fetch packages single-source (remote prune scripts)
         shell: bash
         run: |
@@ -62,7 +80,8 @@ jobs:
       - name: Sync to /www/wwwroot/img.fangkelianmeng.com
         shell: bash
         run: |
-          tar cf - --exclude=.git --exclude=.github --exclude=.user.ini --exclude=.workbuddy --exclude=deploy . | ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=accept-new root@60.205.214.88 "mkdir -p /www/wwwroot/img.fangkelianmeng.com ; cd /www/wwwroot/img.fangkelianmeng.com ; tar xmf -"
+          set -o pipefail
+          tar cf - --exclude=.git --exclude=.github --exclude=.user.ini --exclude=.workbuddy --exclude=deploy --exclude=node_modules --exclude=package-lock.json . | ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=accept-new root@60.205.214.88 "mkdir -p /www/wwwroot/img.fangkelianmeng.com ; cd /www/wwwroot/img.fangkelianmeng.com ; tar xmf -"
       - name: Ensure /p/ 200 fallback (nginx, idempotent)
         shell: bash
         run: |
