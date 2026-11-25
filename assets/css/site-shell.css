@@ -148,6 +148,16 @@ footer.ss-footer {
   margin-right: auto !important;
 }
 
+/* 采集/第三方信息免责声明：仅配置了 site.disclaimer 的站点输出 */
+.ss-disclaimer {
+  margin: 20px 0 0 !important;
+  padding: 10px 12px;
+  border: 1px solid var(--ss-line);
+  border-radius: 8px;
+  font-size: 12px; line-height: 1.6;
+  color: var(--ss-muted) !important;
+}
+
 /* 区块 4：底栏 */
 .ss-bottom {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;

@@ -204,6 +204,7 @@ function renderFooter(site, cfg, legacy, lang) {
     '<ul class="ss-sister">\n          ' + sisterLinks + '\n        </ul></div>\n' +
     '    </div>\n' +
     (promo.length ? '    <div class="ss-slots" data-shell-muted="1">' + promo.join('') + '</div>\n' : '') +
+    (site.disclaimer ? '    <p class="ss-disclaimer">' + esc(site.disclaimer) + '</p>\n' : '') +
     '    <div class="ss-bottom">\n' +
     '      <span>© ' + new Date().getFullYear() + ' ' + esc(site.name) + '</span>\n' +
     '      <nav aria-label="' + esc(i18n(lang, '页脚链接', 'Footer links')) + '">' +
@@ -238,9 +239,9 @@ function renderAbout(site, lang) {
         ? 'No account required. Only local storage is used for theme and favourites; anonymous analytics measure traffic.'
         : '本站不要求注册、不收集账号信息；仅使用本地存储保存主题与收藏偏好，统计用于了解访问量。' },
     { ico: '⚠️', zh: '免责声明', en: 'Disclaimer',
-      val: isEn
+      val: site.disclaimer || (isEn
         ? 'Content is for reference only. Third-party data and prices are subject to the source page.'
-        : '内容仅供参考，第三方信息与价格以对方页面为准；因使用本站内容产生的决策请自行判断。' },
+        : '内容仅供参考，第三方信息与价格以对方页面为准；因使用本站内容产生的决策请自行判断。') },
     { ico: '✉️', zh: '联系方式', en: 'Contact', val: R.CONTACT_EMAIL, isMail: true },
   ];
   const items = rows.map(r =>

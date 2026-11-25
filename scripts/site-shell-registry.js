@@ -49,6 +49,7 @@ const SITES = [
     brand: '#db2777', icp: '京ICP备18062653号-23', adQuota: 1,
     about: '/about.html', privacy: '/about.html#privacy', sitemap: '/sitemap.xml',
     source: '图片索引来自本站内容接口，版权归原作者所有。',
+    disclaimer: '图片标题、描述与版权信息来自第三方数据源，本站仅作索引展示，使用前请自行核实来源与授权。',
     update: '分类与索引随上游内容同步刷新。',
   },
   {
@@ -81,6 +82,7 @@ const SITES = [
     brand: '#ea580c', icp: '京ICP备18062653号-26', adQuota: 3,
     about: '/about.html', privacy: '/about.html#privacy', sitemap: '/sitemap.xml',
     source: '券信息来自第三方联盟接口，价格与库存以商家页面为准。',
+    disclaimer: '商品标题、图片、价格与优惠信息来自第三方平台采集，本站仅作聚合展示与跳转，不对商品功效、质量或描述真实性负责；购买请以平台官方页面为准。',
     update: '券数据按小时同步，过期券自动下架。',
   },
   {

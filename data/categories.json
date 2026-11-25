@@ -3,7 +3,7 @@
   "categories": [
     { "slug": "anime",             "name": "动漫",     "icon": "🎨",  "desc": "二次元动漫角色、场景壁纸，热血、治愈、唯美风格应有尽有。" },
     { "slug": "beauty",            "name": "美女",     "icon": "💃",  "desc": "清新、甜美、时尚风格的美女写真壁纸精选。" },
-    { "slug": "4K",                "name": "4K",       "icon": "📺",  "desc": "4K 超高清壁纸，细节拉满的极致画质。" },
+    { "slug": "4K",                "name": "4K",       "icon": "📺",  "desc": "4K 超高清壁纸，细节清晰锐利。" },
     { "slug": "scenery",           "name": "风景",     "icon": "🏔️", "desc": "山川湖海、日出日落、星空银河等自然风景高清壁纸。" },
     { "slug": "quadraticElement",  "name": "二次元",   "icon": "✨",  "desc": "二次元插画、立绘与同人创作高清壁纸。" },
     { "slug": "pet",               "name": "宠物",     "icon": "🐾",  "desc": "萌宠猫咪、狗狗等可爱动物壁纸。" },
