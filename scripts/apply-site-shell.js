@@ -106,6 +106,82 @@ function isHubPage(rel) {
 }
 function i18n(lang, zh, en) { return lang === 'en' ? en : zh; }
 
+// 英文页共享 chrome 也走同一份注册表语义；品牌名与站点描述在英文页英文化，域名保持原样。
+const EN_SITE_COPY = {
+  'xuliming.com': {
+    name: 'Ming’s Daily', tagline: 'Step-by-step guides to building and shipping your own site.',
+    source: 'Tutorials and examples are curated from the author’s own build notes.',
+    update: 'Updated by topic when there is something to add; each page shows its last checked date.',
+    disclaimer: 'Content is for reference only. Third-party details and prices follow their own pages.',
+  },
+  '2002cs.com': {
+    name: 'cs Color Palette', tagline: 'Free online colour, palette and colour tools',
+    source: 'Colour values come from public standards and the site’s traditional colour-name tables.',
+    update: 'Tools and palettes improve with feedback; historical versions are not retained.',
+  },
+  'fangkelianmeng.com': {
+    name: 'Visitor Toolbox', tagline: 'A static collection of browser tools with no login',
+    source: 'Tools run locally in the browser; input is not uploaded except for anonymous analytics.',
+    update: 'Tools are added as needed and published directly after fixes.',
+  },
+  'img.fangkelianmeng.com': {
+    name: 'Xiaoman Images', tagline: 'Browse and explore image assets by category',
+    source: 'The image index comes from the site’s content API; copyright remains with the original authors.',
+    update: 'Categories and the index refresh with upstream content.',
+    disclaimer: 'Image titles, descriptions and copyright details come from third-party data. Verify the source and licence before use.',
+  },
+  'zangeng.com': {
+    name: 'Xiaoman Notes', tagline: 'Essays, reading excerpts and short daily notes',
+    source: 'All text is original or clearly attributed excerpts.',
+    update: 'Published as inspiration strikes, with no fixed schedule.',
+  },
+  '585.ink': {
+    name: 'Field Notes', tagline: 'One person’s complete hands-on walkthrough',
+    source: 'Findings come from hands-on tests and public references, with the test environment stated.',
+    update: 'Notes follow each hands-on project; outdated conclusions are marked.',
+  },
+  '20101115.com': {
+    name: 'History Timeline', tagline: 'Chronology only, no commentary',
+    source: 'Timelines use public historical sources and structured events from the central platform.',
+    update: 'Entries are added as research is verified; revisions are noted inline.',
+  },
+  'coupon.zangeng.com': {
+    name: 'Xiaoman Coupons', tagline: 'Coupon discovery, price comparison and claiming guides',
+    source: 'Coupon data comes from third-party affiliate APIs; merchant pages remain authoritative.',
+    update: 'Coupon data syncs hourly and expired offers are removed automatically.',
+    disclaimer: 'Product titles, images, prices and offers are aggregated from third-party platforms. Verify all details on the official merchant page before buying.',
+  },
+  'xuyiheng.com': {
+    name: 'Growth Notes', tagline: 'Everyday calculators, personal growth records and practical tools',
+    source: 'Algorithms and copy are curated by the site; results are for everyday reference.',
+    update: 'Tools improve with feedback; major algorithm changes are documented on the about page.',
+  },
+  'store.fangkelianmeng.com': {
+    name: 'NE E-Vehicle Hub', tagline: 'Electric-vehicle comparisons and local dealer information',
+    source: 'Vehicle and dealer data comes from the central content library; confirm with the store before buying.',
+    update: 'Vehicles and campaigns update with the central content feed.',
+  },
+};
+
+function siteView(site, lang) {
+  if (lang !== 'en' || !site) return site;
+  return Object.assign({}, site, EN_SITE_COPY[site.domain] || {});
+}
+
+function relatedView(item, lang) {
+  if (lang !== 'en') return item;
+  return Object.assign({}, item, siteView(R.get(item.domain), lang));
+}
+
+function sisterView(item, lang) {
+  if (lang !== 'en') return item;
+  const domain = String(item.url || '').match(/^https?:\/\/([^/]+)/i);
+  const site = domain ? R.get(domain[1]) : null;
+  if (!site) return item;
+  const view = siteView(site, lang);
+  return { url: item.url, label: view.name + ' · ' + view.domain };
+}
+
 function renderCss(v) {
   return block('css', '<link rel="stylesheet" href="/assets/css/site-shell.css?v=' + v + '" data-site-shell="css">');
 }
@@ -169,19 +245,24 @@ function resolveGongan(site, legacy) {
 }
 
 function renderFooter(site, cfg, legacy, lang) {
+  site = siteView(site, lang);
   const nav = legacyNav(legacy, site, lang);
   const icp = ((legacy || '').match(/[\u4e00-\u9fa5]{0,2}ICP备\d+号-\d+/) || [])[0] || site.icp;
   // WO-194 公安备案号：缺省（尚未申请到号码）不输出任何链接，不得写占位号
   const gongan = resolveGongan(site, legacy);
   const promo = legacyPromoHosts(legacy);
-  const related = cfg.related.map(s =>
-    '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' +
-    '<strong>' + esc(s.name) + '</strong><span>' + esc(s.tagline) + '</span>' +
-    '<em>' + esc(s.domain) + '</em></a></li>').join('\n        ');
+  const related = cfg.related.map(s => {
+    const view = relatedView(s, lang);
+    return '<li><a href="' + esc(view.url) + '" target="_blank" rel="noopener">' +
+      '<strong>' + esc(view.name) + '</strong><span>' + esc(view.tagline) + '</span>' +
+      '<em>' + esc(view.domain) + '</em></a></li>';
+  }).join('\n        ');
   const navLinks = nav.map(l =>
     '<li><a href="' + esc(l.url) + '">' + esc(l.label) + '</a></li>').join('\n          ');
-  const sisterLinks = cfg.sister.map(s =>
-    '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.label) + '</a></li>').join('\n          ');
+  const sisterLinks = cfg.sister.map(s => {
+    const view = sisterView(s, lang);
+    return '<li><a href="' + esc(view.url) + '" target="_blank" rel="noopener">' + esc(view.label) + '</a></li>';
+  }).join('\n          ');
 
   const html =
     '<footer id="site-shell-footer" class="ss-footer" data-site-shell-footer="1" data-shell-version="' + R.SHELL_VERSION + '">\n' +
@@ -229,6 +310,7 @@ function renderFooter(site, cfg, legacy, lang) {
  * 提升可读性与视觉层次；中英文结构一致，仅文案语言不同。卡片内容取自注册表单源。
  */
 function renderAbout(site, lang) {
+  site = siteView(site, lang);
   const isEn = lang === 'en';
   const rows = [
     { ico: '🎯', zh: '站点定位', en: 'What this site is', val: site.tagline },
@@ -452,4 +534,5 @@ function main() {
     ' · 资源版本 ' + v);
 }
 
-main();
+if (require.main === module) main();
+module.exports = { run: main };

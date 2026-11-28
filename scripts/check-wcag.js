@@ -3,6 +3,7 @@
    check-wcag.js · 反色字对比度门禁（审计 T4，零依赖 Node 18+）
    按站点分派配置（ROOT 目录名登记）：默认 store-web 变体直校
    --primary / --primary-strong；zangeng 变体直校 --accent-solid 体系。
+ *   aiWeb 使用 --accent-solid / --accent-strong，并额外覆盖返回顶部等反色字载体。
    校验两件事：
      1. 令牌层：:root 里承载白字的品牌色令牌对 #ffffff 的对比度必须 ≥4.5:1；
      2. 载体层：反色字载体的 background 不得使用未验证的辅助色
@@ -21,6 +22,30 @@ const ROOT = path.resolve(__dirname, '..');
 /* ---------------------------- 本站配置 ---------------------------- */
 // 站点专属配置：新站令牌命名与默认不同时在此登记（键 = 站点目录名）
 const SITE_CONFIGS = {
+  aiWeb: {
+    // 令牌层：深阶品牌色承载白字，亮阶 --accent 不参与反色字。
+    pairs: [
+      { scope: ':root', bg: '--accent-solid', fg: '#ffffff' },
+      { scope: ':root', bg: '--accent-strong', fg: '#ffffff' },
+    ],
+    // 反色字载体选择器（子串匹配）
+    carriers: [
+      '.skip-link',
+      '.header-search button',
+      '.header-cta',
+      '.btn-primary',
+      '.tab.is-active',
+      '.merchant-pick-check',
+      '.merchant-plan-flag',
+      '.back-to-top',
+      '.hero-path-new .path-tag',
+      '.step-link.is-current .step-num',
+      '.glossary-filter-btn.is-active',
+      '.guide-filter-btn.is-active',
+    ],
+    // 这些亮阶/过渡色与白字对比度不足，反色字载体不得使用。
+    badBgTokens: [ '--accent', '--accent-hover', '--accent-hover-2' ],
+  },
   zangeng: {
     // 令牌层：作用域内 bg 令牌 × 反色字（fg 为 -- 开头时到同作用域查找，回退 :root）
     pairs: [
@@ -176,7 +201,7 @@ module.exports = run;
 if (require.main === module) {
   const problems = run();
   if (!problems.length) {
-    console.log('[check-wcag] ✓ 品牌主色白字门禁通过（--primary/--primary-strong 达标 + 载体无未验证色）');
+    console.log('[check-wcag] ✓ 品牌主色白字门禁通过（已配置令牌达标 + 载体无未验证色）');
   } else {
     for (const p of problems) console.error('[check-wcag] ✗ ' + p);
     console.error(`[check-wcag] ${problems.length} 处违例`);

@@ -15,7 +15,7 @@ const path = require('path');
    漂移门禁会红。品牌展示名用 name 字段（canonical），两者允许不同。
    ========================================================================== */
 
-const SHELL_VERSION = '1.0.0';
+const SHELL_VERSION = '1.0.1';
 
 /** 顺序与 main-api/shared/partials/index.js 的 SISTER_SITES 保持一致 */
 const SITES = [
