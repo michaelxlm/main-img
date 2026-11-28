@@ -9,7 +9,6 @@
 
   var API_BASE = 'https://api.xuyiheng.com/api/v1/front/antucao/image';
   var MAIN_URL = 'img.fangkelianmeng.com'; // sourceGuard 放行凭证，须与 projects.url 一致
-  var FAV_KEY = 'gm_favorites';
   var HIS_KEY = 'gm_search_history';
   var PAGE_SIZE = 30;
   var FAV_EMPTY_MSG = '还没有收藏，去首页或热门排行挑选喜欢的壁纸吧';
@@ -43,21 +42,19 @@
   }
 
   function getFavorites() {
-    try { return JSON.parse(readStore(FAV_KEY)) || []; } catch (e) { return []; }
+    return global.GMFavorites ? global.GMFavorites.favorites() : [];
   }
   function saveFavorites(arr) {
-    writeStore(FAV_KEY, JSON.stringify(arr.slice(0, 200)));
+    return global.GMFavorites ? global.GMFavorites.saveFavorites(arr) : { ok: false, msg: '收藏组件未加载' };
   }
   function isFavorited(id) {
     return getFavorites().some(function (f) { return f._id === id; });
   }
   function toggleFavorite(item) {
-    var favs = getFavorites();
-    var idx = favs.findIndex(function (f) { return f._id === item._id; });
-    if (idx >= 0) { favs.splice(idx, 1); toast('已取消收藏'); }
-    else { favs.unshift(item); toast('已收藏'); }
-    saveFavorites(favs);
-    return idx < 0;
+    if (!global.GMFavorites) { toast('收藏组件未加载'); return false; }
+    var result = global.GMFavorites.toggleFavorite(item);
+    toast(result.ok ? (result.added ? '已收藏' : '已取消收藏') : result.msg);
+    return !!result.added;
   }
 
   function getSearchHistory() {
@@ -192,8 +189,8 @@
     hasMore: true,
     items: [],
     controller: null,
+    favoriteCollection: '', // 收藏页命名合集筛选；与 API 列表模式正交
   };
-
   // 宽高比档（基于 item.width / item.height 本地判定；后端 rank/search 无 ratio 参数，
   // 故作为「已加载批次内」的客户端过滤层，不重新请求 API，属渐进增强）。
   var ASPECT_BUCKETS = {
@@ -430,6 +427,35 @@
       dlLink.addEventListener('click', function () {
         apiPost('operation', { img_id: item._id, type: 'download', inc: 1 });
       });
+    }
+
+    // 收藏页卡片可加入命名合集；成员关系与收藏本身分开保存。
+    if (state.mode === 'favorites' && global.GMFavorites) {
+      var actions = $('.gm-actions', card);
+      var collections = global.GMFavorites.collections();
+      if (actions && collections.length) {
+        var picker = doc.createElement('select');
+        picker.className = 'gm-collection-pick';
+        picker.setAttribute('aria-label', '将图片加入命名合集');
+        var placeholder = doc.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = '加入合集';
+        picker.appendChild(placeholder);
+        collections.forEach(function (row) {
+          var option = doc.createElement('option');
+          option.value = row.id;
+          option.textContent = row.name;
+          picker.appendChild(option);
+        });
+        picker.addEventListener('click', function (e) { e.stopPropagation(); });
+        picker.addEventListener('change', function (e) {
+          e.stopPropagation();
+          var result = global.GMFavorites.setMember(picker.value, item._id, true);
+          toast(result.ok ? '已加入合集' : result.msg);
+          picker.value = '';
+        });
+        actions.appendChild(picker);
+      }
     }
 
     return card;
@@ -1071,18 +1097,25 @@
   /* ------------------------------ 收藏页（纯本地） ------------------------------ */
   function renderFavorites(grid, stateEl, moreBtn) {
     state.mode = 'favorites';
-    state.items = getFavorites();
+    var all = getFavorites();
+    var selected = state.favoriteCollection;
+    var collection = selected && global.GMFavorites
+      ? global.GMFavorites.collections().filter(function (row) { return row.id === selected; })[0] : null;
+    if (selected && !collection) { selected = state.favoriteCollection = ''; }
+    state.items = selected && collection
+      ? all.filter(function (item) { return collection.ids.indexOf(item._id) >= 0; })
+      : all;
     state.hasMore = false;
     if (moreBtn) moreBtn.hidden = true;
     grid.innerHTML = '';
     if (!state.items.length) {
-      showState(stateEl, FAV_EMPTY_MSG);
+      showState(stateEl, all.length ? '这个合集还没有图片，可在全部收藏中为卡片选择合集。' : FAV_EMPTY_MSG);
       updateCount('');
       return;
     }
     hideState(stateEl);
     state.items.forEach(function (item, i) { grid.appendChild(createCard(item, i)); });
-    updateCount('共 ' + state.items.length + ' 张收藏');
+    updateCount((collection ? collection.name + '：' : '') + '共 ' + state.items.length + ' 张收藏');
   }
 
   /* ------------------------------ 页面初始化入口 ------------------------------ */
@@ -1164,13 +1197,22 @@
       var clearBtn = $('#gmClearFavs');
       if (clearBtn) {
         clearBtn.addEventListener('click', function () {
-          saveFavorites([]);
+          if (!global.confirm('确定清空全部收藏和命名合集？此操作不可撤销，建议先导出备份。')) return;
+          var result = global.GMFavorites ? global.GMFavorites.clear() : { ok: false, msg: '收藏组件未加载' };
+          toast(result.ok ? '已清空收藏' : result.msg);
+          if (!result.ok) return;
           if (global.Tracker) global.Tracker.track('clear_favorites', {});
+          state.favoriteCollection = '';
           renderFavorites(grid, stateEl, moreBtn);
-          toast('已清空收藏');
         });
       }
       renderFavorites(grid, stateEl, moreBtn);
+      global.addEventListener('gm-favorites-render', function () { renderFavorites(grid, stateEl, moreBtn); });
+      global.addEventListener('gm-favorites-change', function () { renderFavorites(grid, stateEl, moreBtn); });
+      global.addEventListener('gm-collection-filter', function (e) {
+        state.favoriteCollection = e && e.detail ? e.detail.id : '';
+        renderFavorites(grid, stateEl, moreBtn);
+      });
       return;
     }
 

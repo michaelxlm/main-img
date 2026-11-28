@@ -62,6 +62,42 @@
       </div>
     </section>
 
+    <section class="section section-soft">
+      <div class="container">
+        <div class="section-head left">
+          <h2>备份、迁移与命名合集</h2>
+          <p class="muted">导入前先预览，确认后才写入本机；不会上传文件，也不会调用订阅或云端接口。</p>
+        </div>
+        <div class="gm-favorite-tools">
+          <div class="gm-transfer-panel">
+            <h3>迁移收藏清单</h3>
+            <div class="btn-row">
+              <button id="gmFavExport" class="btn btn-ghost" type="button">导出备份</button>
+              <label class="btn btn-ghost gm-file-label" for="gmFavImportFile">选择 JSON 文件</label>
+              <input id="gmFavImportFile" type="file" accept="application/json,.json" hidden>
+              <select id="gmFavImportMode" class="gm-favorite-input" aria-label="收藏导入模式">
+                <option value="merge">合并（按图片 ID 去重）</option>
+                <option value="replace">替换（以备份为准）</option>
+              </select>
+              <button id="gmFavPreview" class="btn btn-ghost" type="button">重新预览</button>
+              <button id="gmFavImportConfirm" class="btn btn-primary" type="button" disabled>确认导入</button>
+            </div>
+            <p id="gmTransferStatus" class="gm-transfer-status" role="status" aria-live="polite">最多 200 条收藏、30 个合集，单个备份文件不超过 1MB。</p>
+          </div>
+          <div class="gm-collection-panel">
+            <h3>命名合集</h3>
+            <div class="gm-collection-create">
+              <label for="gmCollectionName">合集名称</label>
+              <input id="gmCollectionName" class="gm-favorite-input" type="text" maxlength="40" placeholder="例如：桌面精选">
+              <button id="gmCollectionCreate" class="btn btn-primary" type="button">创建合集</button>
+              <button id="gmCollectionAll" class="btn btn-ghost" type="button" aria-pressed="true">当前：全部收藏</button>
+            </div>
+            <div id="gmCollectionList" class="gm-collection-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="section">
       <div class="container">
         <div class="section-head left">
@@ -133,7 +169,9 @@
   <script src="/assets/js/tracker.js?v=a8625a6996"></script>
   <script src="/assets/js/app.js?v=2026.11.25"></script>
   <script src="/assets/js/detail-set.js"></script>
-  <script src="/assets/js/gallery.js?v=2026.11.25"></script>
+  <script src="/assets/js/favorites-store.js?v=2026.11.28"></script>
+  <script src="/assets/js/gallery.js?v=2026.11.28"></script>
+  <script src="/assets/js/favorites-ui.js?v=2026.11.28"></script>
   <script>window.AdSlotsConfig={site:"img-fangkelianmeng",fallbackSrc:'data/ad-slots.json'};</script>
   
     <!-- WO-140 小程序码物料位（数据走 OSS json/mp-codes.json，组件权威源 main-api/app/public/js/mp-slot.js）-->

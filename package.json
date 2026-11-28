@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node scripts/build.js",
     "check": "node scripts/check-encoding.js && node scripts/check-wcag.js",
-    "test": "npm run check",
+    "test": "node --test test/*.test.js && npm run check",
     "index:observation": "node scripts/index-observation.js"
   },
   "engines": {
