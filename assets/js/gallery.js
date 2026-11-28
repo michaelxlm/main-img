@@ -510,6 +510,7 @@
         '<div class="gm-lightbox-actions">' +
         '<a class="gm-lightbox-dl" href="" target="_blank" rel="noopener" download>⤓ 下载原图</a>' +
         '<a class="gm-lightbox-detail" href="" hidden>查看详情 →</a>' +
+        '<a class="gm-lightbox-palette" href="" target="_blank" rel="noopener" hidden>到 cs调色盘 取主色 →</a>' +
         '</div>' +
         '<button class="gm-lightbox-nav gm-lightbox-next" aria-label="下一张">›</button>' +
       '</div>';
@@ -536,6 +537,11 @@
     $('.gm-lightbox-dl', lightboxEl).addEventListener('click', function () {
       var item = state.items[lightboxIdx];
       if (item) apiPost('operation', { img_id: item._id, type: 'download', inc: 1 });
+    });
+    // 跨站接力只记本站侧的点击，图片由用户浏览器直连图源，不经本站中转
+    $('.gm-lightbox-palette', lightboxEl).addEventListener('click', function () {
+      var item = state.items[lightboxIdx];
+      if (item && global.Tracker) global.Tracker.track('relay_palette', { id: item._id });
     });
     doc.addEventListener('keydown', function (e) {
       if (!lightboxEl.classList.contains('is-open')) return;
@@ -602,6 +608,7 @@
     var meta = $('.gm-lightbox-info p', lightboxEl);
     var dl = $('.gm-lightbox-dl', lightboxEl);
     var detailLink = $('.gm-lightbox-detail', lightboxEl);
+    var paletteLink = $('.gm-lightbox-palette', lightboxEl);
     var counter = $('.gm-lightbox-counter', lightboxEl);
     var favBtn = $('.gm-lightbox-fav', lightboxEl);
     var avifUrl = lightboxImgUrlAvif(item);
@@ -625,6 +632,11 @@
     var hasDetail = !!(global.GM_DETAIL_IDS && global.GM_DETAIL_IDS[item._id]);
     detailLink.hidden = !hasDetail;
     if (hasDetail) detailLink.href = '/p/' + item._id + '.html';
+    // 跨站接力：只有实测带 ACAO 的图源直链才给入口（规则单点见 relay.js），
+    // 不给一个点了只能报 canvas SecurityError 的按钮。
+    var relayHref = global.GmRelay ? global.GmRelay.paletteLink(imgUrl(item)) : '';
+    paletteLink.hidden = !relayHref;
+    if (relayHref) paletteLink.href = relayHref;
     counter.textContent = (lightboxIdx + 1) + ' / ' + state.items.length;
     favBtn.classList.toggle('is-on', isFavorited(item._id));
     // 禁用前后按钮

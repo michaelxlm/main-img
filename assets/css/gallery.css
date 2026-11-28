@@ -288,13 +288,13 @@
   font-weight: 600; text-decoration: none; border: 0; cursor: pointer;
 }
 .gm-lightbox-dl:hover { background: var(--accent-solid-hover); color: #fff; }
-.gm-lightbox-detail {
+.gm-lightbox-detail, .gm-lightbox-palette {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 18px; border-radius: var(--radius-sm);
   background: rgba(255,255,255,.15); color: #fff; font-size: 0.875rem;
   font-weight: 600; text-decoration: none; border: 0;
 }
-.gm-lightbox-detail:hover { background: rgba(255,255,255,.3); color: #fff; }
+.gm-lightbox-detail:hover, .gm-lightbox-palette:hover { background: rgba(255,255,255,.3); color: #fff; }
 
 /* ---------------------------------- 统计数字 ---------------------------------- */
 .gm-stats {

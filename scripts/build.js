@@ -17,6 +17,9 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const crypto = require('crypto');
+// 跨站图片接力规则单点源（与浏览器端 gallery.js 同一份文件）。
+// 白名单不许在 build.js 里再抄一份——历史上「双清单漂移」踩过两次。
+const GmRelay = require('../assets/js/relay.js');
 
 const ROOT = path.resolve(__dirname, '..');
 // M4 方案A（WO-227~230）：构建期读取中台下发的已采纳 SEO 增强建议（sites['main-img']）。
@@ -447,6 +450,9 @@ function genDetailPage(item, detailSet, siblings) {
   var canonical = '/p/' + id + '.html';
   var big = bigUrl(item);
   var bigAvif = bigUrlAvif(item);
+  // 接力入口：详情页是纯静态（不加载 gallery.js），链接必须构建期落好；
+  // paletteLink 判定不可接力（域名无 ACAO / 非图片 / 超长）时返回 ''，此处就不给按钮。
+  var relayHref = GmRelay.paletteLink(imgUrl(item));
 
   var metaParts = [];
   if (item.width && item.height) metaParts.push('分辨率 ' + esc(item.width) + '×' + esc(item.height));
@@ -495,6 +501,7 @@ function genDetailPage(item, detailSet, siblings) {
     + '        <div class="btn-row">\n'
     + '          <a class="btn btn-primary" href="' + escAttr(imgUrl(item)) + '" target="_blank" rel="noopener" download onclick=\'try{fetch("' + opUrl + '",{method:"POST",mode:"cors",keepalive:true,headers:{"Content-Type":"application/json"},body:JSON.stringify({img_id:"' + id.replace(/[^0-9a-fA-F]/g, "") + '",type:"download",inc:1})})}catch(e){}\'>⤓ 下载原图</a>\n'
     + (catSlug ? '          <a class="btn btn-ghost" href="/category/' + esc(catSlug) + '.html">更多' + esc(catName) + '壁纸 →</a>\n' : '')
+    + (relayHref ? '          <a class="btn btn-ghost" href="' + escAttr(relayHref) + '" target="_blank" rel="noopener">到 cs调色盘 取主色 →</a>\n' : '')
     + '        </div>\n'
     + '        <div class="ad-slot" data-ad-slot="inline" style="margin:20px 0"></div>\n'
     + (related ? '        <div class="section-head left mt-32"><h2>同类推荐</h2></div>\n        <div class="gm-grid">\n          ' + related + '\n        </div>\n' : '')
@@ -511,7 +518,7 @@ function genDetailPage(item, detailSet, siblings) {
 // 与两 manifest 站的 fingerprint manifest token 同算法：源码一变令牌即变，回访下次可见。
 // 集合与 packages/site-sdk/sync.js 的 WEB_SDKS + slot-loader 合并加载器对齐。
 // 收藏数据层与画廊也按内容哈希失效，避免同一天发布后回访用户继续使用旧收藏逻辑。
-var SLOT_SDK = /^\/assets\/js\/(ad-slots|coupon-slot|img-slot|slot-loader|mp-slot|tracker|favorites-store|favorites-ui|gallery)\.js$/;
+var SLOT_SDK = /^\/assets\/js\/(ad-slots|coupon-slot|img-slot|slot-loader|mp-slot|tracker|favorites-store|favorites-ui|gallery|relay)\.js$/;
 function slotContentHash(rel) {
   var abs = path.join(ROOT, rel.replace(/^\//, ''));
   try {
